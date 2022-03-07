@@ -22,11 +22,11 @@
      inkscape:pageopacity="1"
      inkscape:pagecheckerboard="0"
      inkscape:document-units="px"
-     showgrid="true"
+     showgrid="false"
      units="px"
-     inkscape:zoom="0.64517569"
-     inkscape:cx="470.4145"
-     inkscape:cy="213.89523"
+     inkscape:zoom="0.53724621"
+     inkscape:cx="466.26667"
+     inkscape:cy="858.07957"
      inkscape:window-width="1440"
      inkscape:window-height="872"
      inkscape:window-x="0"
@@ -1106,19 +1106,19 @@
        d="M 127,0 V 279.4"
        id="path9093" />
     <rect
-       style="fill:#000000;stroke:#666666;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.529161, 1.58749;paint-order:markers stroke fill;stop-color:#000000"
+       style="fill:#000000;stroke:#666666;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.529161, 1.58749;paint-order:markers stroke fill;stop-color:#000000"
        id="rect13320"
        width="25.400002"
-       height="53.584831"
+       height="57.149986"
        x="152.39998"
-       y="28.965155" />
+       y="25.4" />
     <rect
-       style="opacity:0.1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.529161, 1.58749;paint-order:markers stroke fill;stop-color:#000000"
+       style="opacity:0.1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.529161, 1.58749;paint-order:markers stroke fill;stop-color:#000000"
        id="rect13320-4"
        width="25.400002"
-       height="53.584843"
+       height="57.149998"
        x="177.79999"
-       y="28.965155" />
+       y="25.4" />
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
