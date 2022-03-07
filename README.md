@@ -15,5 +15,5 @@ For more concrete discussion of content and structure, check out these collabora
 
 ## Sketches and Drafts
 
-![](./Assets/Website Draft 22-03-04.svg)
+![]("./Assets/Website Draft 22-03-04.svg")
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
