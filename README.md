@@ -15,5 +15,9 @@ For more concrete discussion of content and structure, check out these collabora
 
 ## Sketches and Drafts
 
+<<<<<<< HEAD
 ![](./Assets/Website Draft 22-03-04.svg)
+=======
+![](Assets/Website Draft 22-03-04.svg)
+>>>>>>> a8174598a1fe7555d9ab9a23179f377e3515f927
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
