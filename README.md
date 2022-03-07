@@ -1,7 +1,7 @@
 This is the new Moving Across Thresholds website.
 
 Right now, you can't see anything yet.
-This week, I'll create the prorotype, and a link to test it will appear here.
+This week, I'll create the prototype, and a link to test it will appear here.
 
 Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm currently implementing.
 
@@ -15,6 +15,7 @@ Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm current
     - [ ] Hypertext content
     - [ ] Images (initially served via Google Docs)
 - [ ] Arrange initial content into `Zipper` structure
+- [x] Create simple theme
 - [ ] Display `Zipper` as Accordion
 - [ ] Deploy to [movingAcrossThresholds.com](movingAcrossThresholds.com)
 
@@ -53,5 +54,5 @@ For more concrete discussion of content and structure, check out these **collabo
 ![](Assets/22-03-07-Components.svg)
 Sketch of Measures (vertical and horizontal rhythm) and potential Colors, by Flupsi, 22-03-07
 
-![](Assets/Website%20Draft%2022-03-04.svg)
+![](Assets/22-03-04-Sketch.svg)
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04

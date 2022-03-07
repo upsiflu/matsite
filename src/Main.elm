@@ -6,6 +6,8 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 
+import Layout exposing (..)
+
 
 import Data
 
@@ -27,9 +29,19 @@ update msg model =
       model - 1
 
 
+
 view model =
-    Html.div []
-    [ Html.div 
+    Html.div [ ]
+    [ Layout.typography
+    , section
+        [ header "Fatigue as creative proposition"
+        , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        , h2 "This Subheading is weirdäö@%&äÄ'"
+        , dense "For more concrete discussion of content and structure, check out these collaborative docs."
+        , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        ]
+    , Html.div 
         [ css 
             [ displayFlex
             , position relative

@@ -22,11 +22,11 @@
      inkscape:pageopacity="1"
      inkscape:pagecheckerboard="0"
      inkscape:document-units="px"
-     showgrid="false"
+     showgrid="true"
      units="px"
-     inkscape:zoom="0.53724621"
-     inkscape:cx="466.26667"
-     inkscape:cy="858.07957"
+     inkscape:zoom="1.3036816"
+     inkscape:cx="268.85399"
+     inkscape:cy="833.02548"
      inkscape:window-width="1440"
      inkscape:window-height="872"
      inkscape:window-x="0"
@@ -37,15 +37,15 @@
     <inkscape:grid
        type="xygrid"
        id="grid832"
-       spacingx="12.7"
-       spacingy="6.3500001"
+       spacingx="6.35"
+       spacingy="12.7"
        empspacing="4"
        color="#ff3f3f"
        opacity="0.35686275"
-       originy="1.5875"
+       originy="7.9375001"
        originx="4.7625"
-       empcolor="#1affb8"
-       empopacity="0" />
+       empcolor="#ff391a"
+       empopacity="0.50196078" />
     <inkscape:grid
        type="xygrid"
        id="grid15658"
@@ -133,9 +133,9 @@
     <rect
        style="fill:#ececec;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
        id="rect1122-7-42"
-       width="63.500004"
+       width="76.200005"
        height="38.099998"
-       x="25.400007"
+       x="19.049999"
        y="215.89999" />
     <rect
        style="fill:#123dff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
@@ -165,7 +165,7 @@
          id="tspan7018"
          style="fill:#ffffff;stroke-width:0.264583"
          x="42.862503"
-         y="33.337498">Optimal click target (1.06cm)</tspan></text>
+         y="33.337498">Optimal click target (ca. 0.9-1.1cm)</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
@@ -232,7 +232,7 @@
          id="tspan17864-4"
          style="fill:#ff0000;stroke-width:0.264583"
          x="38.100002"
-         y="38.099998">18=3rem</tspan></text>
+         y="38.099998">18=9/8rem</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#00ffff;stroke-width:0.264583"
@@ -311,7 +311,7 @@
          id="tspan19592-92-7"
          style="text-align:end;text-anchor:end;fill:#ff0000;stroke-width:0.264583"
          x="28.575001"
-         y="136.52507">30px=5/8cm</tspan></text>
+         y="136.52507">5/8cm</tspan></text>
     <rect
        style="fill:#ffd5d5;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529165, 0.264582, 0.529165;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
        id="rect18498-3"
@@ -1024,21 +1024,21 @@
     <rect
        style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529161, 1.58749;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
        id="rect173587"
-       width="63.5"
+       width="76.200005"
        height="1.5874968"
-       x="25.400002"
-       y="222.25002" />
+       x="19.049999"
+       y="224.36668" />
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
-       x="25.400002"
-       y="222.25002"
+       x="19.049999"
+       y="224.36665"
        id="text176157"><tspan
          sodipodi:role="line"
          id="tspan176155"
          style="fill:#ff0000;stroke-width:0.264583"
-         x="25.400002"
-         y="222.25002">paragraph width</tspan></text>
+         x="19.049999"
+         y="224.36665">column width</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
@@ -1067,7 +1067,18 @@
          id="tspan184976"
          style="fill:#ff0000;stroke-width:0.264583"
          x="12.700001"
-         y="209.55">margin</tspan></text>
+         y="209.55">unit</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="12.7"
+       y="200.02499"
+       id="text184978-0"><tspan
+         sodipodi:role="line"
+         id="tspan184976-0"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="12.7"
+         y="200.02499">viewport width</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke:none;stroke-width:0.264583"
@@ -1093,14 +1104,14 @@
     <text
        xml:space="preserve"
        style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
-       x="25.400002"
-       y="226.48337"
+       x="19.049999"
+       y="228.60001"
        id="text192001"><tspan
          sodipodi:role="line"
          id="tspan191999"
          style="fill:#ff0000;stroke-width:0.264583"
-         x="25.400002"
-         y="226.48337">5rem</tspan></text>
+         x="19.049999"
+         y="228.60001">6 units</tspan></text>
     <path
        style="fill:none;stroke:#0000ff;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="M 127,0 V 279.4"
@@ -1277,5 +1288,12 @@
          style="text-align:start;text-anchor:start;fill:#ffffff;stroke-width:0.264583"
          x="182.56248"
          y="79.375">10%</tspan></text>
+    <rect
+       style="opacity:1;fill:#800000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.529161, 1.58749;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect126167"
+       width="88.900009"
+       height="3.1750002"
+       x="12.700002"
+       y="200.02501" />
   </g>
 </svg>
