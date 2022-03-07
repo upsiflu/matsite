@@ -1,0 +1,13 @@
+# elm-package generated files
+elm-stuff
+# elm-repl generated files
+repl-temp-*
+# Mac shit
+.DS_Store
+.DS_Store?
+# OS generated files
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
