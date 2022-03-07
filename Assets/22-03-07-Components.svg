@@ -1,0 +1,1105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1920"
+   height="1056"
+   viewBox="0 0 507.99999 279.40001"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2-dev (9ee32be, 2021-06-19)"
+   sodipodi:docname="22-03-07-Components.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="1"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="true"
+     units="px"
+     inkscape:zoom="0.30381036"
+     inkscape:cx="511.83244"
+     inkscape:cy="355.48491"
+     inkscape:window-width="1440"
+     inkscape:window-height="872"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer2"
+     inkscape:snap-text-baseline="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid832"
+       spacingx="12.7"
+       spacingy="6.3500001"
+       empspacing="4"
+       color="#ff3f3f"
+       opacity="0.35686275"
+       originy="1.5875"
+       originx="4.7625"
+       empcolor="#1affb8"
+       empopacity="0" />
+    <inkscape:grid
+       type="xygrid"
+       id="grid15658"
+       color="#0413ff"
+       opacity="0.35686275"
+       empcolor="#007ffb"
+       empopacity="0.69411765"
+       empspacing="4"
+       spacingx="3.175"
+       spacingy="3.175" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     sodipodi:insensitive="true">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529161, 1.58749;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect196360"
+       width="266.70001"
+       height="277.8125"
+       x="-8.5630325e-07"
+       y="1.5875009" />
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 66.675003,46.0375 -36.512501,-1e-6"
+       id="path37497"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#123dff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122"
+       width="12.699999"
+       height="12.699999"
+       x="25.400002"
+       y="25.399996" />
+    <rect
+       style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-73"
+       width="12.699999"
+       height="12.699999"
+       x="152.40001"
+       y="12.700005" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-73-0"
+       width="12.699999"
+       height="12.699999"
+       x="12.699997"
+       y="12.699997" />
+    <rect
+       style="fill:#1e1e1e;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-73-2"
+       width="12.699999"
+       height="12.699999"
+       x="228.60001"
+       y="12.700005" />
+    <rect
+       style="fill:#860083;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="25.399996" />
+    <rect
+       style="fill:#1e1e1e;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-73-8"
+       width="12.699999"
+       height="12.699999"
+       x="12.700009"
+       y="203.2" />
+    <rect
+       style="fill:#1e1e1e;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-73-2-7"
+       width="12.699999"
+       height="12.699999"
+       x="88.900002"
+       y="203.2" />
+    <rect
+       style="fill:#ececec;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-42"
+       width="63.500004"
+       height="38.099998"
+       x="25.400007"
+       y="215.89999" />
+    <rect
+       style="fill:#123dff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499999, 0.499999;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-4"
+       width="34.924999"
+       height="12.699999"
+       x="25.4"
+       y="174.62506" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+       x="30.1625"
+       y="182.56258"
+       id="text37921-0"><tspan
+         sodipodi:role="line"
+         id="tspan37919-0"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+         x="30.1625"
+         y="182.56258">Button Label</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="42.862503"
+       y="33.337498"
+       id="text7020"><tspan
+         sodipodi:role="line"
+         id="tspan7018"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="42.862503"
+         y="33.337498">Optimal click target (1.06cm)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="30.1625"
+       y="46.037502"
+       id="text7020-4"><tspan
+         sodipodi:role="line"
+         id="tspan7018-4"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="46.037502">Default Text <tspan
+   style="font-style:italic"
+   id="tspan37250">abcdefg</tspan></tspan></text>
+    <rect
+       style="fill:none;stroke:#123dff;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect9402"
+       width="88.900002"
+       height="12.699997"
+       x="25.400002"
+       y="50.799999" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#00ffff;stroke-width:0.264583"
+       x="30.1625"
+       y="58.737503"
+       id="text9552"><tspan
+         sodipodi:role="line"
+         id="tspan9550"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#00ffff;stroke-width:0.264583"
+         x="30.1625"
+         y="58.737503">Section Label</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect16212"
+       width="4.7625003"
+       height="1.5874993"
+       x="25.400002"
+       y="58.737503" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="25.400002"
+       y="63.5"
+       id="text17866"><tspan
+         sodipodi:role="line"
+         id="tspan17864"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.400002"
+         y="63.5">18</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect16212-5"
+       width="4.7625003"
+       height="1.5874993"
+       x="38.100002"
+       y="33.337498" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="38.100002"
+       y="38.099998"
+       id="text17866-5"><tspan
+         sodipodi:role="line"
+         id="tspan17864-4"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="38.100002"
+         y="38.099998">18=3rem</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#00ffff;stroke-width:0.264583"
+       x="25.400002"
+       y="38.099998"
+       id="text17866-6"><tspan
+         sodipodi:role="line"
+         id="tspan17864-6"
+         style="fill:#00ffff;stroke-width:0.264583"
+         x="25.400002"
+         y="38.099998">48*48</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529165, 0.264582, 0.529165;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498"
+       width="1.5874999"
+       height="4.7624998"
+       x="41.275002"
+       y="58.737503" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529162, 1.58749;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498-9"
+       width="4.7624998"
+       height="4.7624998"
+       x="25.4"
+       y="182.56256" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529162, 1.58749;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498-9-4"
+       width="4.7624998"
+       height="4.7624998"
+       x="55.5625"
+       y="182.56258" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="42.862503"
+       y="63.5"
+       id="text19594"><tspan
+         sodipodi:role="line"
+         id="tspan19592"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="42.862503"
+         y="63.5">18px=3/8cm</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11668, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498-6"
+       width="1.5874999"
+       height="7.9375"
+       x="28.575001"
+       y="63.500008" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="28.575001"
+       y="71.4375"
+       id="text19594-4"><tspan
+         sodipodi:role="line"
+         id="tspan19592-92"
+         style="text-align:end;text-anchor:end;fill:#ff0000;stroke-width:0.264583"
+         x="28.575001"
+         y="71.4375">30px=5/8cm</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11668, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498-6-5"
+       width="1.5874999"
+       height="7.9375"
+       x="28.575001"
+       y="128.58754" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="28.575001"
+       y="136.52507"
+       id="text19594-4-1"><tspan
+         sodipodi:role="line"
+         id="tspan19592-92-7"
+         style="text-align:end;text-anchor:end;fill:#ff0000;stroke-width:0.264583"
+         x="28.575001"
+         y="136.52507">30px=5/8cm</tspan></text>
+    <rect
+       style="fill:#ffd5d5;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529165, 0.264582, 0.529165;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect18498-3"
+       width="1.5874999"
+       height="4.2333336"
+       x="66.675003"
+       y="42.862499" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="68.262505"
+       y="46.037498"
+       id="text19594-9"><tspan
+         sodipodi:role="line"
+         id="tspan19592-9"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="68.262505"
+         y="46.037498">16px=1/3cm</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect16212-0"
+       width="4.7625003"
+       height="1.5874993"
+       x="25.4"
+       y="46.037502" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="25.4"
+       y="50.800003"
+       id="text17866-0"><tspan
+         sodipodi:role="line"
+         id="tspan17864-0"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.4"
+         y="50.800003">18</tspan></text>
+    <circle
+       style="fill:#00ff00;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="path37793"
+       cx="107.94997"
+       cy="107.94999"
+       r="9.5250006" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#123dff;fill-opacity:1;stroke-width:0.264583"
+       x="30.1625"
+       y="58.737503"
+       id="text37921"><tspan
+         sodipodi:role="line"
+         id="tspan37919"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#123dff;fill-opacity:1;stroke-width:0.264583"
+         x="30.1625"
+         y="58.737503">Section Label</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#123dff;fill-opacity:1;stroke-width:0.264583"
+       x="107.94997"
+       y="109.53745"
+       id="text37921-4"><tspan
+         sodipodi:role="line"
+         id="tspan37919-9"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#123dff;fill-opacity:1;stroke-width:0.264583"
+         x="107.94997"
+         y="109.53745">Floating</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11666, 0.529166, 0.264582, 0.529166;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect39542"
+       width="19.050014"
+       height="1.5874993"
+       x="98.425003"
+       y="117.47495" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="98.424995"
+       y="122.23748"
+       id="text39546"><tspan
+         sodipodi:role="line"
+         id="tspan39544"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="98.424995"
+         y="122.23748">72px=1.5cm</tspan></text>
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,71.4375 h -46.0375"
+       id="path41558"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,84.137502 h -46.0375"
+       id="path41558-1"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,77.787501 h -46.0375"
+       id="path41558-6"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="30.1625"
+       y="71.4375"
+       id="text41564"><tspan
+         sodipodi:role="line"
+         id="tspan41562"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="71.4375">Multiline Text Lorem ipsum</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="77.787498"
+         id="tspan43256">dolor sit amet in precibem</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="84.137497"
+         id="tspan43258">lut gutam ad infitum.</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="90.487495"
+         id="tspan45297">Quod percibem nulla idem</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="96.837502"
+         id="tspan45299">lo aquisitam partit?</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="30.1625"
+       y="142.87506"
+       id="text41564-9"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="142.87506">Multiline Text Lorem ipsum</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="149.22507"
+         id="tspan43256-4">dolor sit amet in precibem</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="155.57506"
+         id="tspan43258-7">lut gutam ad infitum.</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="161.92506"
+         id="tspan45297-4">Quod percibem nulla idem</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="168.27505"
+         id="tspan45299-1">lo aquisitam partit?</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="33.337498"
+       id="text41564-9-1"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="33.337498">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="39.687496"
+         id="tspan43256-4-8">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="46.037498"
+         id="tspan43258-7-7">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="52.387497"
+         id="tspan45297-4-9">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="58.737495"
+         id="tspan45299-1-4">lo aquisitam partit?</tspan></text>
+    <rect
+       style="fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-4"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="63.499992" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="71.437492"
+       id="text41564-9-1-6"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0-4"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="71.437492">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="77.787491"
+         id="tspan43256-4-8-7">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="84.137489"
+         id="tspan43258-7-7-5">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="90.487488"
+         id="tspan45297-4-9-5">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="96.837494"
+         id="tspan45299-1-4-6">lo aquisitam partit?</tspan></text>
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-7"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="101.59998" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="109.53751"
+       id="text41564-9-1-7"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0-9"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="109.53751">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="115.8875"
+         id="tspan43256-4-8-3">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="122.2375"
+         id="tspan43258-7-7-2">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="128.58751"
+         id="tspan45297-4-9-59">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="134.93752"
+         id="tspan45299-1-4-9">lo aquisitam partit?</tspan></text>
+    <rect
+       style="fill:#ffd5d5;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529165, 0.264582, 0.529165;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect41566"
+       width="1.5874999"
+       height="4.2333336"
+       x="76.199997"
+       y="68.262497" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="77.787498"
+       y="71.437492"
+       id="text41570"><tspan
+         sodipodi:role="line"
+         id="tspan41568"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="77.787498"
+         y="71.437492">16px=1/3cm</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect41566-3"
+       width="1.5874999"
+       height="6.3499999"
+       x="76.199997"
+       y="77.787491" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="77.787498"
+       y="84.137489"
+       id="text41570-5"><tspan
+         sodipodi:role="line"
+         id="tspan41568-1"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="77.787498"
+         y="84.137489">24px=1/2cm</tspan></text>
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529167, 0.264583, 0.529167;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect41572"
+       width="4.7625003"
+       height="1.5874993"
+       x="25.4"
+       y="71.4375" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="25.4"
+       y="76.199997"
+       id="text41576"><tspan
+         sodipodi:role="line"
+         id="tspan41574"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.4"
+         y="76.199997">18</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="30.1625"
+       y="103.18748"
+       id="text48899"><tspan
+         sodipodi:role="line"
+         id="tspan48889"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#000080;stroke-width:0.264583"
+         x="30.1625"
+         y="103.18748">x</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="107.42081"
+         id="tspan54187">Multiline Text Lorem ipsum</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="111.65414"
+         id="tspan48891">dolor sit amet in precibem</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="115.88747"
+         id="tspan48893">lut gutam ad infitum.</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="120.1208"
+         id="tspan48895">Quod percibem nulla idem</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="124.35413"
+         id="tspan91628">lo aquisitam partit?</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="128.58748"
+         id="tspan91632">Illut <tspan
+   style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:Subaru;-inkscape-font-specification:'Subaru Medium';fill:#2169ff;fill-opacity:1"
+   id="tspan98332">bellam</tspan>.</tspan></text>
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,84.137502 h -46.0375"
+       id="path53681"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,77.787501 h -46.0375"
+       id="path53683"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect53685"
+       width="1.5874999"
+       height="6.3499999"
+       x="76.199997"
+       y="77.787491" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="77.787498"
+       y="84.137489"
+       id="text53689"><tspan
+         sodipodi:role="line"
+         id="tspan53687"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="77.787498"
+         y="84.137489">24px=1/2cm</tspan></text>
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,103.18749 h -46.0375"
+       id="path53681-9"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,96.837498 h -46.0375"
+       id="path53683-1"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#ff0000;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect53685-0"
+       width="1.5874999"
+       height="6.3499999"
+       x="76.199997"
+       y="96.837479" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 76.2,142.87499 H 30.1625"
+       id="path53681-9-1"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 76.2,136.52499 H 30.1625"
+       id="path53683-1-7"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 76.2,174.62499 H 30.1625"
+       id="path53681-9-1-5"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 76.2,168.27499 H 30.1625"
+       id="path53683-1-7-1"
+       sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="77.787498"
+       y="103.18748"
+       id="text53689-4"><tspan
+         sodipodi:role="line"
+         id="tspan53687-5"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="77.787498"
+         y="103.18748">24</tspan></text>
+    <path
+       style="fill:none;stroke:#ff5555;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833, 0.529166, 0.264583, 0.529166;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 76.200002,107.42082 h -46.0375"
+       id="path53681-9-3"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#ff5555;stroke:none;stroke-width:0.264582;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:2.11667, 0.529164, 0.264582, 0.529164;stroke-dashoffset:0;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect53685-0-9"
+       width="1.5874999"
+       height="4.2333336"
+       x="76.199997"
+       y="103.18748" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff5555;stroke-width:0.264583"
+       x="77.787498"
+       y="107.42082"
+       id="text53689-4-6"><tspan
+         sodipodi:role="line"
+         id="tspan53687-5-4"
+         style="fill:#ff5555;stroke-width:0.264583"
+         x="77.787498"
+         y="107.42082">16</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="25.400002"
+       y="103.1875"
+       id="text41576-1"><tspan
+         sodipodi:role="line"
+         id="tspan41574-5"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.400002"
+         y="103.1875">paragraph break</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="-128.58754"
+       y="28.575001"
+       id="text41576-1-1"
+       transform="rotate(-90)"><tspan
+         sodipodi:role="line"
+         id="tspan41574-5-1"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="-128.58754"
+         y="28.575001">Dense text</tspan></text>
+    <path
+       style="fill:none;stroke:#216eff;stroke-width:0.264583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 37.30625,129.11665 H 47.625"
+       id="path100553" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ffffff;stroke-width:0.264583"
+       x="30.1625"
+       y="136.52505"
+       id="text107573"><tspan
+         sodipodi:role="line"
+         id="tspan107571"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Bold';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         x="30.1625"
+         y="136.52505">Subheading</tspan></text>
+    <rect
+       style="fill:#220055;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-6"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="139.70006" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="147.63756"
+       id="text41564-9-1-3"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0-0"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="147.63756">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="153.98756"
+         id="tspan43256-4-8-1">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="160.33755"
+         id="tspan43258-7-7-6">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="166.68756"
+         id="tspan45297-4-9-595">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="173.03755"
+         id="tspan45299-1-4-8">lo aquisitam partit?</tspan></text>
+    <rect
+       style="fill:#123dff;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-9"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="177.80006" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="185.73756"
+       id="text41564-9-1-1"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0-6"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="185.73756">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="192.08757"
+         id="tspan43256-4-8-0">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="198.43756"
+         id="tspan43258-7-7-1">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="204.78757"
+         id="tspan45297-4-9-0">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="211.13756"
+         id="tspan45299-1-4-2">lo aquisitam partit?</tspan></text>
+    <rect
+       style="fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.999997;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:0.499998, 0.499998;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect1122-7-47"
+       width="63.500004"
+       height="38.099998"
+       x="165.10001"
+       y="215.90007" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:6.35px;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583"
+       x="169.8625"
+       y="223.83757"
+       id="text41564-9-1-35"><tspan
+         sodipodi:role="line"
+         id="tspan41562-0-0-8"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="223.83757">Multiline Text Lorem ipsum locus</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="230.18758"
+         id="tspan43256-4-8-16">dolor sit amet in precibem ad</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="236.53757"
+         id="tspan43258-7-7-3">lut gutam ad infitum. Dorum iat</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="242.88757"
+         id="tspan45297-4-9-8">quod percibem nulla idem igitur</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffffff;stroke-width:0.264583"
+         x="169.8625"
+         y="249.23756"
+         id="tspan45299-1-4-60">lo aquisitam partit?</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="63.5"
+       id="text137850"><tspan
+         sodipodi:role="line"
+         id="tspan137848"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="63.5">lilac</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#999999;stroke-width:0.264583"
+       x="169.8625"
+       y="20.637497"
+       id="text137850-4"><tspan
+         sodipodi:role="line"
+         id="tspan137848-0"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#999999;stroke-width:0.264583"
+         x="169.8625"
+         y="20.637497">Alternative Fill Colors</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="101.59998"
+       id="text137850-3"><tspan
+         sodipodi:role="line"
+         id="tspan137848-6"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="101.59998">dark grey</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="139.70006"
+       id="text137850-3-0"><tspan
+         sodipodi:role="line"
+         id="tspan137848-6-6"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="139.70006">red</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="177.80006"
+       id="text137850-3-0-8"><tspan
+         sodipodi:role="line"
+         id="tspan137848-6-6-7"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="177.80006">violet</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="215.90007"
+       id="text137850-3-0-8-9"><tspan
+         sodipodi:role="line"
+         id="tspan137848-6-6-7-5"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="215.90007">blue</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#666666;stroke-width:0.264583"
+       x="228.60001"
+       y="254.00003"
+       id="text137850-3-0-8-9-2"><tspan
+         sodipodi:role="line"
+         id="tspan137848-6-6-7-5-9"
+         style="fill:#666666;stroke-width:0.264583"
+         x="228.60001"
+         y="254.00003">grey</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="30.1625"
+       y="20.637497"
+       id="text137850-4-0"><tspan
+         sodipodi:role="line"
+         id="tspan137848-0-5"
+         style="font-style:normal;font-variant:normal;font-weight:900;font-stretch:normal;font-size:4.23333px;font-family:Subaru;-inkscape-font-specification:'Subaru, Heavy';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ff0000;stroke-width:0.264583"
+         x="30.1625"
+         y="20.637497">Rhythm</tspan></text>
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529161, 1.58749;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect173483"
+       width="88.899994"
+       height="1.587504"
+       x="12.700001"
+       y="260.35001" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529161, 1.58749;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect173587"
+       width="63.5"
+       height="1.5874968"
+       x="25.400002"
+       y="222.25002" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="25.400002"
+       y="222.25002"
+       id="text176157"><tspan
+         sodipodi:role="line"
+         id="tspan176155"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.400002"
+         y="222.25002">paragraph width</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="12.700001"
+       y="260.35001"
+       id="text179185"><tspan
+         sodipodi:role="line"
+         id="tspan179183"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="12.700001"
+         y="260.35001">minimal device width (scale down on smaller screens)</tspan></text>
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.264581;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:0.529161, 1.58749;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill;stop-color:#000000"
+       id="rect182777"
+       width="12.700001"
+       height="1.5875033"
+       x="12.700001"
+       y="209.55" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;stroke-width:0.264583;fill:#ff0000"
+       x="12.700001"
+       y="209.55"
+       id="text184978"><tspan
+         sodipodi:role="line"
+         id="tspan184976"
+         style="stroke-width:0.264583;fill:#ff0000"
+         x="12.700001"
+         y="209.55">margin</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583;stroke:none"
+       x="12.7"
+       y="213.78333"
+       id="text187684"><tspan
+         sodipodi:role="line"
+         id="tspan187682"
+         style="fill:#ff0000;stroke-width:0.264583;stroke:none"
+         x="12.7"
+         y="213.78333">3rem</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="12.7"
+       y="264.58334"
+       id="text187684-3"><tspan
+         sodipodi:role="line"
+         id="tspan187682-1"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="12.7"
+         y="264.58334">336px=7cm=21rem</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:Subaru;-inkscape-font-specification:'Subaru, Normal';font-variant-ligatures:none;fill:#ff0000;stroke-width:0.264583"
+       x="25.400002"
+       y="226.48337"
+       id="text192001"><tspan
+         sodipodi:role="line"
+         id="tspan191999"
+         style="fill:#ff0000;stroke-width:0.264583"
+         x="25.400002"
+         y="226.48337">5rem</tspan></text>
+  </g>
+</svg>
