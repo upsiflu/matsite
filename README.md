@@ -5,6 +5,41 @@ This week, I'll create the prorotype, and a link to test it will appear here.
 
 Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm currently implementing.
 
+## Progress
+
+### This Week
+
+- [ ] Ingest initial content
+    - [x] are.na embed
+    - [x] vimeo embed (with tracking disabled to comply with EU laws)
+    - [ ] Hypertext content
+    - [ ] Images (initially served via Google Docs)
+- [ ] Arrange initial content into `Zipper` structure
+- [ ] Display `Zipper` as Accordion
+- [ ] Deploy to [movingAcrossThresholds.com](movingAcrossThresholds.com)
+
+------------------ Milestone #1: MVP done ------------------
+
+### March
+
+- [ ] Add User Login for `movingacrossthresholds@gmail.com`
+- [ ] Make data editable
+- [ ] Add Photo Upload feature with automatic compression
+
+------------------ Milestone #2: Backend done ------------------
+
+### April and beyond
+
+- [ ] Fine-tune Layout features and add toolbar for WYSIWYG editing
+
+------------------ Milestone #3: WYSIWYG done ------------------
+
+- [ ] Improve animations
+- [ ] Improve Colors
+
+------------------ Milestone #4: Usability improvements done ------------------
+
+
 ## Prior work
 
 For more concrete discussion of content and structure, check out these **collaborative docs:**
