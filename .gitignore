@@ -2,8 +2,10 @@
 elm-stuff
 # elm-repl generated
 repl-temp-*
-# elm test generated
+# elm-test generated
 tests/VerifyExamples
+# elm-live generated
+main.js
 # Mac shit
 .DS_Store
 .DS_Store?
