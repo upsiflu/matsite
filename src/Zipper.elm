@@ -98,15 +98,36 @@ flat z =
 
 
 
-{-| -}
+{-| 
+
+    singleton "x"
+        |> insertRight "Y"
+        |> insertRight "Z"
+        |> insertRight "A"
+        |> rightmost
+        |> focus
+
+        --> "Y"
+
+    
+    singleton "x"
+        |> insertRight "Y"
+        |> insertRight "Z"
+        |> insertRight "A"
+        |> rightmost
+        |> length
+
+        --> 4
+
+-}
 rightmost : Zipper a -> Zipper a
 rightmost z =
     case List.reverse z.right of
         [] ->
             z
 
-        last :: s ->
-            { z | left = s ++ z.left, focus = last, right = [] }
+        t :: hgir ->
+            { z | left = hgir++[z.focus]++z.left, focus = t, right = []}
 
 
 {-|
@@ -125,12 +146,20 @@ rightmost z =
 
         --> "Y"
 
+    singleton "x"
+        |> insertRight "R"
+        |> insertLeft "LL"
+        |> insertLeft "L"
+        |> length
+
+        --> 4
+
 -}
 left : Zipper a -> Zipper a
 left z =
     case z.left of
-        a :: s ->
-            { z | left = s, focus = a, right = z.focus :: z.right }
+        l :: eft ->
+            { z | left = eft, focus = l, right = z.focus :: z.right }
 
         [] ->
             rightmost z
@@ -143,8 +172,8 @@ leftmost z =
         [] ->
             z
 
-        first :: s ->
-            { z | left = [], focus = first, right = s ++ z.right }
+        t :: fel ->
+            { z | left = [], focus = t, right = fel ++ [z.focus] ++ z.right }
 
 
 {-|
@@ -155,8 +184,8 @@ leftmost z =
 right : Zipper a -> Zipper a
 right z =
     case z.right of
-        a :: s ->
-            { z | left = z.focus :: s, focus = a, right = z.right }
+        r :: ight ->
+            { z | left = z.focus :: z.left, focus = r, right = ight }
 
         [] ->
             leftmost z

@@ -73,8 +73,8 @@ singleton a =
     }
 
 {-|-}
-join : a -> List a -> List a -> (a -> f) -> MixedZipper f a
-join a l r fu =
+join : (a -> f) -> a -> List a -> List a -> MixedZipper f a
+join fu a l r =
     { aToF = fu
     , zipper = Zipper.join a l r
     }

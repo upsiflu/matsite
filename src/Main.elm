@@ -52,7 +52,7 @@ view model =
             , height (vh 100)
             , backgroundColor (rgb 100 200 200) ] 
         ]
-        [ Data.anarchive ]
+        [ Data.anarchiveX ]
     , Html.div 
         [ css 
             [ displayFlex
@@ -61,5 +61,5 @@ view model =
             , height (vh 100)
             , backgroundColor (rgb 100 200 200) ] 
         ]
-        [ Data.vimeo ]
+        [ Data.vimeoX ]
     ]

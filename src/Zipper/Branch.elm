@@ -87,15 +87,6 @@ fromPath (a, aa) =
 
 
 
-
-
-apply : (MixedNonempty a ( MixedZipper a (Branch a) ) -> MixedNonempty a ( MixedZipper a (Branch a) )) -> Branch a -> Branch a 
-apply fu (Branch b) =
-    Branch (fu b)
-
-
-
-
 ---- MAP ----
 
 
@@ -169,7 +160,7 @@ prepend aa (Branch b) =
             Nonempty.Mixed.mapSecond
                 { nonempty = Zipper.Mixed.prepend aa
                 , empty = 
-                    (\_->[Zipper.Mixed.join br anch [] node])
+                    (\_->[Zipper.Mixed.join node br anch []])
                 }
                 b
                 |> Branch
@@ -184,7 +175,7 @@ append aa (Branch b) =
             Nonempty.Mixed.mapSecond
                 { nonempty = Zipper.Mixed.append aa
                 , empty = 
-                    (\_->[Zipper.Mixed.join br [] anch node])
+                    (\_->[Zipper.Mixed.join node br [] anch])
                 }
                 b
                 |> Branch
@@ -235,7 +226,7 @@ defold =
     { mergeBranch = merge
     , consTrunk = (::)
     , leaf = []
-    , join = (\a l r -> Zipper.Mixed.join (singleton a) l r node)
+    , join = (\a l r -> Zipper.Mixed.join node (singleton a) l r)
     , joinBranch = (\a l r -> Zipper.join a l r)
     , consAisle = (::)
     , left = []

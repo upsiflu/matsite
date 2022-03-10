@@ -1,21 +1,22 @@
 module Zipper.Tree exposing
-    ( Tree, singleton, animate, fromPath
+    ( Tree, singleton, animate, fromPath, join, fromBranch
     , left, leftmost
     , right, rightmost
     , up, down
     , root, leaf
+    , walk, Direction(..), Walk(..), EdgeOperation(..)
     , map, mapFocus, mapBranch
     , insertLeft, prepend
     , insertRight, append
     , growRoot, growLeaf, growBranch
     , deleteFocus
     , insert
-    , focus
+    , focus, focusedBranch
     , path
     , circumference
     , petrify
     , fold, defold
-    , view
+    , ViewMode(..), view
     )
 
 {-| A List of branches 🌿 that can be navigated horizontally and vertically.
@@ -23,7 +24,7 @@ module Zipper.Tree exposing
   - When walking left or right, you will wrap silently because we assume that the branches are set in a circle.
   - By convention, the `root`s are on top
 
-@docs Tree, singleton, animate, fromPath
+@docs Tree, singleton, animate, fromPath, join, fromBranch
 
 
 ## Navigate
@@ -32,6 +33,10 @@ module Zipper.Tree exposing
 @docs right, rightmost
 @docs up, down
 @docs root, leaf
+
+## Constructive Navigation
+
+@docs walk, Direction, Walk, EdgeOperation
 
 
 ## Map
@@ -58,7 +63,7 @@ module Zipper.Tree exposing
 
 ## Deconstruct
 
-@docs focus
+@docs focus, focusedBranch
 @docs path
 @docs circumference
 @docs petrify
@@ -409,7 +414,7 @@ walk w =
 defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
 defold =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = (\a l r -> Zipper.Mixed.join (Branch.singleton a) l r Branch.node)
+    , join = (\a l r -> Zipper.Mixed.join Branch.node (Branch.singleton a) l r)
     , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = Branch.merge --: a -> trunk -> b
@@ -433,7 +438,7 @@ defold =
 mapfold : (a->b) -> Fold {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
 mapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = (\a l r -> Zipper.Mixed.join (Branch.singleton (fu a)) l r Branch.node) -- a -> aisle -> aisle -> z
+    , join = (\a l r -> Zipper.Mixed.join Branch.node (Branch.singleton (fu a)) l r ) -- a -> aisle -> aisle -> z
     , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = fu >> Branch.merge --: a -> trunk -> b
@@ -444,9 +449,35 @@ mapfold fu =
     }
 
 {-| -}
+type Marked a
+    = Focused a
+    | Blurred a
+
+{-| -}
+switch : Marked a -> Marked a
+switch m =
+    case m of
+        Focused a -> Blurred a
+        Blurred a -> Focused a
+
+{-| -}
 map : (a -> b) -> Tree a -> Tree b
 map fu =
     fold (mapfold fu)
+
+{-| -}
+mapDistinct : (a -> b) -> (a -> b) -> Tree a -> Tree b
+mapDistinct focusFu peripheryFu =
+    let
+        fu m =
+            case m of 
+                Focused a -> focusFu a
+                Blurred a -> peripheryFu a
+    in
+    map Blurred
+        >> mapFocus switch
+        >> map fu
+    
 
 
 {-| -}
@@ -588,6 +619,10 @@ petrify : Tree a -> Zipper (Branch a)
 petrify =
     root >> Nonempty.Mixed.head
 
+{-|-}
+focusedBranch : Tree a -> Branch a
+focusedBranch =
+    Nonempty.Mixed.head >> Zipper.focus
 
 {-|
 
@@ -671,10 +706,16 @@ fold f =
         }
 
 {-|-}
-view : ( a -> Html msg ) -> Tree a -> Html msg
-view fu =
-    map fu
-        >> fold viewFolder
+type ViewMode a msg
+    = Default { renderFocus : a -> Html msg, renderPeriphery : a -> Html msg }
+
+{-|-}
+view : ViewMode a msg -> Tree a -> Html msg
+view viewMode =
+    case viewMode of
+        Default rendering ->
+            mapDistinct rendering.renderFocus rendering.renderPeriphery
+                >> fold viewFolder
     
 viewFolder :
     Fold 
@@ -688,30 +729,81 @@ viewFolder :
         (Html msg)        --e
 viewFolder =
     let
-        focused = css [border3 (px 5) solid (rgb 120 120 120) ]
-        horizontal = css [displayFlex]
+        asNode = css [backgroundColor yellow, borderRadius (rem 1), Css.height (em 1.5), Css.minWidth (em 1.5), color black, verticalAlign middle, textAlign center]
+        asLeaf = css [backgroundColor white, borderRadius (rem 1), Css.height (em 1.5), Css.minWidth (em 1.5), color black, verticalAlign middle, textAlign center]
+        focused = bordered yellow
+        horizontal = css [displayFlex, justifyContent center]
+        (leftAligned, rightAligned) = (css [justifyContent Css.left], css [justifyContent Css.right])
+        (red, green, blue) = (rgb 200 20 40, rgb 90 240 80, rgb 20 20 140)
+        (black, white, yellow) = (rgb 0 0 0, rgb 255 255 255, rgb 255 255 0)
+        bordered color = css [border3 (px 5) solid color ]
+        label t = Html.div [ css [ fontSize (px 9), backgroundColor black, opacity (num 0.9), Css.height (em 1.5), marginTop (em -2), marginBottom (em 0.5), Css.width (pct 100), textAlign center, hover [opacity (num 1)]]] [Html.text t]
+        hideVertically = Html.div [ css [visibility Css.hidden, overflow Css.hidden, maxHeight (px 5)]]
     in
     { consAisle = (::) --: b -> aisle -> aisle
     , join = 
         (\a l r -> 
-            Html.div [] [Html.span [] l, Html.span [focused] [ a ], Html.span [] r ]
+            let
+                (leftBranch, rightBranch) =
+                    ( Html.div [horizontal, rightAligned, css [backgroundColor green]] (List.reverse l)
+                    , Html.div [horizontal, leftAligned] r
+                    )
+            in
+            Html.div [] 
+                [ label "join"
+                , Html.div [horizontal] 
+                    [ Html.div [bordered blue]
+                        [ hideVertically [rightBranch], leftBranch ]
+                    , Html.div [ css [backgroundColor red] ]
+                        [Html.div [asLeaf] [ a ]]
+                    , Html.div []
+                        [ hideVertically [leftBranch], rightBranch ]
+                    ]
+                ]
         ) -- a -> aisle -> aisle -> z --past
     , joinBranch = 
         (\branch l r -> 
-            Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
+            let
+                (leftBranch, rightBranch) =
+                    ( Html.div [horizontal, rightAligned] (List.reverse l)
+                    , Html.div [horizontal, leftAligned] r
+                    )
+            in
+            Html.div [bordered green] 
+                [ label "joinBranch"
+                , Html.div [horizontal] 
+                    [ Html.div []
+                        [ hideVertically [rightBranch], leftBranch ]
+                    , Html.div [focused, id "focus"] [ branch ]
+                    , Html.div []
+                        [ hideVertically [leftBranch], rightBranch ]
+                    ]
+                ]
+            --Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
         ) -- : b -> aisle -> aisle -> zB -- future
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = 
         (\node body -> 
-            Html.div [] [ Html.h1 [] [Html.text "BRANCH"], Html.div [] [node], Html.hr [] [], Html.div [] body]
+            Html.div [] 
+                [ label "mergeBranch"
+                , Html.div [horizontal]
+                    [Html.div [asNode] [node]]
+                , Html.div [] body
+                ]
         ) --: a -> trunk -> b
     , mergeTree = 
         (\future past -> 
-            Html.div [] [ Html.h1 [] [Html.text "TREE"], Html.div [] past, Html.hr [] [], Html.div [] [future]]
+            Html.div [css [backgroundColor black, Css.width (rem 29), overflowX scroll]] 
+                [ Html.div [ css [Css.width (px 2000)]]
+                    [ Html.h1 [] [Html.text "TREE"]
+                    , Html.div [] (List.reverse past)
+                    , Html.div [] [future]
+                    ]
+                ]
         ) -- : z -> trunk -> result
     , leaf = []
-    , left = []
-    , right = []
+    , left = [Html.div[][]]
+    , right = [Html.div[][]]
     }
 
 
