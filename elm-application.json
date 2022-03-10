@@ -1,0 +1,13 @@
+{
+    "name": "upsiflu/matsite",
+    "summary": "Website for Moving Across Thresholds",
+    "version": "0.0.0",
+    "exposed-modules": [
+        "Zipper",
+        "Zipper.Branch",
+        "Zipper.Mixed",
+        "Zipper.Tree",
+        "Nonempty",
+        "Nonempty.Mixed"
+    ]
+}

@@ -7782,14 +7782,16 @@ var $rtfeldman$elm_css$Css$prop2 = F3(
 		return A2($rtfeldman$elm_css$Css$property, key, argA.value + (' ' + argB.value));
 	});
 var $rtfeldman$elm_css$Css$padding2 = $rtfeldman$elm_css$Css$prop2('padding');
+var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
+var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
 var $rtfeldman$elm_css$Css$RemUnits = {$: 'RemUnits'};
 var $rtfeldman$elm_css$Css$rem = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$RemUnits, 'rem');
 var $author$project$Layout$rhythm = {
 	_break: $rtfeldman$elm_css$Css$rem(1.5),
-	columnWidth: $rtfeldman$elm_css$Css$rem(6 * 3),
-	_default: $rtfeldman$elm_css$Css$rem(1),
-	denseLine: $rtfeldman$elm_css$Css$rem(1),
-	line: $rtfeldman$elm_css$Css$rem(1.5),
+	columnWidth: $rtfeldman$elm_css$Css$rem(7 * 3),
+	_default: $rtfeldman$elm_css$Css$em(1),
+	denseLine: $rtfeldman$elm_css$Css$em(1),
+	line: $rtfeldman$elm_css$Css$em(1.5),
 	minMargin: $rtfeldman$elm_css$Css$rem(1.5),
 	padding: $rtfeldman$elm_css$Css$rem(9 / 8),
 	verticalPadding: $rtfeldman$elm_css$Css$rem(1)
@@ -8078,6 +8080,19 @@ var $rtfeldman$elm_css$Css$Global$selector = F2(
 			styles,
 			A2($rtfeldman$elm_css$Css$Structure$CustomSelector, selectorStr, _List_Nil));
 	});
+var $rtfeldman$elm_css$Css$VwUnits = {$: 'VwUnits'};
+var $rtfeldman$elm_css$Css$vw = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$VwUnits, 'vw');
+var $rtfeldman$elm_css$Css$Structure$CustomQuery = function (a) {
+	return {$: 'CustomQuery', a: a};
+};
+var $rtfeldman$elm_css$Css$Preprocess$WithMedia = F2(
+	function (a, b) {
+		return {$: 'WithMedia', a: a, b: b};
+	});
+var $rtfeldman$elm_css$Css$Media$withMediaQuery = function (queries) {
+	return $rtfeldman$elm_css$Css$Preprocess$WithMedia(
+		A2($elm$core$List$map, $rtfeldman$elm_css$Css$Structure$CustomQuery, queries));
+};
 var $author$project$Layout$typography = $rtfeldman$elm_css$Css$Global$global(
 	_List_fromArray(
 		[
@@ -8091,7 +8106,49 @@ var $author$project$Layout$typography = $rtfeldman$elm_css$Css$Global$global(
 					$rtfeldman$elm_css$Css$fontFamilies(
 					_List_fromArray(
 						['subarubook', 'sans'])),
-					$rtfeldman$elm_css$Css$lineHeight($author$project$Layout$rhythm.line)
+					$rtfeldman$elm_css$Css$lineHeight($author$project$Layout$rhythm.line),
+					A2(
+					$rtfeldman$elm_css$Css$Media$withMediaQuery,
+					_List_fromArray(
+						['screen and (max-width: 335px)']),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$vw(100 / 24))
+						])),
+					A2(
+					$rtfeldman$elm_css$Css$Media$withMediaQuery,
+					_List_fromArray(
+						['screen and (max-width: 359px)']),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$rem(14 / 16))
+						])),
+					A2(
+					$rtfeldman$elm_css$Css$Media$withMediaQuery,
+					_List_fromArray(
+						['screen and (max-width: 383px)']),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$rem(15 / 16))
+						]))
+				])),
+			A2(
+			$rtfeldman$elm_css$Css$Global$selector,
+			'body',
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Css$Media$withMediaQuery,
+					_List_fromArray(
+						['screen and (max-width: 335px)']),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$px(14))
+						]))
 				])),
 			A2(
 			$rtfeldman$elm_css$Css$Global$selector,
@@ -8126,8 +8183,6 @@ var $author$project$Data$vimeo = A2(
 			$rtfeldman$elm_css$Html$Styled$Attributes$class('entered lazyloaded')
 		]),
 	_List_Nil);
-var $rtfeldman$elm_css$Css$VwUnits = {$: 'VwUnits'};
-var $rtfeldman$elm_css$Css$vw = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$VwUnits, 'vw');
 var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
 var $author$project$Main$view = function (model) {
 	return A2(

@@ -5,6 +5,15 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 
+--import Zipper.Tree as Tree exposing (Tree)
+import Zipper exposing (Zipper)
+import Zipper.Branch as Branch exposing (Branch)
+
+site : Branch (Html msg)
+site =
+    Branch.fromPath (anarchive, [vimeo])
+        --|> Branch.fold Branch.defold
+
 anarchive : Html msg
 anarchive =
     Html.iframe 

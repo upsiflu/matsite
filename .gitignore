@@ -1,7 +1,9 @@
-# elm-package generated files
+# elm-package generated
 elm-stuff
-# elm-repl generated files
+# elm-repl generated
 repl-temp-*
+# elm test generated
+tests/VerifyExamples
 # Mac shit
 .DS_Store
 .DS_Store?

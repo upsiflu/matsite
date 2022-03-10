@@ -1,7 +1,8 @@
 module Layout exposing (..)
 
 import Css exposing (..)
-import Css.Global exposing (..)
+import Css.Media as Media
+import Css.Global as Global
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
@@ -21,26 +22,36 @@ theme =
     }
 
 typography =
-    global
-        [ selector "html"
+    Global.global
+        [ Global.selector "html"
             [ color theme.f0
             , backgroundColor theme.b0
             , fontFamilies ["subarubook", "sans"]
             , lineHeight rhythm.line
+            , Media.withMediaQuery [ "screen and (max-width: 335px)" ]
+                [ fontSize (vw (100/24) ) ]
+            , Media.withMediaQuery [ "screen and (max-width: 359px)" ]
+                [ fontSize (rem (14/16)) ]
+            , Media.withMediaQuery [ "screen and (max-width: 383px)" ]
+                [ fontSize (rem (15/16)) ]
             ]
-        , selector "div, p, a, section, article, header, footer, main"
+        , Global.selector "body"
+            [ Media.withMediaQuery [ "screen and (max-width: 335px)" ]
+                [ fontSize (px 14) ]
+            ]
+        , Global.selector "div, p, a, section, article, header, footer, main"
             [ boxSizing borderBox ]
         ]
 
-unit fu = rem (fu 3 )
+unit fu = rem ( fu 3 )
 
 rhythm =
-    { default = rem 1
-    , padding = rem (9/8)
-    , line = rem 1.5
-    , denseLine = rem 1
-    , columnWidth = rem (6*3)
+    { default = em 1
+    , line = em 1.5
+    , denseLine = em 1
+    , columnWidth = rem (7*3)
     , break = rem 1.5
+    , padding = rem (9/8)
     , verticalPadding = rem 1
     , minMargin = rem 1.5
     }

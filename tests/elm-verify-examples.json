@@ -1,0 +1,12 @@
+{
+    "root": "../src",
+    "tests": [
+        "Nonempty",
+        "Nonempty.Mixed",
+        "Zipper",
+        "Zipper.Mixed",
+        "Zipper.Branch",
+        "Zipper.Tree",
+        "./README.md"
+    ]
+}

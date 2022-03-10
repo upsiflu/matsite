@@ -56,3 +56,14 @@ Sketch of Measures (vertical and horizontal rhythm) and potential Colors, by Flu
 
 ![](Assets/22-03-04-Sketch.svg)
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
+
+
+# Development
+
+## Code Documentation
+
+Install elm-doc-preview and run `edp` to launch a local documentation server.
+
+## Verify examples
+
+Run `elm-verify-examples` and `elm-test` to verify the correctness of the examples given in the documentation.
