@@ -230,12 +230,13 @@ growLevel lv (Branch b) =
  
 
 {-| `fold defold ^= identity` -}            
-defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) Bool
+defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) Bool
 defold =
     { mergeBranch = merge
     , consTrunk = (::)
     , leaf = []
     , join = (\a l r -> Zipper.Mixed.join (singleton a) l r node)
+    , joinBranch = (\a l r -> Zipper.join a l r)
     , consAisle = (::)
     , left = []
     , right = []

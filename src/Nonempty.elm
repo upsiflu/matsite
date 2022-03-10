@@ -1,5 +1,6 @@
 module Nonempty exposing
     ( Nonempty
+    , insert, prepend, append
     , TailOperation
     , singleton
     , map, mapSecond
@@ -15,12 +16,20 @@ module Nonempty exposing
 @docs Nonempty
 @docs singleton
 
+## Grow
+
+@docs insert
+@docs prepend
+@docs append
+
 
 ## Map
 
 @docs map, mapSecond
 
 @docs TailOperation
+
+
 
 ## Deconstruct
 
@@ -83,6 +92,19 @@ toList : Nonempty a -> List a
 toList ( h, t ) =
     h :: t
 
+{-|-}
+insert : a -> Nonempty a -> Nonempty a
+insert a ( h, t )
+    = ( h, a::t )
+
+{-|-}
+prepend : a -> Nonempty a -> Nonempty a
+prepend a ( h, t )
+    = ( a, h::t )
+{-|-}
+append : a -> Nonempty a -> Nonempty a
+append a ( h, t )
+    = ( h, t++[a] )
 
 {-| Fallable conversion from List.
 -}

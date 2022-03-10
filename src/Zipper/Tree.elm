@@ -14,7 +14,8 @@ module Zipper.Tree exposing
     , path
     , circumference
     , petrify
-    , fold
+    , fold, defold
+    , view
     )
 
 {-| A List of branches 🌿 that can be navigated horizontally and vertically.
@@ -61,7 +62,12 @@ module Zipper.Tree exposing
 @docs path
 @docs circumference
 @docs petrify
-@docs fold
+@docs fold, defold
+
+
+## View
+
+@docs view
 
 -}
 
@@ -70,6 +76,13 @@ import Nonempty.Mixed exposing (MixedNonempty)
 import Zipper.Mixed exposing (MixedZipper)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
+import Fold exposing (Fold)
+
+
+import Css exposing (..)
+import Html.Styled as Html exposing (Html)
+import Html.Styled.Attributes as Attributes exposing (..)
+import Html.Styled.Events exposing (onClick)
 
 
 {-| The Zipper Tree has a head (the several branching lower levels) as well as a tail (the list of upper levels, each having a focus and perhaps alternative branches to go down into).
@@ -288,9 +301,10 @@ root t =
 
     fromPath (Zipper [] 0 [1, 2])
         |> leaf
+        |> up
         |> focus
 
-        --> 2
+        --> 1
 
 -}
 leaf : Tree a -> Tree a
@@ -322,12 +336,16 @@ rightmost =
     Nonempty.Mixed.mapHead Zipper.rightmost
 
 {-| -}
-type Direction a
-    = Left (EdgeOperation a)
-    | Right (EdgeOperation a)
-    | Up (EdgeOperation a)
-    | Down (EdgeOperation a)
-    | Somewhere ( a -> Float )
+type Direction
+    = Left 
+    | Right
+    | Up
+    | Down
+    | Here
+
+type Walk a
+    = Walk Direction (EdgeOperation a)
+    | Find ( a -> Float )
 
 {-| 
 
@@ -343,44 +361,92 @@ type EdgeOperation a
 anyways = Fail identity
 
 {-| -}
-walk : Direction a -> Tree a -> Tree a
-walk direction =
-    case direction of
-        Left Wrap -> left
-        Left (Insert b) ->
+walk : Walk a -> Tree a -> Tree a
+walk w =
+    case w of
+        Walk Here _ -> identity
+
+        Walk Left Wrap -> left
+        Walk Left (Insert b) ->
             (\t -> if isLeftmost t then insertLeft b t |> left else left t)
-        Left (Fail fu) ->
+        Walk Left (Fail fu) ->
             (\t -> if isLeftmost t then mapFocus fu t else left t )
 
-        Right Wrap -> right
-        Right (Insert b) ->
+        Walk Right Wrap -> right
+        Walk Right (Insert b) ->
             (\t -> if isRightmost t then insertRight b t |> right else right t)
-        Right (Fail fu) ->
+        Walk Right (Fail fu) ->
             (\t -> if isRightmost t then mapFocus fu t else right t)
 
-        Up Wrap -> up
-        Up (Insert r) -> 
+        Walk Up Wrap -> up
+        Walk Up (Insert r) -> 
             (\t -> if isRoot t then growRoot r t |> root else up t)
-        Up (Fail fu) ->
+        Walk Up (Fail fu) ->
             (\t -> if isRoot t then mapFocus fu t else up t)
         
-        Down Wrap -> down
-        Down (Insert r) -> 
+        Walk Down Wrap -> down
+        Walk Down (Insert r) -> 
             (\t -> if isLeaf t then growBranch r t |> down else down t)
-        Down (Fail fu) ->
+        Walk Down (Fail fu) ->
             (\t -> if isLeaf t then mapFocus fu t else down t)
 
-        Somewhere score ->
+        Find howToScore ->
+
             identity -- TODO!
 
 
+{-| `fold defold ^= identity`
+
+    import Zipper exposing (Zipper)
+
+    fromPath (Zipper [1, 2] 3 [4])
+        |> fold defold
+        |> focus
+
+        --> 3
+
+-}
+defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
+defold =
+    { consAisle = (::) --: b -> aisle -> aisle
+    , join = (\a l r -> Zipper.Mixed.join (Branch.singleton a) l r Branch.node)
+    , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
+    , consTrunk = (::) --: z -> trunk -> trunk
+    , mergeBranch = Branch.merge --: a -> trunk -> b
+    , mergeTree = merge -- : z -> trunk -> result
+    , leaf = []
+    , left = []
+    , right = []
+    }
+
+{-| `fold defold ^= identity`
+
+    import Zipper exposing (Zipper)
+
+    fromPath (Zipper [1, 2] 3 [4])
+        |> fold defold
+        |> focus
+
+        --> 3
+
+-}
+mapfold : (a->b) -> Fold {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
+mapfold fu =
+    { consAisle = (::) --: b -> aisle -> aisle
+    , join = (\a l r -> Zipper.Mixed.join (Branch.singleton (fu a)) l r Branch.node) -- a -> aisle -> aisle -> z
+    , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
+    , consTrunk = (::) --: z -> trunk -> trunk
+    , mergeBranch = fu >> Branch.merge --: a -> trunk -> b
+    , mergeTree = merge -- : z -> trunk -> result
+    , leaf = []
+    , left = []
+    , right = []
+    }
 
 {-| -}
-map : (a -> a) -> Tree a -> Tree a
+map : (a -> b) -> Tree a -> Tree b
 map fu =
-    Nonempty.Mixed.map
-        (Zipper.Mixed.map (Branch.map fu))
-        (Zipper.map (Branch.map fu))
+    fold (mapfold fu)
 
 
 {-| -}
@@ -564,10 +630,10 @@ fold :
     { f
     | consAisle : b -> aisle -> aisle
     , join : a -> aisle -> aisle -> z
-    , joinBranch : b -> aisle -> aisle -> z
+    , joinBranch : b -> aisle -> aisle -> zB
     , consTrunk : z -> trunk -> trunk
     , mergeBranch : a -> trunk -> b
-    , mergeTree : z -> trunk -> result
+    , mergeTree : zB -> trunk -> result
     , leaf : trunk
     , left : aisle
     , right : aisle
@@ -604,6 +670,49 @@ fold f =
         , leaf = f.leaf
         }
 
+{-|-}
+view : ( a -> Html msg ) -> Tree a -> Html msg
+view fu =
+    map fu
+        >> fold viewFolder
+    
+viewFolder :
+    Fold 
+        {}                --f 
+        (Html msg)        --a 
+        (List (Html msg)) --aisle 
+        (Html msg)        --z 
+        (Html msg)        ---zB 
+        (List (Html msg)) --trunk 
+        (Html msg)        --b 
+        (Html msg)        --e
+viewFolder =
+    let
+        focused = css [border3 (px 5) solid (rgb 120 120 120) ]
+        horizontal = css [displayFlex]
+    in
+    { consAisle = (::) --: b -> aisle -> aisle
+    , join = 
+        (\a l r -> 
+            Html.div [] [Html.span [] l, Html.span [focused] [ a ], Html.span [] r ]
+        ) -- a -> aisle -> aisle -> z --past
+    , joinBranch = 
+        (\branch l r -> 
+            Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
+        ) -- : b -> aisle -> aisle -> zB -- future
+    , consTrunk = (::) --: z -> trunk -> trunk
+    , mergeBranch = 
+        (\node body -> 
+            Html.div [] [ Html.h1 [] [Html.text "BRANCH"], Html.div [] [node], Html.hr [] [], Html.div [] body]
+        ) --: a -> trunk -> b
+    , mergeTree = 
+        (\future past -> 
+            Html.div [] [ Html.h1 [] [Html.text "TREE"], Html.div [] past, Html.hr [] [], Html.div [] [future]]
+        ) -- : z -> trunk -> result
+    , leaf = []
+    , left = []
+    , right = []
+    }
 
 
 -- SCOPING --

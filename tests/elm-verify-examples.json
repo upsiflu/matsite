@@ -1,6 +1,7 @@
 {
     "root": "../src",
     "tests": [
+        "Fold",
         "Nonempty",
         "Nonempty.Mixed",
         "Zipper",

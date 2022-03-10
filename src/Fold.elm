@@ -14,13 +14,14 @@ Here is an illustration of a Fold over a Zipper.Tree:
 ![](Assets/22-03-09.pdf)
 
 -}
-type  alias Fold f a aisle z trunk b e =
+type  alias Fold f a aisle z zB trunk b e =
     { f
     | consAisle : b -> aisle -> aisle
     , join : a -> aisle -> aisle -> z
+    , joinBranch : b -> aisle -> aisle -> zB
     , consTrunk : z -> trunk -> trunk
     , mergeBranch : a -> trunk -> b
-    , mergeTree : b -> trunk -> e
+    , mergeTree : zB -> trunk -> e
     , leaf : trunk
     , left : aisle
     , right : aisle

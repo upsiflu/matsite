@@ -8,11 +8,28 @@ import Html.Styled.Events exposing (onClick)
 --import Zipper.Tree as Tree exposing (Tree)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
+import Zipper.Tree as Tree exposing (Tree)
 
-site : Branch (Html msg)
+
+type Data msg
+    = Data (Tree (Html msg))
+
+singleton : Tree (Html msg) -> Data msg
+singleton = Data
+
+
+view : Data msg -> Html msg
+view (Data tree) =
+    Tree.view identity tree
+        |> List.singleton
+        |> Html.div [ css [backgroundColor (rgb 22 99 11), padding (rem 5)]]
+
+
+site : Data msg
 site =
-    Branch.fromPath (anarchive, [vimeo])
-        --|> Branch.fold Branch.defold
+    Tree.fromPath (Zipper ["Oldest Content", "Older Content", "Old Content"] "Present Content" ["Future Content"])
+        |> Tree.map (Html.text)
+        |> singleton
 
 anarchive : Html msg
 anarchive =

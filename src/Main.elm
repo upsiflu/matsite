@@ -33,6 +33,9 @@ update msg model =
 view model =
     Html.div [ ]
     [ Layout.typography
+    , Html.hr [] []
+    , Html.div [] [Data.view (Debug.log "site:" Data.site)]
+    , Html.hr [] []
     , section
         [ header "Fatigue as creative proposition"
         , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
