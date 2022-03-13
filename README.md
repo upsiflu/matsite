@@ -64,6 +64,20 @@ Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
 
 Install elm-doc-preview and run `edp` to launch a local documentation server.
 
+```sh
+edp --no-browser --port 1234
+```
+
 ## Verify examples
 
 Run `elm-verify-examples` and `elm-test` to verify the correctness of the examples given in the documentation.
+
+```sh
+elm-verify-examples && elm-test
+```
+
+## Run
+
+```sh
+elm-live src/Main.elm -- --output=main.js
+```

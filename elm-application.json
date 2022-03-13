@@ -8,6 +8,7 @@
         "Zipper.Mixed",
         "Zipper.Tree",
         "Nonempty",
-        "Nonempty.Mixed"
+        "Nonempty.Mixed",
+        "Fold"
     ]
 }

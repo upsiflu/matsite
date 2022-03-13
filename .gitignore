@@ -6,6 +6,8 @@ repl-temp-*
 tests/VerifyExamples
 # elm-live generated
 main.js
+# Npm
+node_modules
 # Mac shit
 .DS_Store
 .DS_Store?

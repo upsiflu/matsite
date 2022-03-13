@@ -1,19 +1,23 @@
 module Zipper.Mixed exposing
-    ( MixedZipper, singleton
-    , deviateBy, fromZipper, toZipper, join
-    , map, mapFocus, map9
+    ( MixedZipper
+    , singleton, fromZipper, join
+    , deviateBy
+    , toZipper
+    , map, map9, mapFocus
     , left, leftmost
     , right, rightmost
     , insertLeft, prepend
     , insertRight, append
     , insert
-    , fold
-    , focus, homogenize
+    , focus
+    , homogenize
+    , foldr, foldl
     )
 
 {-| Its `focus` may "deviate" from the other nodes
 
-@docs MixedZipper, singleton, fromZipper, join
+@docs MixedZipper
+@docs singleton, fromZipper, join
 
 
 ## Transform
@@ -47,7 +51,8 @@ module Zipper.Mixed exposing
 
 
 ## Fold
-@docs fold
+
+@docs foldr, foldl
 
 -}
 
@@ -72,13 +77,13 @@ singleton a =
     , zipper = Zipper.singleton a
     }
 
-{-|-}
+
+{-| -}
 join : (a -> f) -> a -> List a -> List a -> MixedZipper f a
 join fu a l r =
     { aToF = fu
     , zipper = Zipper.join a l r
     }
-
 
 
 
@@ -107,7 +112,8 @@ fromZipper =
     MixedZipper identity
 
 
-{-| Requires prior homogenization to explify information loss -}
+{-| Requires prior homogenization to explify information loss
+-}
 toZipper : MixedZipper a a -> Zipper a
 toZipper =
     .zipper
@@ -128,12 +134,15 @@ mapZipper fu m =
     { m | zipper = fu m.zipper }
 
 
-{-| This is weird -}
+{-| This is weird
+-}
 mapFocus : (a -> a) -> MixedZipper f a -> MixedZipper f a
 mapFocus =
     mapZipper << Zipper.mapFocus
 
-{-| This is better than mapFocus -}
+
+{-| This is better than mapFocus
+-}
 map9 : (a -> b) -> (b -> g) -> MixedZipper f a -> MixedZipper g b
 map9 fu bToG m =
     { aToF = bToG
@@ -208,11 +217,12 @@ append =
 
 
 {-| -}
-homogenize :  MixedZipper f a ->  MixedZipper a a
+homogenize : MixedZipper f a -> MixedZipper a a
 homogenize mz =
     { aToF = identity
-    , zipper = mz.zipper 
+    , zipper = mz.zipper
     }
+
 
 {-| -}
 focus : MixedZipper f a -> f
@@ -220,17 +230,75 @@ focus m =
     m.zipper |> Zipper.focus |> m.aToF
 
 
-{-|-}
-fold :
+{-| this is foldr, `cons`ing from both the `left` and `right` leaf and finally 
+`join`ing with the focus.
+
+    import Zipper exposing (Zipper)
+    import Nonempty exposing (Nonempty)
+
+    Zipper [1, 2] 3 [4, 5]
+        |> fromZipper
+        |> foldr
+            { cons = (::)
+            , join = Zipper.join
+            , left = []
+            , right = []
+            }
+
+            --> Zipper [1, 2] 3 [4, 5]
+
+-}
+foldr :
     { f
-    | cons : a -> acc -> acc
-    , join : focus -> acc -> acc -> result
-    , left : acc
-    , right : acc
+        | cons : a -> acc -> acc
+        , join : focus -> acc -> acc -> result
+        , left : acc
+        , right : acc
     }
     -> MixedZipper focus a
     -> result
-fold f z =
+foldr f z =
     f.join (focus z)
         (List.foldr f.cons f.left z.zipper.left)
         (List.foldr f.cons f.right z.zipper.right)
+
+
+{-| `acc`umulate the two aisles using `cons`.
+The left aisle starts with the first element in the output of `init`,
+the right one with the second.
+Finally, `join` the resulting tuple.
+
+    import Zipper exposing (Zipper)
+    import Nonempty exposing (Nonempty)
+
+    Zipper [1, 2] 3 [4, 5]
+        |> fromZipper
+        |> foldl
+            { cons = Nonempty.appendItem
+            , join = \(l, r) -> 
+                Zipper.join 
+                    (Nonempty.head l)
+                    (Nonempty.tail l)
+                    (Nonempty.tail r)
+                    |> fromZipper
+            , init = \f -> (Nonempty.singleton f, Nonempty.singleton f)
+            }
+        |> toZipper
+
+            --> Zipper [1, 2] 3 [4, 5]
+
+-}
+foldl :
+    { f
+        | cons : a -> acc -> acc
+        , join : (acc, acc) -> result
+        , init : focus -> (acc, acc)
+    }
+    -> MixedZipper focus a
+    -> result
+foldl f z =
+    f.init (focus z)
+        |> Tuple.mapBoth
+            (\initL -> List.foldl f.cons initL z.zipper.left )
+            (\initR ->  List.foldl f.cons initR z.zipper.right )
+        |> f.join

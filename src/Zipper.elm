@@ -1,25 +1,24 @@
 module Zipper exposing
-    ( Zipper, singleton, path, join
-    , focus
-    , flat, fold
+    ( Zipper
+    , singleton, path, join
     , left, leftmost
     , right, rightmost
     , map, mapFocus
     , deleteFocus
-    , insertLeft, prepend
-    , insertRight, append
+    , insertLeft, insertListLeft,  prepend
+    , insertRight, insertListRight, append
     , insert
-    , length
+    , focus
+    , flat
     , isLeftmost, isRightmost, isSingleton
+    , length
+    , foldl, foldr
     )
 
 {-|
 
-
-
-@docs Zipper, singleton, path, join
-@docs focus
-
+@docs Zipper
+@docs singleton, path, join
 
 
 ## Navigate
@@ -43,6 +42,7 @@ module Zipper exposing
 
 ## Deconstruct
 
+@docs focus
 @docs flat
 @docs isLeftmost, isRightmost, isSingleton
 @docs length
@@ -50,7 +50,10 @@ module Zipper exposing
 
 ## Fold
 
-@docs fold
+This is actually a CATAMORPHISM and not a traditional fold (I think). But I
+still haven't studied category theory... 
+
+@docs foldl, foldr
 
 -}
 
@@ -68,10 +71,12 @@ singleton : a -> Zipper a
 singleton a =
     Zipper [] a []
 
-{-|-}
+
+{-| -}
 join : a -> List a -> List a -> Zipper a
 join a l r =
     Zipper l a r
+
 
 {-| -}
 path : a -> List a -> Zipper a
@@ -81,7 +86,7 @@ path =
 
 {-|
 
-    focus ( singleton 1 ) --> 1
+    focus (singleton 1) --> 1
 
 -}
 focus : Zipper a -> a
@@ -92,13 +97,10 @@ focus =
 {-| -}
 flat : Zipper a -> List a
 flat z =
-    z.focus :: z.left
-        |> List.reverse
-        |> (++) z.right
+    List.reverse z.left ++ [z.focus] ++ z.right
 
 
-
-{-| 
+{-|
 
     singleton "x"
         |> insertRight "Y"
@@ -109,7 +111,7 @@ flat z =
 
         --> "Y"
 
-    
+
     singleton "x"
         |> insertRight "Y"
         |> insertRight "Z"
@@ -127,7 +129,7 @@ rightmost z =
             z
 
         t :: hgir ->
-            { z | left = hgir++[z.focus]++z.left, focus = t, right = []}
+            { z | left = hgir ++ [ z.focus ] ++ z.left, focus = t, right = [] }
 
 
 {-|
@@ -173,7 +175,7 @@ leftmost z =
             z
 
         t :: fel ->
-            { z | left = [], focus = t, right = fel ++ [z.focus] ++ z.right }
+            { z | left = [], focus = t, right = fel ++ [ z.focus ] ++ z.right }
 
 
 {-|
@@ -213,46 +215,51 @@ mapFocus fu z =
     { z | focus = fu z.focus }
 
 
-
 {-| Removes the focused segment
 
-- go left if there is a segment left
-- otherwise go right if there is a segment right
-- otherwise replace the focus with a default
+  - go left if there is a segment left
+
+  - otherwise go right if there is a segment right
+
+  - otherwise replace the focus with a default
 
     deleteFocus "default" (singleton "X")
 
     --> singleton "default"
 
     singleton "X"
-        |> insertRight "Y" 
-        |> deleteFocus "default"
+    |> insertRight "Y"
+    |> deleteFocus "default"
 
     --> singleton "Y"
 
     singleton "X"
-        |> insertLeft "W" 
-        |> deleteFocus "default"
+    |> insertLeft "W"
+    |> deleteFocus "default"
 
     --> singleton "W"
 
     singleton "X"
-        |> insertLeft "W" 
-        |> insertRight "Y" 
-        |> deleteFocus "default"
-        |> focus
+    |> insertLeft "W"
+    |> insertRight "Y"
+    |> deleteFocus "default"
+    |> focus
 
     --> "W"
+
 -}
 deleteFocus : a -> Zipper a -> Zipper a
 deleteFocus default z =
-    case (z.left, z.right) of
-        ([], []) ->
+    case ( z.left, z.right ) of
+        ( [], [] ) ->
             singleton default
-        (l::eft, _) ->
+
+        ( l :: eft, _ ) ->
             { z | left = eft, focus = l }
-        ([], r::ight) ->
+
+        ( [], r :: ight ) ->
             { z | right = ight, focus = r }
+
 
 {-|
 
@@ -293,6 +300,16 @@ insertRight : a -> Zipper a -> Zipper a
 insertRight a z =
     { z | right = a :: z.right }
 
+{-| -}
+insertListLeft : List a -> Zipper a -> Zipper a
+insertListLeft aa z =
+    { z | left = aa ++ z.left }
+
+
+{-| -}
+insertListRight : List a -> Zipper a -> Zipper a
+insertListRight aa z =
+    { z | right = aa ++ z.right }
 
 {-| -}
 insert : a -> Zipper a -> Zipper a
@@ -305,38 +322,82 @@ length : Zipper a -> Int
 length z =
     List.length z.left + List.length z.right + 1
 
-{-|-}
+
+{-| -}
 isLeftmost : Zipper a -> Bool
 isLeftmost z =
     z.left == []
 
-{-|-}
+
+{-| -}
 isRightmost : Zipper a -> Bool
 isRightmost z =
     z.right == []
 
-{-|-}
+
+{-| -}
 isSingleton : Zipper a -> Bool
 isSingleton z =
     isRightmost z && isLeftmost z
 
 
----- Folding
-    
 
-{-| 
+---- Folding
+
+
+{-| `foldl` goes from inside to outside wereas `foldr` reduces from both aisles inwards.
+
+`init` has already incorporated previous information.
+It now swallows the focus.
+Then it outputs two accumulators, left and right,
+which then `cons` along the aisles.
+`join` both aisles to get the `result`.
+
+    import Nonempty
+
+    Zipper [0, 1] 2 [3, 4]
+        |> foldl
+            { cons = Nonempty.appendItem
+            , join = \(l, r) -> 
+                Zipper.join
+                    (Nonempty.head l)
+                    (Nonempty.tail l)
+                    (Nonempty.tail r)
+            , init = \f -> (Nonempty.singleton f, Nonempty.singleton f)
+            }
+        
+        --> Zipper [0, 1] 2 [3, 4]
 -}
-fold : 
+foldl :
     { f
-    | cons : a -> acc -> acc
-    , join : a -> acc -> acc -> result
-    , left : acc
-    , right : acc
+        | cons : a -> acc -> acc
+        , join : (acc, acc) -> result
+        , init : a -> (acc, acc)
     }
     -> Zipper a
     -> result
-fold f z =
+foldl f z =
+    f.init z.focus
+        |> Tuple.mapBoth
+            (\initL -> List.foldl f.cons initL z.left )
+            (\initR ->  List.foldl f.cons initR z.right )
+        |> f.join
+
+
+
+{-| folds the zipper with `cons`, starting from the `left` and `right` initializers 
+until it reaches the focus which it `join`s to the both `acc`s.
+ -}
+foldr :
+    { f
+        | cons : a -> acc -> acc
+        , join : a -> acc -> acc -> result
+        , left : acc
+        , right : acc
+    }
+    -> Zipper a
+    -> result
+foldr f z =
     f.join z.focus
         (List.foldr f.cons f.left z.left)
         (List.foldr f.cons f.right z.right)
-
