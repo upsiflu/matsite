@@ -380,7 +380,7 @@ type Direction
 {-| -}
 type Walk a
     = Walk Direction (EdgeOperation a)
-    | Find (a -> Float)
+    | Find (a -> Bool)
     | Jump Edge
 
 {-|-}
@@ -491,12 +491,11 @@ go w =
         Jump Leaf ->
             leaf
 
-        Find howToScore ->
+        Find isHere ->
             identity
 
 
 
--- TODO!
 
 
 {-| `foldr defold ^= identity`

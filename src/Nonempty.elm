@@ -10,6 +10,7 @@ module Nonempty exposing
     , fromList
     , toList
     , member, head, tail
+    , length
     , justSingleton, isSingleton
     , foldl, foldr
     )
@@ -39,7 +40,7 @@ module Nonempty exposing
 @docs fromList
 @docs toList
 @docs member, head, tail
-@docs justSingleton, isSingleton
+@docs justSingleton, isSingleton, length
 @docs foldl, foldr
 
 -}
@@ -176,6 +177,11 @@ isSingleton : Nonempty a -> Bool
 isSingleton =
     tail >> (==) []
 
+{-|-}
+length : Nonempty a-> Int
+length =
+    tail >> List.length >> (+) 1
+ 
 
 ---- Folding
 

@@ -13,6 +13,8 @@ import Zipper.Tree as Tree exposing (Direction(..), Edge(..), EdgeOperation(..),
 import Fold exposing (Fold)
 import Accordion.Segment as Segment exposing (Segment, Orientation(..), ViewMode(..))
 
+import Snippets.Festival as Festival
+
 type Accordion msg
     = Accordion (Tree (Segment msg))
 
@@ -45,6 +47,10 @@ site =
                 |> Segment.withOrientation Horizontal
                 |> Branch.singleton
 
+        setBody =
+            Segment.withBody >> Branch.mapNode
+
+
         emptySegment = 
             Segment.empty |> Branch.singleton
 
@@ -52,7 +58,7 @@ site =
             verticalSegment "Anarchive"
 
         placeholder =
-            verticalSegment "?"
+            emptySegment
 
         vimeo =
             verticalSegment "Vimeo"
@@ -74,9 +80,11 @@ site =
 
         description =
             horizontalSegment "Description"
+                |> setBody Festival.description
 
         video =
             horizontalSegment "Video"
+                |> setBody Festival.video
 
         credits =
             horizontalSegment "Credits"
@@ -94,13 +102,13 @@ site =
 
         appendSubtree =
             go Down
-                >> setDate "March 22"
+                >> setDate "Future Festival - August 22"
                 >> go Right
-                >> setDate "March 24"
+                >> setDate "Future Festival - June 5-19"
                 >> go Right
-                >> setDate "March 26"
+                >> setDate "Foregrounding the background - March 23 + 24"
                 >> go Right
-                >> setDate "April 14"
+                >> setDate "Previous Festival - November 2, 2021"
                 >> go Left
                 >> go Down
                 >> set info
@@ -196,23 +204,25 @@ view (Accordion tree) =
     tree
         |> Tree.view
             ( Tree.Custom renderer
-                { renderFocus = Tuple.pair (Expanded {focused = True})
-                , renderPeriphery = Tuple.pair Collapsed
+                { renderFocus = Tuple.pair (Expanded {focused = True} [])
+                , renderPeriphery = Tuple.pair (Collapsed [])
                 , transformation =
-                    Tree.mapTail ( Tuple.mapFirst (\_-> Expanded {focused = False}))
+                    Tree.mapTail ( Tuple.mapFirst (\_-> Expanded {focused = False} []))
                         -->> Tree.mapAisles ( Tuple.mapFirst (\_-> Expanded {focused = False}) |> Branch.map )
                 }
             )
         |> List.singleton
         |> Html.div [ css [ backgroundColor (rgb 22 99 11), padding (rem 5) ] ]
 
+{-|-}
+type alias Renderable msg = 
+    Segment.ViewMode -> Html msg
 
 {-| Like this:
  -}
 myRenderable : Renderable msg
 myRenderable mode =
     Segment.view mode ( Segment.singleton "test" )
-
 
 createRenderable : Segment.ViewMode -> Segment msg -> Renderable msg
 createRenderable innerMode segment =
@@ -224,15 +234,15 @@ render mode renderable =
 
 invisible : Renderable msg -> Renderable msg
 invisible =
-    preferRendering Invisible
+    preferMode Invisible
 
 collapsed : Renderable msg -> Renderable msg
 collapsed =
-    preferRendering Collapsed
+    preferMode (Collapsed [])
 
 focused : Renderable msg -> Renderable msg
 focused =
-    preferRendering (Expanded {focused = True}) 
+    preferMode (Expanded {focused = True} []) 
 
 wrap : (Html msg -> Html msg ) -> Renderable msg -> Renderable msg
 wrap wrapper renderable =
@@ -247,13 +257,32 @@ div attr children =
             |> Html.div attr
 
 {-|-}
-preferRendering : Segment.ViewMode -> Renderable msg -> Renderable msg
-preferRendering innerMode renderable =
+preferMode : Segment.ViewMode -> Renderable msg -> Renderable msg
+preferMode innerMode renderable =
     \inheritedMode -> renderable (Segment.preferMode inheritedMode innerMode)
 
+{-|-}
+changeDirection : Direction -> Renderable msg -> Renderable msg
+changeDirection innerDirection renderable =
+    \inheritedMode -> renderable (Segment.changeDirection innerDirection inheritedMode)
 
+{-|-}
+continueDirection : Renderable msg -> Renderable msg
+continueDirection renderable =
+    \inheritedMode -> renderable (Segment.continueDirection inheritedMode)
 
-type alias Renderable msg = Segment.ViewMode -> Html msg
+repeat i fu target =
+    if i < 0 then target
+    else repeat (i-1) fu target
+
+directAisle : Direction -> Aisle msg -> Aisle msg
+directAisle dir =
+    List.indexedMap (\i -> repeat (i+1) (changeDirection dir))
+
+directAislePlus : Int -> Direction -> Aisle msg -> Aisle msg
+directAislePlus int dir =
+    List.indexedMap (\i -> repeat (i+1+int) (changeDirection dir))
+
 
 type alias Aisle msg = List ( Renderable msg )
 
@@ -315,7 +344,7 @@ renderer =
             css []
 
         vertical =
-            css [ displayFlex, justifyContent center, alignItems center, flexDirection column ]
+            css [ displayFlex, justifyContent flexStart, alignItems center, flexDirection column ]
 
         horizontal =
             css [ displayFlex, justifyContent center ]
@@ -335,8 +364,10 @@ renderer =
         ( brown, grey ) =
             ( rgb 110 70 20, rgb 90 90 90 )
 
+        debugging = False
+
         bordered color =
-            css [ border3 (px 8) solid color ]
+            css <| if debugging then [ border3 (px 8) solid color ] else []
 
         hideVertically =
             Html.div [ css [ visibility Css.hidden, overflow Css.hidden, maxHeight (px 0) ] ]
@@ -344,7 +375,7 @@ renderer =
     { consAisle = 
         --< in any aisle, chew branches
         --< : b -> aisle -> aisle
-        --< : (A msg, Html msg) -> List (Renderable msg) -> List (Renderable msg)
+        --< : (A msg, Renderable msg) -> List (Renderable msg) -> List (Renderable msg)
         Tuple.second >> (::) 
 
     , join =
@@ -352,14 +383,14 @@ renderer =
         --< : a -> aisle -> aisle -> z
         --< : (ViewMode, Segment) -> Aisle -> Aisle -> (Aisle msg, (ViewMode, Segment), Aisle msg)
         \a prev next ->
-            ( List.reverse prev, a, next )
+            ( directAisle Left (List.reverse prev), a, directAisle Right next )
 
     , joinBranch =
         --< in the present of the tree, join the focused branch with the aisles
         --< : b -> aisle -> aisle -> zB 
         --< : (A msg, Renderable msg) -> Aisle -> Aisle -> (A msg, Zipper (Renderable msg))
         \(a, b) l r ->
-            (a, Zipper.join b l r)
+            (a, Zipper.join b (directAisle Left l) (directAisle Right r))
 
     , consTrunk = 
         --< in any branch, chew towards the node of the branch
@@ -373,37 +404,45 @@ renderer =
                     createRenderable currentViewMode currentSegment
                         |> wrap (List.singleton >> Html.div [ bordered green ])
 
+                (pWidth, nWidth) = (List.length prev,List.length next)
+
             in
             case currentSegment.orientation of
                 Horizontal ->
-                    ( prev0 
-                        ++ [ List.map invisible next ++ prev ++ [current] ++ next ++ List.map invisible prev
+                    ( directAislePlus pWidth Left prev0 
+                        ++ [ List.map invisible next 
+                            ++ directAisle Left prev 
+                            ++ [current] 
+                            ++ directAisle Right next 
+                            ++ List.map invisible prev
                             |> div [ horizontal, bordered brown ] 
                             ]
-                    , next0 
+                    , directAislePlus nWidth Right next0 
                     )
 
                 Vertical ->
-                    ( prev0 ++ [ prev ++ [current] |> div [ vertical, bordered yellow ] ]
-                    , next ++ next0 
+                    ( directAislePlus pWidth Left prev0 
+                        ++ [ directAisle Left prev ++ [current] |> div [ vertical, bordered yellow ] ]
+                    , directAisle Right (next ++ next0) 
                     )
                     
 
     , mergeBranch =
         --< in any branch, merge its node with its chewed future
+        --< The directions: Down
         --< : a -> trunk -> b
         --< : ( ViewMode, Segment ) -> Tuple ( Aisle msg ) -> ( A msg, Renderable msg)
         \( currentViewMode, currentSegment ) ( prev, next ) ->
             let
                 subsegments =
-                        List.reverse prev ++ next
-                            |> div [ vertical, bordered cyan, subStyle ]
-                            |> subTransform
+                    List.reverse (directAisle Up prev) ++ directAisle Down next
+                        |> div [ vertical, bordered cyan, subStyle ]
+                        |> subTransform
 
-                (subStyle, subTransform) =
+                (subStyle, subTransform ) =
                     case currentViewMode of
-                        Expanded _ -> ( css [], identity )
-                        Collapsed -> ( css 
+                        Expanded _ _ -> ( css [], identity )
+                        Collapsed _ -> ( css 
                             [ maxWidth zero
                             , maxHeight zero
                             , overflow Css.hidden
@@ -430,15 +469,15 @@ renderer =
                         |> div [ bordered black, orient currentSegment ]
 
             in
-            prev ++ [currentWindow] ++ next
+            directAisle Up prev ++ [currentWindow] ++ next
                 |> div [ bordered black, vertical ]
                 |> List.singleton
                 |> div [ css [ Css.width (px 2000) ] ]
                 |> List.singleton
                 |> div [ css [ backgroundColor black, Css.width (rem 29), overflowX scroll ] ]
-                |> render (Expanded { focused = True })
+                |> render (Expanded { focused = True } [])
 
-    , leaf = ( [\_->Html.text "ROOT"], [\_->Html.text "LEAF"] )
-    , left = [[\_->Html.text "|<<"] |> div []]
-    , right = [[\_->Html.text ">>|"] |> div []]
+    , leaf = ( [(\_->Html.text "ROOT") |> changeDirection Up], [(\_->Html.text "LEAF") |> changeDirection Down] )
+    , left = [[\_->Html.text "|<<"] |> div [] |> changeDirection Left ]
+    , right = [[\_->Html.text ">>|"] |> div [] |> changeDirection Right ]
     }

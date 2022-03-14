@@ -18,6 +18,7 @@ import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
+import HtmlToElm
 import Review.Rule exposing (Rule)
 
 
@@ -25,4 +26,5 @@ config : List Rule
 config =
     [ NoMissingTypeExpose.rule
     , NoPrematureLetComputation.rule
+    , HtmlToElm.rule
     ]
