@@ -1,4 +1,4 @@
-module Accordion.Segment exposing ( Segment, singleton, empty,withOrientation, ViewMode(..), Orientation(..), view )
+module Accordion.Segment exposing ( Segment, singleton, empty,withOrientation, ViewMode(..), Orientation(..), preferMode, view )
 
 {-|
 
@@ -55,6 +55,16 @@ empty =
 type ViewMode
     = Expanded { focused : Bool }
     | Collapsed
+    | Invisible
+
+{-|-}
+preferMode : ViewMode -> ViewMode -> ViewMode
+preferMode preference statusQuo =
+    case ( preference, statusQuo ) of
+        ( _, Invisible ) -> Invisible
+        ( Invisible, _ ) -> Invisible
+        ( _, Collapsed ) -> Collapsed
+        ( preferent, _ ) -> preferent
 
 
 ---- View and helpers ----
@@ -65,15 +75,19 @@ view mode s =
     let
         functions =
             case mode of
-            Expanded f -> 
-                if f.focused then
-                    [class "focused", css [backgroundColor (rgb 0 199 255)]]
-                else
-                    [class "expanded", css [backgroundColor (rgb 0 99 199)]]
-            _ -> [class "collapsed"]
+                Expanded f -> 
+                    if f.focused then
+                        [class "focused", css [backgroundColor (rgb 0 199 255)]]
+                    else
+                        [class "expanded", css [backgroundColor (rgb 0 99 199)]]
+                _ -> [class "collapsed"]
 
+        magic =
+            case mode of
+                Invisible -> [css [opacity (num 0.6), visibility Css.hidden]]
+                _ -> [id s.id]
     in
-    Html.div (functions ++ [id s.id])
+    Html.div (functions ++ magic)
         [ (case s.caption of
             Just h -> Html.a [href ("#"++s.id)] [Html.text h]
             Nothing -> Html.text "⤋"

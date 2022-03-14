@@ -49,6 +49,16 @@
 		.targeting {
 			background: yellow !important
 		}
+
+		.blink {
+			animation: blinker .125s linear infinite;
+		}
+
+		@keyframes blinker {
+			50% {
+				opacity: 0;
+			}
+		}
 	</style>
 	<script src="main.js"></script>
 </head>
@@ -62,7 +72,8 @@
 		document.getElementsByClassName("focused")[0].scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
 
 		app.ports.sendMessage.subscribe(function (message) {
-			document.getElementById(message).style.backgroundColor = "red";
+			document.getElementById(message).classList.add("blink");
+			setTimeout(() => { document.getElementById(message).classList.remove("blink"); }, 500)
 			document.getElementById(message).scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 		});
 	</script>
