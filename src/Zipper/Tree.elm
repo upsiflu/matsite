@@ -7,7 +7,7 @@ module Zipper.Tree exposing
     , up, down
     , root, leaf
     , go, Direction(..), Walk(..), Edge(..), EdgeOperation(..)
-    , map, mapFocus, mapBranch
+    , map, mapFocus, mapBranch, mapTail, mapAisles
     , insertLeft, prepend
     , insertRight, append
     , insert
@@ -46,7 +46,7 @@ module Zipper.Tree exposing
 
 ## Map
 
-@docs map, mapFocus, mapBranch
+@docs map, mapFocus, mapBranch, mapTail, mapAisles
 
 
 ## Insert
@@ -545,6 +545,8 @@ type Marked a
     | Blurred a
 
 
+
+
 {-| -}
 switch : Marked a -> Marked a
 switch m =
@@ -578,17 +580,27 @@ mapDistinct focusFu peripheryFu =
         >> mapFocus switch
         >> map fu
 
-
 {-| -}
 mapFocus : (a -> a) -> Tree a -> Tree a
 mapFocus =
     Branch.mapNode >> mapBranch
+
+{-| -}
+mapTail : (a -> a) -> Tree a -> Tree a
+mapTail =
+    Zipper.Mixed.deviateBy >> Nonempty.Mixed.mapTail
 
 
 {-| -}
 mapBranch : (Branch a -> Branch a) -> Tree a -> Tree a
 mapBranch =
     Zipper.mapFocus >> Nonempty.Mixed.mapHead
+
+
+{-| -}
+mapAisles : (Branch a -> Branch a) -> Tree a -> Tree a
+mapAisles =
+    Zipper.mapPeriphery >> Nonempty.Mixed.mapHead
 
 
 {-| Deletes the focus
@@ -911,7 +923,7 @@ type ViewMode a msg viewmodel aisle z zB trunk b
         (Fold {} viewmodel aisle z zB trunk b (Html msg))
         { renderFocus : a -> viewmodel
         , renderPeriphery : a -> viewmodel
-        , finalWalk : Walk viewmodel
+        , transformation : Tree viewmodel -> Tree viewmodel
         }
 
 
@@ -929,7 +941,7 @@ view viewMode =
         
         Custom renderer rendering ->
             mapDistinct rendering.renderFocus rendering.renderPeriphery
-                >> go rendering.finalWalk
+                >> rendering.transformation
                 >> foldr renderer
 
 

@@ -45,6 +45,10 @@
 			font-weight: normal;
 			font-style: italic;
 		}
+
+		.targeting {
+			background: yellow !important
+		}
 	</style>
 	<script src="main.js"></script>
 </head>
@@ -55,7 +59,12 @@
 		var app = Elm.Main.init({
 			node: document.getElementById('app')
 		});
-		document.getElementById("focus").scrollIntoView({ behavior: "auto", block: "center", inline: "center" });;
+		document.getElementsByClassName("focused")[0].scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
+
+		app.ports.sendMessage.subscribe(function (message) {
+			document.getElementById(message).style.backgroundColor = "red";
+			document.getElementById(message).scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+		});
 	</script>
 </body>
 

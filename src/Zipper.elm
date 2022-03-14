@@ -3,7 +3,7 @@ module Zipper exposing
     , singleton, path, join
     , left, leftmost
     , right, rightmost
-    , map, mapFocus
+    , map, mapFocus, mapPeriphery
     , deleteFocus
     , insertLeft, insertListLeft,  prepend
     , insertRight, insertListRight, append
@@ -29,7 +29,7 @@ module Zipper exposing
 
 ## Map
 
-@docs map, mapFocus
+@docs map, mapFocus, mapPeriphery
 
 
 ## Delete and Insert
@@ -214,6 +214,10 @@ mapFocus : (a -> a) -> Zipper a -> Zipper a
 mapFocus fu z =
     { z | focus = fu z.focus }
 
+{-| -}
+mapPeriphery : (a -> a) -> Zipper a -> Zipper a
+mapPeriphery fu z =
+    { z | left = List.map fu z.left, right = List.map fu z.right }
 
 {-| Removes the focused segment
 

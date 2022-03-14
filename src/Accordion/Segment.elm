@@ -15,6 +15,7 @@ import Html.Styled.Events exposing (onClick)
 {-|-}
 type alias Segment msg =
     { caption : Maybe String 
+    , id : String
     , body : Maybe (Html msg)
     , orientation : Orientation
     }
@@ -31,8 +32,9 @@ withOrientation orientation segment =
 
 
 singleton : String -> Segment msg
-singleton caption =
-    { caption = Just caption 
+singleton id =
+    { caption = Just id 
+    , id = String.replace " " "-" id
     , body = Nothing
     , orientation = Vertical
     }
@@ -40,6 +42,7 @@ singleton caption =
 empty : Segment msg
 empty =
     { caption = Nothing
+    , id = ""
     , body = Nothing
     , orientation = Vertical
     }
@@ -64,16 +67,16 @@ view mode s =
             case mode of
             Expanded f -> 
                 if f.focused then
-                    [id "focus", css [backgroundColor (rgb 0 199 255)]]
+                    [class "focused", css [backgroundColor (rgb 0 199 255)]]
                 else
                     [class "expanded", css [backgroundColor (rgb 0 99 199)]]
             _ -> [class "collapsed"]
 
     in
-    Html.div functions
+    Html.div (functions ++ [id s.id])
         [ (case s.caption of
-            Just h -> Html.h3 [] [Html.text h]
-            Nothing -> Html.text "?"
+            Just h -> Html.a [href ("#"++s.id)] [Html.text h]
+            Nothing -> Html.text "⤋"
             )
             , (case s.body of
             Just b -> b

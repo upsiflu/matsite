@@ -1,41 +1,74 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser
+import Browser.Navigation as Nav
+import Url exposing (Url)
 import Css exposing (..)
-import Accordion
+import Accordion exposing (Accordion)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
 
 
+port sendMessage : String -> Cmd msg
+
+
+type alias Model =
+  { key : Nav.Key
+  , url : Url
+  , accordion : Accordion Msg
+  }
+
+main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = 0
+    Browser.application
+        { init = \_ url key ->
+            ( { key = key
+              , url = url
+              , accordion = Accordion.site
+              } 
+            , Cmd.none
+            )
+        , view = view
         , update = update
-        , view = view >> Html.toUnstyled
+        , subscriptions = \_-> Sub.none
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
         }
 
 
-type Msg
-    = Increment
-    | Decrement
+---- Update ----
 
+
+type Msg
+    = LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
 
 update msg model =
     case msg of
-        Increment ->
-            model + 1
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
-        Decrement ->
-            model - 1
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            ( { model | url = url }
+            , url.fragment 
+                |> Maybe.map (Debug.log "url="  >> sendMessage)
+                |> Maybe.withDefault Cmd.none
+            )
 
 
 view model =
-    Html.div []
+    { title = "Moving across Thresholds"
+    , body =
         [ Layout.typography
         , Html.hr [] []
-        , Html.div [] [ Accordion.view (Debug.log "site:" Accordion.site) ]
+        , Html.div [] [ Accordion.view model.accordion ]
         , Html.hr [] []
         , section
             [ header "Fatigue as creative proposition"
@@ -66,3 +99,5 @@ view model =
             ]
             [ Accordion.vimeoX ]
         ]
+        |> List.map Html.toUnstyled
+    }
