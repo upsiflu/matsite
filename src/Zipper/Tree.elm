@@ -82,7 +82,7 @@ module Zipper.Tree exposing
 -}
 
 import Css exposing (..)
-import Fold exposing (Fold)
+import Fold exposing (Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
@@ -171,7 +171,7 @@ animate =
 -}
 merge : Zipper (Branch a) -> List (MixedZipper a (Branch a)) -> Tree a
 merge =
-    Nonempty.Mixed.merge
+    Nonempty.Mixed.create
 
 
 {-| goes into the past, wraps by default
@@ -383,10 +383,12 @@ type Walk a
     | Find (a -> Bool)
     | Jump Edge
 
-{-|-}
+
+{-| -}
 type Edge
     = Root
     | Leaf
+
 
 {-| `Wrap`: Default operation mode.
 `Insert a`: Append empty segment.
@@ -495,9 +497,6 @@ go w =
             identity
 
 
-
-
-
 {-| `foldr defold ^= identity`
 
     import Zipper exposing (Zipper)
@@ -509,11 +508,11 @@ go w =
         --> 3
 
 -}
-defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
+defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
 defold =
     { consAisle = (::) --: b -> aisle -> aisle
     , join = \a l r -> Zipper.Mixed.join Branch.node (Branch.singleton a) l r
-    , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
+    , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = Branch.merge --: a -> trunk -> b
     , mergeTree = merge -- : z -> trunk -> result
@@ -524,11 +523,11 @@ defold =
 
 
 {-| -}
-mapfold : (a -> b) -> Fold {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
+mapfold : (a -> b) -> Foldr {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
 mapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
     , join = \a l r -> Zipper.Mixed.join Branch.node (Branch.singleton (fu a)) l r -- a -> aisle -> aisle -> z
-    , joinBranch = Zipper.join -- : b -> aisle -> aisle -> zB
+    , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = fu >> Branch.merge --: a -> trunk -> b
     , mergeTree = merge -- : z -> trunk -> result
@@ -542,8 +541,6 @@ mapfold fu =
 type Marked a
     = Focused a
     | Blurred a
-
-
 
 
 {-| -}
@@ -579,10 +576,12 @@ mapDistinct focusFu peripheryFu =
         >> mapFocus switch
         >> map fu
 
+
 {-| -}
 mapFocus : (a -> a) -> Tree a -> Tree a
 mapFocus =
     Branch.mapNode >> mapBranch
+
 
 {-| -}
 mapTail : (a -> a) -> Tree a -> Tree a
@@ -657,7 +656,7 @@ deletePresent default =
             Zipper.Mixed.homogenize
                 >> Zipper.Mixed.toZipper
     in
-    Nonempty.Mixed.delete
+    Nonempty.Mixed.deleteWithDefault
         default
         pastToPresent
 
@@ -683,13 +682,13 @@ insert =
 {-| -}
 prepend : List (Branch a) -> Tree a -> Tree a
 prepend =
-    Zipper.prepend >> Nonempty.Mixed.mapHead
+    Zipper.appendLeft >> Nonempty.Mixed.mapHead
 
 
 {-| -}
 append : List (Branch a) -> Tree a -> Tree a
 append =
-    Zipper.append >> Nonempty.Mixed.mapHead
+    Zipper.appendRight >> Nonempty.Mixed.mapHead
 
 
 {-| -}
@@ -779,7 +778,8 @@ isLeaf =
     Nonempty.Mixed.head >> Zipper.focus >> Branch.isLeaf
 
 
-{-| 
+{-|
+
     import Zipper exposing (Zipper)
     import Zipper.Mixed
     import Zipper.Branch as Branch
@@ -794,9 +794,9 @@ isLeaf =
 
     Zipper [20] 30 [40, 2, 3, 4]
         |> fromPath
-        |> foldr    
-            { consAisle   = min                        
-            , join        = \a l r -> min a (min l r) 
+        |> foldr
+            { consAisle   = min
+            , join        = \a l r -> min a (min l r)
             , joinBranch  = \a l r -> min a (min l r)                  --: b -> aisle -> aisle -> zB
             , consTrunk   = min                         --: z -> trunk -> trunk
             , mergeBranch = min                  --: a -> trunk -> b
@@ -853,73 +853,75 @@ foldr f =
         }
 
 
-{- fold from inside to outside. 
-foldl :
-    { f
-        | initPeriphery : trunk -> a -> (aisle, aisle) 
-        , initTrunk : zB -> trunk
-        , consAisle : b -> aisle -> aisle
-        , join : (aisle, aisle) -> z 
-        , consTrunk : z -> trunk
-        , root : a -> trunk
-        , mergeBranch : trunk -> b
-        
-        , join : a -> aisle -> aisle -> z
-        , joinBranch : b -> aisle -> aisle -> zB
-        , consTrunk : z -> trunk -> trunk
-        , mergeBranch : a -> trunk -> b
-        , mergeTree : zB -> trunk -> result
-    }
-    -> Tree a
-    -> result
-foldl f =
-    Nonempty.Mixed.foldl
-        { cons = \zipper trunk ->
-            f.consTrunk
-                ( Zipper.Mixed.foldl 
-                    { cons = f.consAisle
-                    , join = f.join
-                    , init = f.initPeriphery trunk
-                    --  cons : b -> acc -> acc
-                    --, join : (acc, acc) -> result
-                    --, init : focus -> (acc, acc)
-                    } zipper
-                )
-            
-            cons =
-            \zipper trunk ->
-                f.consTrunk
-                    (Zipper.Mixed.foldr
-                        { cons = Branch.foldr f >> f.consAisle
-                        , join = f.join
-                        , left = f.left
-                        , right = f.right
-                        }
-                        zipper
-                    )
-                    trunk
-        , merge =
-            \future past ->
-                f.mergeTree
-                    (Zipper.foldr
-                        { cons = Branch.foldr f >> f.consAisle
-                        , join = Branch.foldr f >> f.joinBranch
-                        , left = f.left
-                        , right = f.right
-                        }
-                        future
-                    )
-                    past
-        , init = f.initTrunk
-        }
+
+{- fold from inside to outside.
+   foldl :
+       { f
+           | initPeriphery : trunk -> a -> (aisle, aisle)
+           , initTrunk : zB -> trunk
+           , consAisle : b -> aisle -> aisle
+           , join : (aisle, aisle) -> z
+           , consTrunk : z -> trunk
+           , root : a -> trunk
+           , mergeBranch : trunk -> b
+
+           , join : a -> aisle -> aisle -> z
+           , joinBranch : b -> aisle -> aisle -> zB
+           , consTrunk : z -> trunk -> trunk
+           , mergeBranch : a -> trunk -> b
+           , mergeTree : zB -> trunk -> result
+       }
+       -> Tree a
+       -> result
+   foldl f =
+       Nonempty.Mixed.foldl
+           { cons = \zipper trunk ->
+               f.consTrunk
+                   ( Zipper.Mixed.foldl
+                       { cons = f.consAisle
+                       , join = f.join
+                       , init = f.initPeriphery trunk
+                       --  cons : b -> acc -> acc
+                       --, join : (acc, acc) -> result
+                       --, init : focus -> (acc, acc)
+                       } zipper
+                   )
+
+               cons =
+               \zipper trunk ->
+                   f.consTrunk
+                       (Zipper.Mixed.foldr
+                           { cons = Branch.foldr f >> f.consAisle
+                           , join = f.join
+                           , left = f.left
+                           , right = f.right
+                           }
+                           zipper
+                       )
+                       trunk
+           , merge =
+               \future past ->
+                   f.mergeTree
+                       (Zipper.foldr
+                           { cons = Branch.foldr f >> f.consAisle
+                           , join = Branch.foldr f >> f.joinBranch
+                           , left = f.left
+                           , right = f.right
+                           }
+                           future
+                       )
+                       past
+           , init = f.initTrunk
+           }
 -}
+
 
 {-| -}
 type ViewMode a msg viewmodel aisle z zB trunk b
     = Default { renderFocus : a -> Html msg, renderPeriphery : a -> Html msg }
     | Partitioned { renderFocus : a -> Html msg, renderPeriphery : a -> Html msg }
-    | Custom 
-        (Fold {} viewmodel aisle z zB trunk b (Html msg))
+    | Custom
+        (Foldr {} viewmodel aisle z zB trunk b (Html msg))
         { renderFocus : a -> viewmodel
         , renderPeriphery : a -> viewmodel
         , transformation : Tree viewmodel -> Tree viewmodel
@@ -937,7 +939,7 @@ view viewMode =
         Partitioned rendering ->
             mapDistinct rendering.renderFocus rendering.renderPeriphery
                 >> foldr viewFolder3
-        
+
         Custom renderer rendering ->
             mapDistinct rendering.renderFocus rendering.renderPeriphery
                 >> rendering.transformation
@@ -945,7 +947,7 @@ view viewMode =
 
 
 viewFolder :
-    Fold
+    Foldr
         {}
         --f
         (Html msg)
@@ -1066,7 +1068,7 @@ viewFolder =
 
 
 viewFolder2 :
-    Fold
+    Foldr
         {}
         --f
         (Html msg)
@@ -1183,19 +1185,10 @@ viewFolder2 =
     }
 
 
-
-
-
-
-
-
-
-{-|
-
-switch Arrangement every next level
+{-| switch Arrangement every next level
 -}
 viewFolder3 :
-    Fold
+    Foldr
         {}
         --f
         (Html msg)

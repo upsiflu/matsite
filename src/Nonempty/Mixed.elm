@@ -1,49 +1,66 @@
 module Nonempty.Mixed exposing
     ( MixedNonempty
-    , singleton, merge
-    , insert, appendItem, appendList, cons
-    , cut, delete
+    , singleton, create
     , map, mapTail, mapHead, mapSecond
+    , delete, deleteWithDefault
+    , add
+    , insert, appendList, cons
     , member, head, tail
-    , homogenize
+    , uncons, cut
     , justSingleton, isSingleton
+    , Fold, fold, defold
     , foldl, foldr
     )
 
 {-|
 
 @docs MixedNonempty
-@docs singleton, merge
+@docs singleton, create
 
 
-## Extend and Shrink
-
-@docs insert, appendItem, appendList, cons
-@docs cut, delete
-
-
-## Map
+# Map
 
 @docs map, mapTail, mapHead, mapSecond
 
 
-## Deconstruct
+# Shrink
+
+@docs delete, deleteWithDefault
+
+
+# Grow
+
+@docs add
+
+@docs insert, appendList, cons
+
+
+# Deconstruct
 
 @docs member, head, tail
-@docs homogenize
+@docs uncons, cut
 @docs justSingleton, isSingleton
 
 
 ## Fold
 
+@docs Fold, fold, defold
+
+---
+
 @docs foldl, foldr
 
 -}
 
+import Fold
+import List.Extra as List
 import Nonempty exposing (Nonempty)
 
 
 {-| A list with at least one element.
+
+Note that `MixedNonempty a a == Nonempty z`, no need to transform them.
+
 -}
 type alias MixedNonempty h a =
     ( h, List a )
@@ -54,8 +71,8 @@ type alias MixedNonempty h a =
 
 
 {-| -}
-merge : h -> List a -> MixedNonempty h a
-merge h t =
+create : h -> List a -> MixedNonempty h a
+create h t =
     ( h, t )
 
 
@@ -102,18 +119,52 @@ mapSecond tailOperation ( h, aa ) =
             ( h, tailOperation.nonempty s :: ss )
 
 
+{-| -}
+delete : MixedNonempty h a -> Maybe (MixedNonempty a a)
+delete =
+    uncons >> Tuple.second
+
+
+{-| -}
+deleteWithDefault : h -> (a -> h) -> MixedNonempty h a -> MixedNonempty h a
+deleteWithDefault default fu =
+    cut fu >> Maybe.map Tuple.first >> Maybe.withDefault (singleton default)
+
+
+{-| plops the head and tries to make the tail another nonempty
+-}
+uncons : MixedNonempty h a -> ( h, Maybe (Nonempty a) )
+uncons ( h, t ) =
+    ( h, List.uncons t )
+
+
+{-| Given a way to make the first tail segment a new head, Plop out the old head.
+
+It diverges from `uncons` in that it keeps the type
+
+-}
+cut : (a -> h) -> MixedNonempty h a -> Maybe ( MixedNonempty h a, h )
+cut fu ( h, ail ) =
+    case ail of
+        [] ->
+            Nothing
+
+        a :: il ->
+            Just ( create (fu a) il, h )
+
+
+{-| Extend the tail towards the end
+-}
+add : a -> MixedNonempty h a -> MixedNonempty h a
+add l ( h, tai ) =
+    ( h, tai ++ [ l ] )
+
+
 {-| Insert between head and tail
 -}
 insert : a -> MixedNonempty h a -> MixedNonempty h a
 insert t ( h, ail ) =
     ( h, t :: ail )
-
-
-{-| Extend the tail towards the end
--}
-appendItem : a -> MixedNonempty h a -> MixedNonempty h a
-appendItem l ( h, tai ) =
-    ( h, tai ++ [ l ] )
 
 
 {-| Extend the tail towards the end
@@ -130,29 +181,31 @@ cons h fu ( t, ail ) =
     ( h, fu t :: ail )
 
 
-{-| Given a way to make the first tail segment a new head, Plop out the old head
--}
-cut : (a -> h) -> MixedNonempty h a -> Maybe ( MixedNonempty h a, h )
-cut fu ( h, ail ) =
-    case ail of
-        [] ->
-            Nothing
 
-        a :: il ->
-            Just ( merge (fu a) il, h )
-
-
-{-| Remove the head, provided a default
--}
-delete : h -> (a -> h) -> MixedNonempty h a -> MixedNonempty h a
-delete default fu =
-    cut fu >> Maybe.map Tuple.first >> Maybe.withDefault (singleton default)
+---- Fold
 
 
 {-| -}
-homogenize : (h -> a) -> MixedNonempty h a -> Nonempty a
-homogenize fu ( t, ail ) =
-    ( fu t, ail )
+type alias Fold f h a n =
+    { f
+        | init : h -> n
+        , add : a -> n -> n
+    }
+
+
+{-| -}
+fold : Fold f h a n -> MixedNonempty h a -> n
+fold f ( h, t ) =
+    f.init h
+        |> Fold.list f.add t
+
+
+{-| -}
+defold : Fold {} h a (MixedNonempty h a)
+defold =
+    { init = singleton
+    , add = add
+    }
 
 
 {-| -}
@@ -169,7 +222,7 @@ foldr f ( h, t ) =
         |> f.merge h
 
 
-{-| 
+{-|
 
     foldl
         { cons = appendItem

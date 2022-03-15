@@ -1,46 +1,67 @@
 module Zipper exposing
     ( Zipper
-    , singleton, path, join
+    , singleton, create
     , left, leftmost
     , right, rightmost
     , map, mapFocus, mapPeriphery
     , deleteFocus
-    , insertLeft, insertListLeft,  prepend
-    , insertRight, insertListRight, append
+    , addLeft, addRight
+    , appendLeft, appendRight
+    , insertLeft, insertListLeft
+    , insertRight, insertListRight
     , insert
     , focus
     , flat
     , isLeftmost, isRightmost, isSingleton
     , length
+    , fold, defold
     , foldl, foldr
     )
 
 {-|
 
 @docs Zipper
-@docs singleton, path, join
+@docs singleton, create
 
 
-## Navigate
+# Navigate
+
+This zipper wraps over the edges by default. If you want to implement a different behaviour, check [`isLeftmost`](#isLeftmost) and [`isRightmost`](#isRightmost)
 
 @docs left, leftmost
 @docs right, rightmost
 
 
-## Map
+# Map
 
 @docs map, mapFocus, mapPeriphery
 
 
-## Delete and Insert
+# Delete
 
 @docs deleteFocus
-@docs insertLeft, prepend
-@docs insertRight, append
+
+
+# Add
+
+@docs addLeft, addRight
+
+
+## Append
+
+@docs appendLeft, appendRight
+
+
+## Insert
+
+a.k.a. `cons`; inserts new items between the focus and the aisles
+
+@docs insertLeft, insertListLeft
+@docs insertRight, insertListRight
 @docs insert
 
 
-## Deconstruct
+# Deconstruct
 
 @docs focus
 @docs flat
@@ -51,9 +72,13 @@ module Zipper exposing
 ## Fold
 
 This is actually a CATAMORPHISM and not a traditional fold (I think). But I
-still haven't studied category theory... 
+still haven't studied category theory...
 
-@docs foldl, foldr, fold
+@docs fold, defold
+
+---
+
+@docs foldl, foldr
 
 -}
 
@@ -73,15 +98,9 @@ singleton a =
 
 
 {-| -}
-join : a -> List a -> List a -> Zipper a
-join a l r =
+create : a -> List a -> List a -> Zipper a
+create a l r =
     Zipper l a r
-
-
-{-| -}
-path : a -> List a -> Zipper a
-path =
-    Zipper []
 
 
 {-|
@@ -97,7 +116,7 @@ focus =
 {-| -}
 flat : Zipper a -> List a
 flat z =
-    List.reverse z.left ++ [z.focus] ++ z.right
+    List.reverse z.left ++ z.focus :: z.right
 
 
 {-|
@@ -129,7 +148,7 @@ rightmost z =
             z
 
         t :: hgir ->
-            { z | left = hgir ++ [ z.focus ] ++ z.left, focus = t, right = [] }
+            { z | left = hgir ++ z.focus :: z.left, focus = t, right = [] }
 
 
 {-|
@@ -175,7 +194,7 @@ leftmost z =
             z
 
         t :: fel ->
-            { z | left = [], focus = t, right = fel ++ [ z.focus ] ++ z.right }
+            { z | left = [], focus = t, right = fel ++ z.focus :: z.right }
 
 
 {-|
@@ -214,10 +233,12 @@ mapFocus : (a -> a) -> Zipper a -> Zipper a
 mapFocus fu z =
     { z | focus = fu z.focus }
 
+
 {-| -}
 mapPeriphery : (a -> a) -> Zipper a -> Zipper a
 mapPeriphery fu z =
     { z | left = List.map fu z.left, right = List.map fu z.right }
+
 
 {-| Removes the focused segment
 
@@ -227,29 +248,31 @@ mapPeriphery fu z =
 
   - otherwise replace the focus with a default
 
-    deleteFocus "default" (singleton "X")
+```
+deleteFocus "default" (singleton "X")
 
-    --> singleton "default"
+--> singleton "default"
 
-    singleton "X"
-    |> insertRight "Y"
-    |> deleteFocus "default"
+singleton "X"
+|> insertRight "Y"
+|> deleteFocus "default"
 
-    --> singleton "Y"
+--> singleton "Y"
 
-    singleton "X"
-    |> insertLeft "W"
-    |> deleteFocus "default"
+singleton "X"
+|> insertLeft "W"
+|> deleteFocus "default"
 
-    --> singleton "W"
+--> singleton "W"
 
-    singleton "X"
-    |> insertLeft "W"
-    |> insertRight "Y"
-    |> deleteFocus "default"
-    |> focus
+singleton "X"
+|> insertLeft "W"
+|> insertRight "Y"
+|> deleteFocus "default"
+|> focus
 
-    --> "W"
+--> "W"
+```
 
 -}
 deleteFocus : a -> Zipper a -> Zipper a
@@ -274,8 +297,8 @@ deleteFocus default z =
         --> 0
 
 -}
-prepend : List a -> Zipper a -> Zipper a
-prepend s z =
+appendLeft : List a -> Zipper a -> Zipper a
+appendLeft s z =
     { z | left = z.left ++ List.reverse s }
 
 
@@ -288,9 +311,22 @@ prepend s z =
         --> 5
 
 -}
-append : List a -> Zipper a -> Zipper a
-append s z =
+appendRight : List a -> Zipper a -> Zipper a
+appendRight s z =
     { z | right = z.right ++ s }
+
+
+{-| adds a single item onto the left aisle
+-}
+addLeft : a -> Zipper a -> Zipper a
+addLeft =
+    List.singleton >> appendLeft
+
+
+{-| -}
+addRight : a -> Zipper a -> Zipper a
+addRight =
+    List.singleton >> appendRight
 
 
 {-| -}
@@ -304,6 +340,7 @@ insertRight : a -> Zipper a -> Zipper a
 insertRight a z =
     { z | right = a :: z.right }
 
+
 {-| -}
 insertListLeft : List a -> Zipper a -> Zipper a
 insertListLeft aa z =
@@ -314,6 +351,7 @@ insertListLeft aa z =
 insertListRight : List a -> Zipper a -> Zipper a
 insertListRight aa z =
     { z | right = aa ++ z.right }
+
 
 {-| -}
 insert : a -> Zipper a -> Zipper a
@@ -349,6 +387,41 @@ isSingleton z =
 ---- Folding
 
 
+{-| A fold that tries to adhere very well to the constructor and cons/append functions and has less functions
+-}
+type alias Fold f a z =
+    { f
+        | init : a -> z
+        , add : ( a -> z -> z, a -> z -> z )
+    }
+
+
+{-| -}
+fold : Fold f a z -> Zipper a -> z
+fold f zipper =
+    (\( l, r ) ->
+        f.init zipper.focus
+            |> applyListFold l zipper.left
+            |> applyListFold r zipper.right
+    )
+        f.add
+
+
+{-|
+
+    fold defold
+        (Zipper [0, 1] 2 [3, 4])
+
+        --> (Zipper [0, 1] 2 [3, 4])
+
+-}
+defold : Fold {} a (Zipper a)
+defold =
+    { init = singleton
+    , add = ( addLeft, addRight )
+    }
+
+
 {-| `foldl` goes from inside to outside wereas `foldr` reduces from both aisles inwards.
 
 `init` has already incorporated previous information.
@@ -362,36 +435,36 @@ which then `cons` along the aisles.
     Zipper [0, 1] 2 [3, 4]
         |> foldl
             { cons = Nonempty.appendItem
-            , join = \(l, r) -> 
+            , join = \(l, r) ->
                 Zipper.join
                     (Nonempty.head l)
                     (Nonempty.tail l)
                     (Nonempty.tail r)
             , init = \f -> (Nonempty.singleton f, Nonempty.singleton f)
             }
-        
+
         --> Zipper [0, 1] 2 [3, 4]
+
 -}
 foldl :
     { f
         | cons : a -> acc -> acc
-        , join : (acc, acc) -> result
-        , init : a -> (acc, acc)
+        , join : ( acc, acc ) -> result
+        , init : a -> ( acc, acc )
     }
     -> Zipper a
     -> result
 foldl f z =
     f.init z.focus
         |> Tuple.mapBoth
-            (\initL -> List.foldl f.cons initL z.left )
-            (\initR ->  List.foldl f.cons initR z.right )
+            (\initL -> List.foldl f.cons initL z.left)
+            (\initR -> List.foldl f.cons initR z.right)
         |> f.join
 
 
-
-{-| folds the zipper with `cons`, starting from the `left` and `right` initializers 
+{-| folds the zipper with `cons`, starting from the `left` and `right` initializers
 until it reaches the focus which it `join`s to the both `acc`s.
- -}
+-}
 foldr :
     { f
         | cons : a -> acc -> acc
@@ -406,34 +479,11 @@ foldr f z =
         (List.foldr f.cons f.left z.left)
         (List.foldr f.cons f.right z.right)
 
-{-| A fold that tries to adhere very well to the constructor and cons/append functions and has less functions.
 
-    fold 
-        { init = singleton
-        , append = (prepend, append)
-        }
-        (Zipper [0, 1] 2 [3, 4])
 
-        --> (Zipper [0, 1] 2 [3, 4])
-
- -}
-fold :
-    { init : a -> z 
-    , append : ( a -> z -> z, a -> z -> z )
-    }
-fold f z =
-    let
-        ( left, right ) =
-            z.append
-                |> (\l, r ->
-                    f.init z.focus 
-                        |> applyListFold l z.left
-                        |> applyListFold l z.left
-
-    
 ---- Helpers ----
 
 
-applyListFold : ( a -> z -> z ) -> List a -> z -> z
-    applyListFold fu list init =
-        List.foldl fu init list
+applyListFold : (a -> z -> z) -> List a -> z -> z
+applyListFold fu list init =
+    List.foldl fu init list

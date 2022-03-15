@@ -42,7 +42,7 @@ module Zipper.Branch exposing
 
 -}
 
-import Fold exposing (Fold)
+import Fold exposing (Foldr)
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed exposing (MixedNonempty)
 import Zipper exposing (Zipper)
@@ -69,14 +69,14 @@ singleton =
 {-| -}
 merge : a -> List (MixedZipper a (Branch a)) -> Branch a
 merge a =
-    Nonempty.Mixed.merge a >> Branch
+    Nonempty.Mixed.create a >> Branch
 
 
 {-| Generate a long Branch without forks
 -}
 fromPath : Nonempty a -> Branch a
 fromPath ( a, aa ) =
-    Nonempty.Mixed.merge
+    Nonempty.Mixed.create
         a
         (List.map (singleton >> Zipper.Mixed.singleton >> Zipper.Mixed.deviateBy node) aa)
         |> Branch
@@ -208,7 +208,7 @@ grow list branch =
 -}
 growLeaf : a -> Branch a -> Branch a
 growLeaf lf (Branch b) =
-    Nonempty.Mixed.appendItem (singleton lf |> Zipper.Mixed.singleton |> Zipper.Mixed.deviateBy node) b
+    Nonempty.Mixed.add (singleton lf |> Zipper.Mixed.singleton |> Zipper.Mixed.deviateBy node) b
         |> Branch
 
 
@@ -223,7 +223,7 @@ growBranch =
 allGenerations : Branch a -> Nonempty (MixedZipper a (Branch a))
 allGenerations (Branch b) =
     b
-        |> Nonempty.Mixed.homogenize
+        |> Nonempty.Mixed.mapHead
             ------(h->a) -> MixedNonempty h a -> Nonempty a
             (singleton >> Zipper.Mixed.singleton >> Zipper.Mixed.deviateBy node)
 
@@ -232,7 +232,7 @@ allGenerations (Branch b) =
 -}
 growLevel : MixedZipper a (Branch a) -> Branch a -> Branch a
 growLevel lv (Branch b) =
-    Nonempty.Mixed.appendItem lv b
+    Nonempty.Mixed.add lv b
         |> Branch
 
 
@@ -242,20 +242,21 @@ growLevel lv (Branch b) =
 
 {-| `foldr defold ^= identity`
 -}
-defold : Fold {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) Bool
+defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) Bool
 defold =
     { mergeBranch = merge
     , consTrunk = (::)
     , leaf = []
     , join = \a l r -> Zipper.Mixed.join node (singleton a) l r
-    , joinBranch = \a l r -> Zipper.join a l r
+    , joinBranch = \a l r -> Zipper.create a l r
     , consAisle = (::)
     , left = []
     , right = []
     , mergeTree = \a b -> False
     }
 
-{-| starts at the focus and accumulates outward 
+
+{-| starts at the focus and accumulates outward
 
     import Zipper.Mixed
     import Nonempty.Mixed
@@ -272,7 +273,7 @@ defold =
                 ( Nonempty.singleton (singleton n), Nonempty.singleton (singleton n) )
             , consAisle = Nonempty.Mixed.appendItem
             , join = \(l, r) ->
-                Zipper.join 
+                Zipper.join
                     ( Nonempty.Mixed.head l )
                     ( Nonempty.Mixed.tail l )
                     ( Nonempty.Mixed.tail r )
@@ -285,13 +286,12 @@ defold =
         |> path
         --> ("root", ["0", "1"])
 
-
 -}
-foldl : 
+foldl :
     { f
-        | init : a -> (aisle, aisle) 
+        | init : a -> ( aisle, aisle )
         , consAisle : b -> aisle -> aisle
-        , join : (aisle, aisle) -> z 
+        , join : ( aisle, aisle ) -> z
         , consTrunk : z -> trunk -> trunk
         , root : a -> trunk
         , merge : trunk -> b
@@ -301,16 +301,15 @@ foldl :
 foldl f (Branch b) =
     b
         |> Nonempty.Mixed.foldl
-            { 
-                -- cons : a -> acc -> acc
-                -- init : h -> acc
-                cons =
+            { -- cons : a -> acc -> acc
+              -- init : h -> acc
+              cons =
                 \zipper trunk ->
                     f.consTrunk
                         (Zipper.Mixed.foldl
-                        -- cons : a -> acc -> acc
-                        -- join : (acc, acc) -> result
-                        -- init : focus -> (acc, acc)
+                            -- cons : a -> acc -> acc
+                            -- join : (acc, acc) -> result
+                            -- init : focus -> (acc, acc)
                             { cons = foldl f >> f.consAisle
                             , join = f.join
                             , init = f.init
@@ -318,13 +317,12 @@ foldl f (Branch b) =
                             zipper
                         )
                         trunk
-                , init = f.root
+            , init = f.root
             }
         |> f.merge
 
-{-| 
 
-takes the `leaf`, `left` and `right` accumulators as starting points,
+{-| takes the `leaf`, `left` and `right` accumulators as starting points,
 then first folds the zippers horizontally
 and finally foldst the generations vertically
 -}

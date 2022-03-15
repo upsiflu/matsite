@@ -82,7 +82,7 @@ singleton a =
 join : (a -> f) -> a -> List a -> List a -> MixedZipper f a
 join fu a l r =
     { aToF = fu
-    , zipper = Zipper.join a l r
+    , zipper = Zipper.create a l r
     }
 
 
@@ -203,13 +203,13 @@ insert =
 {-| -}
 prepend : List a -> MixedZipper f a -> MixedZipper f a
 prepend =
-    mapZipper << Zipper.prepend
+    mapZipper << Zipper.appendLeft
 
 
 {-| -}
 append : List a -> MixedZipper f a -> MixedZipper f a
 append =
-    mapZipper << Zipper.append
+    mapZipper << Zipper.appendRight
 
 
 
@@ -230,7 +230,7 @@ focus m =
     m.zipper |> Zipper.focus |> m.aToF
 
 
-{-| this is foldr, `cons`ing from both the `left` and `right` leaf and finally 
+{-| this is foldr, `cons`ing from both the `left` and `right` leaf and finally
 `join`ing with the focus.
 
     import Zipper exposing (Zipper)
@@ -275,8 +275,8 @@ Finally, `join` the resulting tuple.
         |> fromZipper
         |> foldl
             { cons = Nonempty.appendItem
-            , join = \(l, r) -> 
-                Zipper.join 
+            , join = \(l, r) ->
+                Zipper.join
                     (Nonempty.head l)
                     (Nonempty.tail l)
                     (Nonempty.tail r)
@@ -291,14 +291,14 @@ Finally, `join` the resulting tuple.
 foldl :
     { f
         | cons : a -> acc -> acc
-        , join : (acc, acc) -> result
-        , init : focus -> (acc, acc)
+        , join : ( acc, acc ) -> result
+        , init : focus -> ( acc, acc )
     }
     -> MixedZipper focus a
     -> result
 foldl f z =
     f.init (focus z)
         |> Tuple.mapBoth
-            (\initL -> List.foldl f.cons initL z.zipper.left )
-            (\initR ->  List.foldl f.cons initR z.zipper.right )
+            (\initL -> List.foldl f.cons initL z.zipper.left)
+            (\initR -> List.foldl f.cons initR z.zipper.right)
         |> f.join

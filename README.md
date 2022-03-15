@@ -76,7 +76,15 @@ Run `elm-verify-examples` and `elm-test` to verify the correctness of the exampl
 elm-verify-examples && elm-test
 ```
 
+```sh
+elm-verify-examples --run-tests
+```
+
 ## Run
+
+```sh
+npm install -g elm-live
+```
 
 ```sh
 elm-live src/Main.elm -- --output=main.js
