@@ -53,7 +53,7 @@ module Zipper exposing
 This is actually a CATAMORPHISM and not a traditional fold (I think). But I
 still haven't studied category theory... 
 
-@docs foldl, foldr
+@docs foldl, foldr, fold
 
 -}
 
@@ -405,3 +405,35 @@ foldr f z =
     f.join z.focus
         (List.foldr f.cons f.left z.left)
         (List.foldr f.cons f.right z.right)
+
+{-| A fold that tries to adhere very well to the constructor and cons/append functions and has less functions.
+
+    fold 
+        { init = singleton
+        , append = (prepend, append)
+        }
+        (Zipper [0, 1] 2 [3, 4])
+
+        --> (Zipper [0, 1] 2 [3, 4])
+
+ -}
+fold :
+    { init : a -> z 
+    , append : ( a -> z -> z, a -> z -> z )
+    }
+fold f z =
+    let
+        ( left, right ) =
+            z.append
+                |> (\l, r ->
+                    f.init z.focus 
+                        |> applyListFold l z.left
+                        |> applyListFold l z.left
+
+    
+---- Helpers ----
+
+
+applyListFold : ( a -> z -> z ) -> List a -> z -> z
+    applyListFold fu list init =
+        List.foldl fu init list

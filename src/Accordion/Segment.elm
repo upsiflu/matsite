@@ -109,8 +109,8 @@ view mode s =
             [css 
                 [ overflowY scroll
                 , Css.width (rem 21)
-                , maxHeight (calc (vh 100) minus (rem 4))]
                 ]
+            ]
 
         functions =
             case mode of
@@ -123,8 +123,11 @@ view mode s =
 
         magic =
             case mode of
+                Expanded _ _ -> 
+                    [css [ maxHeight (calc (vh 100) minus (rem 4))]]
+                Collapsed _ -> 
+                    [css [ maxHeight (rem 4)], id s.id]
                 Invisible -> [css [opacity (num 0.6), visibility Css.hidden]]
-                _ -> [id s.id]
 
         viewDirection : Tree.Direction -> String
         viewDirection dir =
