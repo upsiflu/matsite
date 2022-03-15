@@ -1,53 +1,51 @@
 module Zipper.Mixed exposing
     ( MixedZipper
-    , singleton, fromZipper, join
-    , deviateBy
-    , toZipper
+    , singleton, fromZipper, create
+    , left, right
+    , leftmost, rightmost
     , map, map9, mapFocus
-    , left, leftmost
-    , right, rightmost
-    , insertLeft, prepend
-    , insertRight, append
+    , deviateBy
+    , insertLeft, insertRight
+    , prepend, append
     , insert
-    , focus
-    , homogenize
+    , focus, periphery
+    , homogenize, toZipper
     , foldr, foldl
     )
 
 {-| Its `focus` may "deviate" from the other nodes
 
 @docs MixedZipper
-@docs singleton, fromZipper, join
+@docs singleton, fromZipper, create
 
 
-## Transform
+# Navigate
 
-@docs deviateBy
-@docs toZipper
+@docs left, right
+@docs leftmost, rightmost
 
 
 ## Map
 
 @docs map, map9, mapFocus
 
-
-## Navigate
-
-@docs left, leftmost
-@docs right, rightmost
+@docs deviateBy
 
 
 ## Insert
 
-@docs insertLeft, prepend
-@docs insertRight, append
+@docs insertLeft, insertRight
+@docs prepend, append
 @docs insert
 
 
 ## Deconstruct
 
-@docs focus
-@docs homogenize
+@docs focus, periphery
+
+---
+
+@docs homogenize, toZipper
 
 
 ## Fold
@@ -79,8 +77,8 @@ singleton a =
 
 
 {-| -}
-join : (a -> f) -> a -> List a -> List a -> MixedZipper f a
-join fu a l r =
+create : (a -> f) -> a -> List a -> List a -> MixedZipper f a
+create fu a l r =
     { aToF = fu
     , zipper = Zipper.create a l r
     }
@@ -203,13 +201,13 @@ insert =
 {-| -}
 prepend : List a -> MixedZipper f a -> MixedZipper f a
 prepend =
-    mapZipper << Zipper.appendLeft
+    Zipper.prepend >> mapZipper
 
 
 {-| -}
 append : List a -> MixedZipper f a -> MixedZipper f a
 append =
-    mapZipper << Zipper.appendRight
+    Zipper.append >> mapZipper
 
 
 
@@ -228,6 +226,12 @@ homogenize mz =
 focus : MixedZipper f a -> f
 focus m =
     m.zipper |> Zipper.focus |> m.aToF
+
+
+{-| -}
+periphery : MixedZipper f a -> ( List a, List a )
+periphery =
+    .zipper >> Zipper.periphery
 
 
 {-| this is foldr, `cons`ing from both the `left` and `right` leaf and finally

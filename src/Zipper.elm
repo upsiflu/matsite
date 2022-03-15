@@ -1,16 +1,16 @@
 module Zipper exposing
     ( Zipper
     , singleton, create
-    , left, leftmost
-    , right, rightmost
+    , left, right
+    , leftmost, rightmost
     , map, mapFocus, mapPeriphery
     , deleteFocus
-    , addLeft, addRight
-    , appendLeft, appendRight
+    , growLeft, growRight
+    , prepend, append
     , insertLeft, insertListLeft
     , insertRight, insertListRight
-    , insert
-    , focus
+    , consLeft, consRight
+    , focus, periphery
     , flat
     , isLeftmost, isRightmost, isSingleton
     , length
@@ -28,8 +28,8 @@ module Zipper exposing
 
 This zipper wraps over the edges by default. If you want to implement a different behaviour, check [`isLeftmost`](#isLeftmost) and [`isRightmost`](#isRightmost)
 
-@docs left, leftmost
-@docs right, rightmost
+@docs left, right
+@docs leftmost, rightmost
 
 
 # Map
@@ -37,33 +37,25 @@ This zipper wraps over the edges by default. If you want to implement a differen
 @docs map, mapFocus, mapPeriphery
 
 
-# Delete
+# Shrink and Grow
 
 @docs deleteFocus
 
+---
 
-# Add
-
-@docs addLeft, addRight
-
-
-## Append
-
-@docs appendLeft, appendRight
-
-
-## Insert
-
-a.k.a. `cons`; inserts new items between the focus and the aisles
-
+@docs growLeft, growRight
+@docs prepend, append
 @docs insertLeft, insertListLeft
 @docs insertRight, insertListRight
-@docs insert
+@docs consLeft, consRight
 
 
 # Deconstruct
 
-@docs focus
+@docs focus, periphery
+
+---
+
 @docs flat
 @docs isLeftmost, isRightmost, isSingleton
 @docs length
@@ -111,6 +103,12 @@ create a l r =
 focus : Zipper a -> a
 focus =
     .focus
+
+
+{-| -}
+periphery : Zipper a -> ( List a, List a )
+periphery z =
+    ( z.left, z.right )
 
 
 {-| -}
@@ -292,13 +290,14 @@ deleteFocus default z =
 
     singleton 5
         |> prepend [0, 1, 2, 3, 4]
-        |> leftmost >> focus
+        |> leftmost
+        |> focus
 
         --> 0
 
 -}
-appendLeft : List a -> Zipper a -> Zipper a
-appendLeft s z =
+prepend : List a -> Zipper a -> Zipper a
+prepend s z =
     { z | left = z.left ++ List.reverse s }
 
 
@@ -306,27 +305,28 @@ appendLeft s z =
 
     singleton 0
         |> append [1, 2, 3, 4, 5]
-        |> rightmost >> focus
+        |> rightmost
+        |> focus
 
         --> 5
 
 -}
-appendRight : List a -> Zipper a -> Zipper a
-appendRight s z =
+append : List a -> Zipper a -> Zipper a
+append s z =
     { z | right = z.right ++ s }
 
 
 {-| adds a single item onto the left aisle
 -}
-addLeft : a -> Zipper a -> Zipper a
-addLeft =
-    List.singleton >> appendLeft
+growLeft : a -> Zipper a -> Zipper a
+growLeft =
+    List.singleton >> prepend
 
 
 {-| -}
-addRight : a -> Zipper a -> Zipper a
-addRight =
-    List.singleton >> appendRight
+growRight : a -> Zipper a -> Zipper a
+growRight =
+    List.singleton >> append
 
 
 {-| -}
@@ -353,10 +353,21 @@ insertListRight aa z =
     { z | right = aa ++ z.right }
 
 
+{-| push the focus to the right
+-}
+consLeft : a -> Zipper a -> Zipper a
+consLeft a z =
+    { z | focus = a, right = z.focus :: z.right }
+
+
 {-| -}
-insert : a -> Zipper a -> Zipper a
-insert x =
-    insertRight x >> right
+consRight : a -> Zipper a -> Zipper a
+consRight a z =
+    { z | focus = a, left = z.focus :: z.left }
+
+
+
+----- Deconstruct ----
 
 
 {-| -}
@@ -392,19 +403,16 @@ isSingleton z =
 type alias Fold f a z =
     { f
         | init : a -> z
-        , add : ( a -> z -> z, a -> z -> z )
+        , grow : ( a -> z -> z, a -> z -> z )
     }
 
 
 {-| -}
 fold : Fold f a z -> Zipper a -> z
 fold f zipper =
-    (\( l, r ) ->
-        f.init zipper.focus
-            |> applyListFold l zipper.left
-            |> applyListFold r zipper.right
-    )
-        f.add
+    f.init zipper.focus
+        |> applyListFold (Tuple.first f.grow) zipper.left
+        |> applyListFold (Tuple.second f.grow) zipper.right
 
 
 {-|
@@ -418,7 +426,7 @@ fold f zipper =
 defold : Fold {} a (Zipper a)
 defold =
     { init = singleton
-    , add = ( addLeft, addRight )
+    , grow = ( growLeft, growRight )
     }
 
 
@@ -434,7 +442,7 @@ which then `cons` along the aisles.
 
     Zipper [0, 1] 2 [3, 4]
         |> foldl
-            { cons = Nonempty.appendItem
+            { cons = Nonempty.grow
             , join = \(l, r) ->
                 Zipper.join
                     (Nonempty.head l)

@@ -6,6 +6,7 @@
         "Zipper",
         "Zipper.Branch",
         "Zipper.Mixed",
+        "Zipper.Mixed1",
         "Zipper.Tree",
         "Nonempty",
         "Nonempty.Mixed",

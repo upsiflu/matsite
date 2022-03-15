@@ -8,9 +8,9 @@ module Zipper.Tree exposing
     , root, leaf
     , go, Direction(..), Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapTail, mapAisles
-    , insertLeft, prepend
-    , insertRight, append
-    , insert
+    , insertLeft, insertRight
+    , prepend, append
+    , consLeft, consRight
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , focus, focusedBranch
@@ -51,9 +51,9 @@ module Zipper.Tree exposing
 
 ## Insert
 
-@docs insertLeft, prepend
-@docs insertRight, append
-@docs insert
+@docs insertLeft, insertRight
+@docs prepend, append
+@docs consLeft, consRight
 
 
 ## Delete
@@ -511,7 +511,7 @@ go w =
 defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
 defold =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> Zipper.Mixed.join Branch.node (Branch.singleton a) l r
+    , join = \a l r -> Zipper.Mixed.create Branch.node (Branch.singleton a) l r
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = Branch.merge --: a -> trunk -> b
@@ -526,7 +526,7 @@ defold =
 mapfold : (a -> b) -> Foldr {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
 mapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> Zipper.Mixed.join Branch.node (Branch.singleton (fu a)) l r -- a -> aisle -> aisle -> z
+    , join = \a l r -> Zipper.Mixed.create Branch.node (Branch.singleton (fu a)) l r -- a -> aisle -> aisle -> z
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = fu >> Branch.merge --: a -> trunk -> b
@@ -674,21 +674,27 @@ insertRight =
 
 
 {-| -}
-insert : Branch a -> Tree a -> Tree a
-insert =
-    Zipper.insert >> Nonempty.Mixed.mapHead
+consLeft : Branch a -> Tree a -> Tree a
+consLeft =
+    Zipper.consLeft >> Nonempty.Mixed.mapHead
+
+
+{-| -}
+consRight : Branch a -> Tree a -> Tree a
+consRight =
+    Zipper.consRight >> Nonempty.Mixed.mapHead
 
 
 {-| -}
 prepend : List (Branch a) -> Tree a -> Tree a
 prepend =
-    Zipper.appendLeft >> Nonempty.Mixed.mapHead
+    Zipper.prepend >> Nonempty.Mixed.mapHead
 
 
 {-| -}
 append : List (Branch a) -> Tree a -> Tree a
 append =
-    Zipper.appendRight >> Nonempty.Mixed.mapHead
+    Zipper.append >> Nonempty.Mixed.mapHead
 
 
 {-| -}
@@ -696,7 +702,7 @@ growRoot : Branch a -> Tree a -> Tree a
 growRoot =
     Branch.allGenerations
         >> Nonempty.toList
-        >> (\newGens tree -> Nonempty.Mixed.appendList newGens tree)
+        >> (\newGens tree -> Nonempty.Mixed.append newGens tree)
 
 
 {-| -}

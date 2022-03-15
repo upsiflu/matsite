@@ -22,8 +22,8 @@ module Fold exposing
 -}
 type alias Fold f a z =
     { f
-        | initZ : a -> z
-        , add : ( a -> z -> z, a -> z -> z )
+        | init : a -> z
+        , grow : ( a -> z -> z, a -> z -> z )
     }
 
 

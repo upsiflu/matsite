@@ -3,8 +3,8 @@ module Nonempty.Mixed exposing
     , singleton, create
     , map, mapTail, mapHead, mapSecond
     , delete, deleteWithDefault
-    , add
-    , insert, appendList, cons
+    , grow
+    , insert, append, cons
     , member, head, tail
     , uncons, cut
     , justSingleton, isSingleton
@@ -30,9 +30,9 @@ module Nonempty.Mixed exposing
 
 # Grow
 
-@docs add
+@docs grow
 
-@docs insert, appendList, cons
+@docs insert, append, cons
 
 
 # Deconstruct
@@ -155,8 +155,8 @@ cut fu ( h, ail ) =
 
 {-| Extend the tail towards the end
 -}
-add : a -> MixedNonempty h a -> MixedNonempty h a
-add l ( h, tai ) =
+grow : a -> MixedNonempty h a -> MixedNonempty h a
+grow l ( h, tai ) =
     ( h, tai ++ [ l ] )
 
 
@@ -169,8 +169,8 @@ insert t ( h, ail ) =
 
 {-| Extend the tail towards the end
 -}
-appendList : List a -> MixedNonempty h a -> MixedNonempty h a
-appendList l ( h, tai ) =
+append : List a -> MixedNonempty h a -> MixedNonempty h a
+append l ( h, tai ) =
     ( h, tai ++ l )
 
 
@@ -189,7 +189,7 @@ cons h fu ( t, ail ) =
 type alias Fold f h a n =
     { f
         | init : h -> n
-        , add : a -> n -> n
+        , grow : a -> n -> n
     }
 
 
@@ -197,14 +197,14 @@ type alias Fold f h a n =
 fold : Fold f h a n -> MixedNonempty h a -> n
 fold f ( h, t ) =
     f.init h
-        |> Fold.list f.add t
+        |> Fold.list f.grow t
 
 
 {-| -}
 defold : Fold {} h a (MixedNonempty h a)
 defold =
     { init = singleton
-    , add = add
+    , grow = grow
     }
 
 

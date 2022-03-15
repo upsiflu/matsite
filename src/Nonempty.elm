@@ -4,7 +4,7 @@ module Nonempty exposing
     , map, mapSecond
     , TailOperation
     , delete, deleteWithDefault
-    , add
+    , grow
     , insert
     , cons
     , append
@@ -29,14 +29,11 @@ module Nonempty exposing
 @docs TailOperation
 
 
-# Shrink
+# Shrink and Grow
 
 @docs delete, deleteWithDefault
 
-
-# Grow
-
-@docs add
+@docs grow
 
 @docs insert
 @docs cons
@@ -144,6 +141,22 @@ toList ( h, t ) =
     h :: t
 
 
+
+---- Grow and Shrink
+
+
+{-| -}
+grow : a -> Nonempty a -> Nonempty a
+grow a ( h, t ) =
+    ( h, t ++ [ a ] )
+
+
+{-| -}
+append : List a -> Nonempty a -> Nonempty a
+append l ( h, t ) =
+    ( h, t ++ l )
+
+
 {-|
 
     insert 1 (0, [2])
@@ -171,18 +184,6 @@ cons a ( h, t ) =
 uncons : Nonempty a -> ( a, Maybe (Nonempty a) )
 uncons ( h, t ) =
     ( h, List.uncons t )
-
-
-{-| -}
-add : a -> Nonempty a -> Nonempty a
-add a ( h, t ) =
-    ( h, t ++ [ a ] )
-
-
-{-| -}
-append : List a -> Nonempty a -> Nonempty a
-append l ( h, t ) =
-    ( h, t ++ l )
 
 
 {-| -}
@@ -228,7 +229,7 @@ length =
 type alias Fold f a n =
     { f
         | init : a -> n
-        , add : a -> n -> n
+        , grow : a -> n -> n
     }
 
 
@@ -236,14 +237,14 @@ type alias Fold f a n =
 fold : Fold f a n -> Nonempty a -> n
 fold f ( h, t ) =
     f.init h
-        |> Fold.list f.add t
+        |> Fold.list f.grow t
 
 
 {-| -}
 defold : Fold {} a (Nonempty a)
 defold =
     { init = singleton
-    , add = add
+    , grow = grow
     }
 
 

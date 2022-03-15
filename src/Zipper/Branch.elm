@@ -170,7 +170,7 @@ prepend aa (Branch b) =
             Nonempty.Mixed.mapSecond
                 { nonempty = Zipper.Mixed.prepend aa
                 , empty =
-                    \_ -> [ Zipper.Mixed.join node br anch [] ]
+                    \_ -> [ Zipper.Mixed.create node br anch [] ]
                 }
                 b
                 |> Branch
@@ -188,7 +188,7 @@ append aa (Branch b) =
             Nonempty.Mixed.mapSecond
                 { nonempty = Zipper.Mixed.append aa
                 , empty =
-                    \_ -> [ Zipper.Mixed.join node br [] anch ]
+                    \_ -> [ Zipper.Mixed.create node br [] anch ]
                 }
                 b
                 |> Branch
@@ -208,7 +208,7 @@ grow list branch =
 -}
 growLeaf : a -> Branch a -> Branch a
 growLeaf lf (Branch b) =
-    Nonempty.Mixed.add (singleton lf |> Zipper.Mixed.singleton |> Zipper.Mixed.deviateBy node) b
+    Nonempty.Mixed.grow (singleton lf |> Zipper.Mixed.singleton |> Zipper.Mixed.deviateBy node) b
         |> Branch
 
 
@@ -232,7 +232,7 @@ allGenerations (Branch b) =
 -}
 growLevel : MixedZipper a (Branch a) -> Branch a -> Branch a
 growLevel lv (Branch b) =
-    Nonempty.Mixed.add lv b
+    Nonempty.Mixed.grow lv b
         |> Branch
 
 
@@ -247,7 +247,7 @@ defold =
     { mergeBranch = merge
     , consTrunk = (::)
     , leaf = []
-    , join = \a l r -> Zipper.Mixed.join node (singleton a) l r
+    , join = \a l r -> Zipper.Mixed.create node (singleton a) l r
     , joinBranch = \a l r -> Zipper.create a l r
     , consAisle = (::)
     , left = []
