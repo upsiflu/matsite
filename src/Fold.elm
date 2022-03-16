@@ -2,6 +2,7 @@ module Fold exposing
     ( Fold
     , Foldr
     , list
+    , Direction(..)
     )
 
 {-| Helpers for folding over lists and Zippers
@@ -50,6 +51,15 @@ type alias Foldr f a aisle z zB trunk b e =
         , left : aisle
         , right : aisle
     }
+
+
+{-| -}
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+    | Here
 
 
 

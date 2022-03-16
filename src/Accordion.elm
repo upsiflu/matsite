@@ -2,14 +2,14 @@ module Accordion exposing (Accordion, anarchiveX, site, view, vimeoX)
 
 import Accordion.Segment as Segment exposing (Orientation(..), Segment, ViewMode(..))
 import Css exposing (..)
-import Fold exposing (Foldr)
+import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Snippets.Festival as Festival
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
-import Zipper.Tree as Tree exposing (Direction(..), Edge(..), EdgeOperation(..), Tree, Walk(..))
+import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
 type Accordion msg

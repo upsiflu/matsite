@@ -13,7 +13,7 @@ module Zipper.Branch exposing
     , Fold, fold, defold
     , foldl
     , foldr, defoldr
-    , Direction, cons, getLeftmostLeaf, getRightmostLeaf, zipDirections
+    , DirBranch, cons, defoldWithDirections, getLeftmostLeaf, getRightmostLeaf, zipDirections
     )
 
 {-|
@@ -51,7 +51,7 @@ module Zipper.Branch exposing
 
 -}
 
-import Fold
+import Fold exposing (Direction(..))
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Result.Extra as Result
@@ -222,21 +222,25 @@ growBranch =
 
 
 {-| appends a branch to the left of the leafmost generation
+or under the focus if singleton
 -}
 growLeft : Branch a -> Branch a -> Branch a
 growLeft branch (Branch br) =
     MixedNonempty.mapLast (MixedZipper.growLeft branch) br
-        |> Result.withDefault br
-        |> Branch
+        |> Result.unpack
+            (\_ -> growBranch branch (Branch br))
+            Branch
 
 
-{-| appends a branch to the left of the leafmost generation
+{-| appends a branch to the right of the leafmost generation
+or under the focus if singleton
 -}
 growRight : Branch a -> Branch a -> Branch a
 growRight branch (Branch br) =
     MixedNonempty.mapLast (MixedZipper.growRight branch) br
-        |> Result.withDefault br
-        |> Branch
+        |> Result.unpack
+            (\_ -> growBranch branch (Branch br))
+            Branch
 
 
 {-| -}
@@ -268,45 +272,7 @@ growLevel lv (Branch b) =
 -}
 zipDirections : Branch a -> Branch ( List Direction, a )
 zipDirections =
-    fold direct
-
-
-{-| -}
-direct : Fold {} a (Branch ( List Direction, a ))
-direct =
-    let
-        prependDirections : List Direction -> Branch ( List Direction, a ) -> Branch ( List Direction, a )
-        prependDirections dirs =
-            (\oldDirs -> dirs ++ oldDirs) |> Tuple.mapFirst |> map
-    in
-    { init = Tuple.pair [] >> singleton
-    , grow =
-        { leftwards =
-            \newBranch oldBranch ->
-                let
-                    accumulatedDirections =
-                        getLeftmostLeaf oldBranch |> Tuple.first
-                in
-                (prependDirections (Left :: accumulatedDirections) >> growLeft) oldBranch newBranch
-        , rightwards =
-            \newBranch oldBranch ->
-                let
-                    accumulatedDirections =
-                        getRightmostLeaf oldBranch |> Tuple.first
-                in
-                (prependDirections (Right :: accumulatedDirections) >> growRight) oldBranch newBranch
-        , downwards =
-            \a oldBranch ->
-                let
-                    oldDirections =
-                        leaf oldBranch |> Tuple.first
-
-                    newNode =
-                        ( Down :: oldDirections, a )
-                in
-                growLeaf newNode oldBranch
-        }
-    }
+    fold defoldWithDirections
 
 
 {-| -}
@@ -357,6 +323,48 @@ defold =
         { leftwards = growLeft
         , rightwards = growRight
         , downwards = growLeaf
+        }
+    }
+
+
+{-| -}
+type alias DirBranch a =
+    Branch ( List Direction, a )
+
+
+type alias Map x =
+    x -> x
+
+
+{-| -}
+defoldWithDirections : Fold {} a (Branch ( List Direction, a ))
+defoldWithDirections =
+    let
+        insertDir :
+            Direction
+            -> (DirBranch a -> ( List Direction, a ))
+            -> Map (DirBranch a -> DirBranch a -> DirBranch a)
+        insertDir dir getLastNode build newBranch oldBranch =
+            Tuple.mapFirst ((::) dir >> (++) (Tuple.first (getLastNode oldBranch)))
+                |> map
+                |> (|>) newBranch
+                |> (<|) build
+                |> (|>) oldBranch
+    in
+    { init = Tuple.pair [] >> defold.init
+    , grow =
+        { leftwards =
+            insertDir Left getLeftmostLeaf defold.grow.leftwards
+        , rightwards =
+            insertDir Right getRightmostLeaf defold.grow.rightwards
+        , downwards =
+            \newNode oldBranch ->
+                Down
+                    :: Tuple.first (leaf oldBranch)
+                    |> (<|) Tuple.pair
+                    |> (|>) newNode
+                    |> (<|) defold.grow.downwards
+                    |> (|>) oldBranch
         }
     }
 
@@ -536,13 +544,6 @@ foldr f (Branch b) =
             , merge = f.mergeBranch
             , leaf = f.leaf
             }
-
-
-{-| -}
-type Direction
-    = Left
-    | Right
-    | Down
 
 
 {-| -}

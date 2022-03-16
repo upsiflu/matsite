@@ -16,7 +16,7 @@ module Zipper exposing
     , length
     , fold, defold
     , foldl, foldr
-    , Fold
+    , Fold, getLeftmost, getRightmost
     )
 
 {-|
@@ -74,6 +74,8 @@ still haven't studied category theory...
 @docs foldl, foldr
 
 -}
+
+import List.Extra as List
 
 
 {-| -}
@@ -369,6 +371,18 @@ consRight a z =
 
 
 ----- Deconstruct ----
+
+
+{-| -}
+getLeftmost : Zipper a -> a
+getLeftmost z =
+    List.last z.left |> Maybe.withDefault z.focus
+
+
+{-| -}
+getRightmost : Zipper a -> a
+getRightmost z =
+    List.last z.left |> Maybe.withDefault z.focus
 
 
 {-| -}

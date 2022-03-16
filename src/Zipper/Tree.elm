@@ -7,7 +7,7 @@ module Zipper.Tree exposing
     , right, rightmost
     , up, down
     , root, leaf
-    , go, Direction(..), Walk(..), Edge(..), EdgeOperation(..)
+    , go, Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapAisles, mapTrace
     , deleteFocus
     , growRoot, growLeaf, growBranch
@@ -22,6 +22,7 @@ module Zipper.Tree exposing
     , Fold, defold, fold
     , foldr, defoldr
     , ViewMode(..), view
+    , DirTree, defoldWithDirections, getLeftmostRoot, getRightmostRoot, zipDirections
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -95,12 +96,13 @@ module Zipper.Tree exposing
 -}
 
 import Css exposing (..)
-import Fold exposing (Foldr)
+import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
+import Result.Extra as Result
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Mixed as MixedZipper exposing (MixedZipper)
@@ -375,15 +377,6 @@ leftmost =
 rightmost : Tree a -> Tree a
 rightmost =
     MixedNonempty.mapHead Zipper.rightmost
-
-
-{-| -}
-type Direction
-    = Left
-    | Right
-    | Up
-    | Down
-    | Here
 
 
 {-| -}
@@ -791,6 +784,33 @@ focus =
 
 
 {-| -}
+getRoot : Tree a -> a
+getRoot =
+    MixedNonempty.last
+        >> Result.unpack
+            (Zipper.focus >> Branch.node)
+            MixedZipper.focus
+
+
+{-| -}
+getLeftmostRoot : Tree a -> a
+getLeftmostRoot =
+    MixedNonempty.last
+        >> Result.unpack
+            (Zipper.getLeftmost >> Branch.node)
+            (MixedZipper.getLeftmost >> Result.unpack identity Branch.node)
+
+
+{-| -}
+getRightmostRoot : Tree a -> a
+getRightmostRoot =
+    MixedNonempty.last
+        >> Result.unpack
+            (Zipper.getRightmost >> Branch.node)
+            (MixedZipper.getRightmost >> Result.unpack identity Branch.node)
+
+
+{-| -}
 circumference : Tree a -> Int
 circumference =
     MixedNonempty.head >> Zipper.length
@@ -850,6 +870,54 @@ defold =
         { leftwards = growRootLeft
         , rightwards = growRootRight
         , upwards = growRootUp
+        }
+    }
+
+
+type alias DirTree a =
+    Tree ( List Direction, a )
+
+
+{-|
+
+    fromPath (0, [1, 2])
+        |> zipDirections
+        |> path
+
+        -- (([], 0), [(Down, 1), (Down, 2)])
+
+-}
+zipDirections : Tree a -> DirTree a
+zipDirections =
+    fold defoldWithDirections
+
+
+{-| -}
+defoldWithDirections : Fold {} a (Branch.DirBranch a) (DirTree a)
+defoldWithDirections =
+    let
+        withDirection :
+            Direction
+            -> (DirTree a -> ( List Direction, a ))
+            -> (Branch.DirBranch a -> DirTree a -> DirTree a)
+            -> Branch.DirBranch a
+            -> (DirTree a -> DirTree a)
+        withDirection dir getLastNode fu newBranch oldTree =
+            let
+                previousPath =
+                    getLastNode oldTree |> Tuple.first
+
+                integratedBranch =
+                    (Tuple.mapFirst >> Branch.map) (\p -> p ++ previousPath ++ [ dir ]) newBranch
+            in
+            fu integratedBranch oldTree
+    in
+    { init = defold.init
+    , branch = Branch.defoldWithDirections
+    , grow =
+        { leftwards = withDirection Left getLeftmostRoot defold.grow.leftwards
+        , rightwards = withDirection Right getRightmostRoot defold.grow.rightwards
+        , upwards = Tuple.pair [] >> defold.grow.upwards
         }
     }
 

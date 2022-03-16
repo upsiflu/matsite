@@ -10,7 +10,7 @@ module Nonempty.Mixed exposing
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
-    , Error(..), mapLast, second
+    , Error(..), last, mapLast, second
     )
 
 {-|
@@ -290,7 +290,7 @@ isSingleton =
     tail >> (==) []
 
 
-second : MixedNonempty a b -> Maybe b
+second : MixedNonempty h b -> Maybe b
 second ( h, t ) =
     case t of
         [] ->
@@ -298,3 +298,9 @@ second ( h, t ) =
 
         a :: _ ->
             Just a
+
+
+last : MixedNonempty h b -> Result h b
+last ( h, t ) =
+    List.last t
+        |> Result.fromMaybe h
