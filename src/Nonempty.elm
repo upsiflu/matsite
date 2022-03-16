@@ -14,6 +14,7 @@ module Nonempty exposing
     , justSingleton, isSingleton, length
     , Fold, fold, defold
     , foldl, foldr
+    , last
     )
 
 {-| A list with at least one element
@@ -295,3 +296,9 @@ foldr :
 foldr f ( h, t ) =
     List.foldr f.cons f.init t
         |> f.merge h
+
+
+last : Nonempty a -> a
+last ( h, t ) =
+    List.last t
+        |> Maybe.withDefault h

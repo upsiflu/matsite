@@ -13,7 +13,7 @@ module Zipper.Branch exposing
     , Fold, fold, defold
     , foldl
     , foldr, defoldr
-    , cons
+    , Direction, cons, getLeftmostLeaf, getRightmostLeaf, zipDirections
     )
 
 {-|
@@ -54,6 +54,7 @@ module Zipper.Branch exposing
 import Fold
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
+import Result.Extra as Result
 import Zipper exposing (Zipper)
 import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 
@@ -254,6 +255,84 @@ growLevel lv (Branch b) =
 
 
 ---- DECONSTRUCT ----
+
+
+{-|
+
+    fromPath (0, [1, 2])
+        |> zipDirections
+        |> path
+
+        -- (([], 0), [(Down, 1), (Down, 2)])
+
+-}
+zipDirections : Branch a -> Branch ( List Direction, a )
+zipDirections =
+    fold direct
+
+
+{-| -}
+direct : Fold {} a (Branch ( List Direction, a ))
+direct =
+    let
+        prependDirections : List Direction -> Branch ( List Direction, a ) -> Branch ( List Direction, a )
+        prependDirections dirs =
+            (\oldDirs -> dirs ++ oldDirs) |> Tuple.mapFirst |> map
+    in
+    { init = Tuple.pair [] >> singleton
+    , grow =
+        { leftwards =
+            \newBranch oldBranch ->
+                let
+                    accumulatedDirections =
+                        getLeftmostLeaf oldBranch |> Tuple.first
+                in
+                (prependDirections (Left :: accumulatedDirections) >> growLeft) oldBranch newBranch
+        , rightwards =
+            \newBranch oldBranch ->
+                let
+                    accumulatedDirections =
+                        getRightmostLeaf oldBranch |> Tuple.first
+                in
+                (prependDirections (Right :: accumulatedDirections) >> growRight) oldBranch newBranch
+        , downwards =
+            \a oldBranch ->
+                let
+                    oldDirections =
+                        leaf oldBranch |> Tuple.first
+
+                    newNode =
+                        ( Down :: oldDirections, a )
+                in
+                growLeaf newNode oldBranch
+        }
+    }
+
+
+{-| -}
+leaf : Branch a -> a
+leaf =
+    allGenerations
+        >> Nonempty.last
+        >> .focus
+
+
+{-| -}
+getLeftmostLeaf : Branch a -> a
+getLeftmostLeaf =
+    allGenerations
+        >> Nonempty.last
+        >> MixedZipper.getLeftmost
+        >> Result.unpack identity node
+
+
+{-| -}
+getRightmostLeaf : Branch a -> a
+getRightmostLeaf =
+    allGenerations
+        >> Nonempty.last
+        >> MixedZipper.getRightmost
+        >> Result.unpack identity node
 
 
 {-| A fold that tries to adhere very well to the constructor and
@@ -457,6 +536,13 @@ foldr f (Branch b) =
             , merge = f.mergeBranch
             , leaf = f.leaf
             }
+
+
+{-| -}
+type Direction
+    = Left
+    | Right
+    | Down
 
 
 {-| -}

@@ -18,6 +18,7 @@ module Zipper.Mixed exposing
     , Fold, fold, defold
     , Foldl, foldl, defoldl
     , Foldr, foldr, defoldr
+    , getLeftmost, getRightmost
     )
 
 {-| A Zipper that requires a reversible function for navigations
@@ -84,6 +85,7 @@ still haven't studied category theory...
 -}
 
 import Fold
+import List.Extra as List
 import Nonempty.Mixed exposing (MixedNonempty)
 
 
@@ -105,28 +107,6 @@ singleton f =
 create : f -> List a -> List a -> MixedZipper f a
 create f l r =
     MixedZipper l f r
-
-
-{-|
-
-    focus (singleton 1) --> 1
-
--}
-focus : MixedZipper f a -> f
-focus =
-    .focus
-
-
-{-| -}
-periphery : MixedZipper f a -> { left : List a, right : List a }
-periphery z =
-    { left = z.left, right = z.right }
-
-
-{-| -}
-flat : MixedZipper a a -> List a
-flat z =
-    List.reverse z.left ++ z.focus :: z.right
 
 
 {-| -}
@@ -365,6 +345,40 @@ consRight fa f z =
 ----- Deconstruct ----
 
 
+{-|
+
+    focus (singleton 1) --> 1
+
+-}
+focus : MixedZipper f a -> f
+focus =
+    .focus
+
+
+{-| -}
+periphery : MixedZipper f a -> { left : List a, right : List a }
+periphery z =
+    { left = z.left, right = z.right }
+
+
+{-| -}
+getLeftmost : MixedZipper f a -> Result f a
+getLeftmost z =
+    z.left |> List.last |> Result.fromMaybe z.focus
+
+
+{-| -}
+getRightmost : MixedZipper f a -> Result f a
+getRightmost z =
+    z.right |> List.last |> Result.fromMaybe z.focus
+
+
+{-| -}
+flat : MixedZipper a a -> List a
+flat z =
+    List.reverse z.left ++ z.focus :: z.right
+
+
 {-| -}
 length : MixedZipper f a -> Int
 length z =
@@ -442,8 +456,8 @@ foldl :
 foldl f z =
     f.init z.focus
         |> Tuple.mapBoth
-            (foldThroughList f.cons z.left)
-            (foldThroughList f.cons z.right)
+            (Fold.list f.cons z.left)
+            (Fold.list f.cons z.right)
 
 
 {-|
@@ -490,12 +504,3 @@ defoldr =
     , join = create
     , init = { left = [], right = [] }
     }
-
-
-
----- Helpers ----
-
-
-foldThroughList : (a -> z -> z) -> List a -> z -> z
-foldThroughList fu list init =
-    List.foldl fu init list
