@@ -1,25 +1,27 @@
 module Zipper.Tree exposing
     ( Tree
-    , singleton, animate, fromPath, fromBranch
+    , singleton, create
+    , animate, fromPath, fromBranch
     , join, split, Split
     , left, leftmost
     , right, rightmost
     , up, down
     , root, leaf
     , go, Direction(..), Walk(..), Edge(..), EdgeOperation(..)
-    , map, mapFocus, mapBranch, mapAisles
+    , map, mapFocus, mapBranch, mapAisles, mapTrace
+    , deleteFocus
+    , growRoot, growLeaf, growBranch
+    , growLeft, growRight
     , insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
-    , deleteFocus
-    , growRoot, growLeaf, growBranch
     , focus, focusedBranch
     , path
     , circumference
     , petrify
-    , foldr, defold
+    , Fold, defold, fold
+    , foldr, defoldr
     , ViewMode(..), view
-    , create, defoldr, mapTrace
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -28,11 +30,15 @@ module Zipper.Tree exposing
   - Check out [`go`](#go) for alternative navigation methods!
 
 @docs Tree
-@docs singleton, animate, fromPath, fromBranch, merge
+@docs singleton, create
+
+---
+
+@docs animate, fromPath, fromBranch, merge
 @docs join, split, Split
 
 
-## Navigate
+# Navigate
 
 @docs left, leftmost
 @docs right, rightmost
@@ -45,35 +51,41 @@ module Zipper.Tree exposing
 @docs go, Direction, Walk, Edge, EdgeOperation
 
 
-## Map
+# Map
 
-@docs map, mapFocus, mapBranch, mapTail, mapAisles
+@docs map, mapFocus, mapBranch, mapTail, mapAisles, mapTrace
 
 
-## Insert
+## Shrink and Grow
+
+@docs deleteFocus
+
+@docs growRoot, growLeaf, growBranch
+@docs growLeft, growRight
+@docs growRootLeft, growRootRight
+
+---
 
 @docs insertLeft, insertRight
 @docs prepend, append
 @docs consLeft, consRight
 
 
-## Delete
-
-@docs deleteFocus
-
-
-## Grow
-
-@docs growRoot, growLeaf, growBranch
-
-
-## Deconstruct
+# Deconstruct
 
 @docs focus, focusedBranch
 @docs path
 @docs circumference
 @docs petrify
-@docs foldr, defold
+
+
+## Fold
+
+@docs Fold, defold, fold
+
+---
+
+@docs foldr, defoldr
 
 
 ## View
@@ -689,6 +701,18 @@ append =
 
 
 {-| -}
+growLeft : Branch a -> Tree a -> Tree a
+growLeft =
+    Zipper.growLeft >> MixedNonempty.mapHead
+
+
+{-| -}
+growRight : Branch a -> Tree a -> Tree a
+growRight =
+    Zipper.growRight >> MixedNonempty.mapHead
+
+
+{-| -}
 growRoot : Branch a -> Tree a -> Tree a
 growRoot =
     Branch.allGenerations
@@ -702,18 +726,19 @@ growRootUp =
     MixedZipper.singleton >> MixedNonempty.grow
 
 
-{-| -}
+{-| grow a branch left of the root(s). If there is no root,
+-}
 growRootLeft : Branch a -> Tree a -> Tree a
 growRootLeft br t =
     MixedNonempty.mapLast (MixedZipper.growLeft br) t
-        |> Result.withDefault (growRoot br t)
+        |> Result.withDefault (growLeft br t)
 
 
 {-| -}
 growRootRight : Branch a -> Tree a -> Tree a
 growRootRight br t =
     MixedNonempty.mapLast (MixedZipper.growRight br) t
-        |> Result.withDefault (growRoot br t)
+        |> Result.withDefault (growRight br t)
 
 
 {-| -}
@@ -795,11 +820,18 @@ isLeaf =
     MixedNonempty.head >> Zipper.focus >> Branch.isLeaf
 
 
-{-| a simple Fold starting at the focus and never switching types
+{-| a simple Fold starting at the focus.
+
+  - `branch` folds any sub-branch
+  - `grow.leftwards` and `grow.rightwards` fold the aisles
+  - `grow.upwards` folds just the breadcrumbs.
+
+Each function here modifes a `c`, so that type needs to be quite flexible.
+
 -}
 type alias Fold f a b c =
     { f
-        | init : a -> c
+        | init : b -> c
         , branch : Branch.Fold f a b
         , grow :
             { leftwards : b -> c -> c
@@ -812,7 +844,7 @@ type alias Fold f a b c =
 {-| -}
 defold : Fold {} a (Branch a) (Tree a)
 defold =
-    { init = singleton
+    { init = fromBranch
     , branch = Branch.defold
     , grow =
         { leftwards = growRootLeft
@@ -822,34 +854,59 @@ defold =
     }
 
 
-{-|
+{-| The Fold of a Tree _is_
 
-1.  Make a singleton
+The Fold of a MixedNonempty
+where
+the Head is a Zipper (Branch a)
+and the Tail consists of MixedZipper a (Branch a).
+
+How MixedNonempty.fold works:
+
+1.  Initialize by feeding the head to f.init
+2.  Along the tail, successively apply f.grow
+
+How Zipper.fold and MixedZipper.fold work:
+
+1.  Initialize by feeding the focus to f.init
+2.  Along the left aisle, apply f.grow.leftwards
+3.  Along the right aisle, apply f.grow.rightwards
 
 -}
 fold : Fold f a b c -> Tree a -> c
-fold f tree =
+fold f =
     let
-        composeFold : (c -> c -> c) -> Branch a -> (c -> c) -> (c -> c)
-        composeFold fu branch bb =
-            (Branch.fold f.branch >> bb >> fu) branch
-
-        myZipFold : MixedZipper.Fold {} a (Branch a) (c -> c)
-        myZipFold =
-            { init = f.grow.upwards
+        headFold : Zipper.Fold {} (Branch a) c
+        headFold =
+            { init =
+                -- : Branch a -> c
+                Branch.fold f.branch >> f.init
             , grow =
-                { leftwards = composeFold f.grow.leftwards
-                , rightwards = composeFold f.grow.rightwards
+                -- : { leftwards : Branch a -> c -> c, rightwards : Branch a -> c -> c }}
+                { leftwards = Branch.fold f.branch >> f.grow.leftwards
+                , rightwards = Branch.fold f.branch >> f.grow.rightwards
                 }
             }
 
-        foldGeneration1 : MixedZipper a (Branch a) -> c -> c
-        foldGeneration1 =
-            MixedZipper.fold myZipFold
+        tailFold : c -> MixedZipper.Fold {} a (Branch a) c
+        tailFold c =
+            { init =
+                -- : a -> c
+                \a -> f.grow.upwards a c
+            , grow =
+                -- : { leftwards : Branch a -> c -> c, rightwards : Branch a -> c -> c }}
+                { leftwards = Branch.fold f.branch >> f.grow.leftwards
+                , rightwards = Branch.fold f.branch >> f.grow.rightwards
+                }
+            }
     in
     MixedNonempty.fold
-        { init = f.init -- : c
-        , grow = foldGeneration1
+        { init =
+            --: h -> c     ---- (Zipper (Branch a)) -> c
+            Zipper.fold headFold
+        , grow =
+            -- a -> c -> c ---- (MixedZipper a (Branch a)) -> c -> c
+            \generation c -> MixedZipper.fold (tailFold c) generation
         }
 
 

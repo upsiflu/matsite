@@ -16,6 +16,7 @@ module Zipper exposing
     , length
     , fold, defold
     , foldl, foldr
+    , Fold
     )
 
 {-|
@@ -403,7 +404,7 @@ isSingleton z =
 type alias Fold f a z =
     { f
         | init : a -> z
-        , grow : ( a -> z -> z, a -> z -> z )
+        , grow : { leftwards : a -> z -> z, rightwards : a -> z -> z }
     }
 
 
@@ -411,8 +412,8 @@ type alias Fold f a z =
 fold : Fold f a z -> Zipper a -> z
 fold f zipper =
     f.init zipper.focus
-        |> applyListFold (Tuple.first f.grow) zipper.left
-        |> applyListFold (Tuple.second f.grow) zipper.right
+        |> applyListFold f.grow.leftwards zipper.left
+        |> applyListFold f.grow.rightwards zipper.right
 
 
 {-|
@@ -426,7 +427,7 @@ fold f zipper =
 defold : Fold {} a (Zipper a)
 defold =
     { init = singleton
-    , grow = ( growLeft, growRight )
+    , grow = { leftwards = growLeft, rightwards = growRight }
     }
 
 
