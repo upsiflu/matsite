@@ -1,6 +1,6 @@
 module Zipper.Tree exposing
     ( Tree
-    , singleton, animate, fromPath, fromBranch, merge
+    , singleton, animate, fromPath, fromBranch
     , join, split, Split
     , left, leftmost
     , right, rightmost
@@ -19,7 +19,7 @@ module Zipper.Tree exposing
     , petrify
     , foldr, defold
     , ViewMode(..), view
-    , mapTrace
+    , create, defoldr, mapTrace
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -88,7 +88,7 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Nonempty exposing (Nonempty)
-import Nonempty.Mixed exposing (MixedNonempty)
+import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Mixed as MixedZipper exposing (MixedZipper)
@@ -110,7 +110,7 @@ type alias Tree a =
 {-| -}
 singleton : a -> Tree a
 singleton =
-    Branch.singleton >> Zipper.singleton >> Nonempty.Mixed.singleton
+    Branch.singleton >> Zipper.singleton >> MixedNonempty.singleton
 
 
 {-| -}
@@ -165,14 +165,14 @@ path =
 -}
 animate : Zipper (Branch a) -> Tree a
 animate =
-    Nonempty.Mixed.singleton
+    MixedNonempty.singleton
 
 
 {-| internal representation
 -}
-merge : Zipper (Branch a) -> List (MixedZipper a (Branch a)) -> Tree a
-merge =
-    Nonempty.Mixed.create
+create : Zipper (Branch a) -> List (MixedZipper a (Branch a)) -> Tree a
+create =
+    MixedNonempty.create
 
 
 {-| goes into the past, wraps by default
@@ -294,7 +294,7 @@ split ( z, past ) =
 {-| -}
 join : Split a -> Tree a
 join s =
-    merge
+    create
         (s.present
             |> MixedZipper.mapFocus Branch.singleton
             |> Zipper.mapFocus
@@ -344,25 +344,25 @@ leaf t =
 {-| -}
 left : Tree a -> Tree a
 left =
-    Nonempty.Mixed.mapHead Zipper.left
+    MixedNonempty.mapHead Zipper.left
 
 
 {-| -}
 right : Tree a -> Tree a
 right =
-    Nonempty.Mixed.mapHead Zipper.right
+    MixedNonempty.mapHead Zipper.right
 
 
 {-| -}
 leftmost : Tree a -> Tree a
 leftmost =
-    Nonempty.Mixed.mapHead Zipper.leftmost
+    MixedNonempty.mapHead Zipper.leftmost
 
 
 {-| -}
 rightmost : Tree a -> Tree a
 rightmost =
-    Nonempty.Mixed.mapHead Zipper.rightmost
+    MixedNonempty.mapHead Zipper.rightmost
 
 
 {-| -}
@@ -505,14 +505,14 @@ go w =
         --> 3
 
 -}
-defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
-defold =
+defoldr : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
+defoldr =
     { consAisle = (::) --: b -> aisle -> aisle
     , join = MixedZipper.create
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = Branch.create --: a -> trunk -> b
-    , mergeTree = merge -- : z -> trunk -> result
+    , mergeTree = create -- : z -> trunk -> result
     , leaf = []
     , left = []
     , right = []
@@ -527,7 +527,7 @@ mapfold fu =
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch = fu >> Branch.create --: a -> trunk -> b
-    , mergeTree = merge -- : z -> trunk -> result
+    , mergeTree = create -- : z -> trunk -> result
     , leaf = []
     , left = []
     , right = []
@@ -583,19 +583,19 @@ mapFocus =
 {-| -}
 mapTrace : (a -> a) -> Tree a -> Tree a
 mapTrace =
-    MixedZipper.mapFocus >> Nonempty.Mixed.mapTail
+    MixedZipper.mapFocus >> MixedNonempty.mapTail
 
 
 {-| -}
 mapBranch : (Branch a -> Branch a) -> Tree a -> Tree a
 mapBranch =
-    Zipper.mapFocus >> Nonempty.Mixed.mapHead
+    Zipper.mapFocus >> MixedNonempty.mapHead
 
 
 {-| -}
 mapAisles : (Branch a -> Branch a) -> Tree a -> Tree a
 mapAisles =
-    Zipper.mapPeriphery >> Nonempty.Mixed.mapHead
+    Zipper.mapPeriphery >> MixedNonempty.mapHead
 
 
 {-| Deletes the focus
@@ -634,20 +634,20 @@ Provide a default for the case of a singleton Tree
 -}
 deleteFocus : Branch a -> Tree a -> Tree a
 deleteFocus default tree =
-    if Zipper.isSingleton (Nonempty.Mixed.head tree) then
+    if Zipper.isSingleton (MixedNonempty.head tree) then
         deletePresent
             (Zipper.singleton default)
             tree
 
     else
-        Nonempty.Mixed.mapHead
+        MixedNonempty.mapHead
             (Zipper.deleteFocus default)
             tree
 
 
 deletePresent : Zipper (Branch a) -> Tree a -> Tree a
 deletePresent default =
-    Nonempty.Mixed.deleteWithDefault
+    MixedNonempty.deleteWithDefault
         default
         (MixedZipper.mapFocus Branch.singleton)
 
@@ -655,37 +655,37 @@ deletePresent default =
 {-| -}
 insertLeft : Branch a -> Tree a -> Tree a
 insertLeft =
-    Zipper.insertLeft >> Nonempty.Mixed.mapHead
+    Zipper.insertLeft >> MixedNonempty.mapHead
 
 
 {-| -}
 insertRight : Branch a -> Tree a -> Tree a
 insertRight =
-    Zipper.insertRight >> Nonempty.Mixed.mapHead
+    Zipper.insertRight >> MixedNonempty.mapHead
 
 
 {-| -}
 consLeft : Branch a -> Tree a -> Tree a
 consLeft =
-    Zipper.consLeft >> Nonempty.Mixed.mapHead
+    Zipper.consLeft >> MixedNonempty.mapHead
 
 
 {-| -}
 consRight : Branch a -> Tree a -> Tree a
 consRight =
-    Zipper.consRight >> Nonempty.Mixed.mapHead
+    Zipper.consRight >> MixedNonempty.mapHead
 
 
 {-| -}
 prepend : List (Branch a) -> Tree a -> Tree a
 prepend =
-    Zipper.prepend >> Nonempty.Mixed.mapHead
+    Zipper.prepend >> MixedNonempty.mapHead
 
 
 {-| -}
 append : List (Branch a) -> Tree a -> Tree a
 append =
-    Zipper.append >> Nonempty.Mixed.mapHead
+    Zipper.append >> MixedNonempty.mapHead
 
 
 {-| -}
@@ -693,19 +693,39 @@ growRoot : Branch a -> Tree a -> Tree a
 growRoot =
     Branch.allGenerations
         >> Nonempty.toList
-        >> (\newGens tree -> Nonempty.Mixed.append newGens tree)
+        >> (\newGens tree -> MixedNonempty.append newGens tree)
+
+
+{-| -}
+growRootUp : a -> Tree a -> Tree a
+growRootUp =
+    MixedZipper.singleton >> MixedNonempty.grow
+
+
+{-| -}
+growRootLeft : Branch a -> Tree a -> Tree a
+growRootLeft br t =
+    MixedNonempty.mapLast (MixedZipper.growLeft br) t
+        |> Result.withDefault (growRoot br t)
+
+
+{-| -}
+growRootRight : Branch a -> Tree a -> Tree a
+growRootRight br t =
+    MixedNonempty.mapLast (MixedZipper.growRight br) t
+        |> Result.withDefault (growRoot br t)
 
 
 {-| -}
 growLeaf : a -> Tree a -> Tree a
 growLeaf =
-    Branch.growLeaf >> Zipper.mapFocus >> Nonempty.Mixed.mapHead
+    Branch.growLeaf >> Zipper.mapFocus >> MixedNonempty.mapHead
 
 
 {-| -}
 growBranch : Branch a -> Tree a -> Tree a
 growBranch =
-    Branch.growBranch >> Zipper.mapFocus >> Nonempty.Mixed.mapHead
+    Branch.growBranch >> Zipper.mapFocus >> MixedNonempty.mapHead
 
 
 
@@ -726,13 +746,13 @@ growBranch =
 -}
 petrify : Tree a -> Zipper (Branch a)
 petrify =
-    root >> Nonempty.Mixed.head
+    root >> MixedNonempty.head
 
 
 {-| -}
 focusedBranch : Tree a -> Branch a
 focusedBranch =
-    Nonempty.Mixed.head >> Zipper.focus
+    MixedNonempty.head >> Zipper.focus
 
 
 {-|
@@ -742,49 +762,107 @@ focusedBranch =
 -}
 focus : Tree a -> a
 focus =
-    Nonempty.Mixed.head >> Zipper.focus >> Branch.node
+    MixedNonempty.head >> Zipper.focus >> Branch.node
 
 
 {-| -}
 circumference : Tree a -> Int
 circumference =
-    Nonempty.Mixed.head >> Zipper.length
+    MixedNonempty.head >> Zipper.length
 
 
 {-| -}
 isLeftmost : Tree a -> Bool
 isLeftmost =
-    Nonempty.Mixed.head >> Zipper.isLeftmost
+    MixedNonempty.head >> Zipper.isLeftmost
 
 
 {-| -}
 isRightmost : Tree a -> Bool
 isRightmost =
-    Nonempty.Mixed.head >> Zipper.isRightmost
+    MixedNonempty.head >> Zipper.isRightmost
 
 
 {-| -}
 isRoot : Tree a -> Bool
 isRoot =
-    Nonempty.Mixed.tail >> (==) []
+    MixedNonempty.tail >> (==) []
 
 
 {-| -}
 isLeaf : Tree a -> Bool
 isLeaf =
-    Nonempty.Mixed.head >> Zipper.focus >> Branch.isLeaf
+    MixedNonempty.head >> Zipper.focus >> Branch.isLeaf
+
+
+{-| a simple Fold starting at the focus and never switching types
+-}
+type alias Fold f a b c =
+    { f
+        | init : a -> c
+        , branch : Branch.Fold f a b
+        , grow :
+            { leftwards : b -> c -> c
+            , rightwards : b -> c -> c
+            , upwards : a -> c -> c
+            }
+    }
+
+
+{-| -}
+defold : Fold {} a (Branch a) (Tree a)
+defold =
+    { init = singleton
+    , branch = Branch.defold
+    , grow =
+        { leftwards = growRootLeft
+        , rightwards = growRootRight
+        , upwards = growRootUp
+        }
+    }
+
+
+{-|
+
+1.  Make a singleton
+
+-}
+fold : Fold f a b c -> Tree a -> c
+fold f tree =
+    let
+        composeFold : (c -> c -> c) -> Branch a -> (c -> c) -> (c -> c)
+        composeFold fu branch bb =
+            (Branch.fold f.branch >> bb >> fu) branch
+
+        myZipFold : MixedZipper.Fold {} a (Branch a) (c -> c)
+        myZipFold =
+            { init = f.grow.upwards
+            , grow =
+                { leftwards = composeFold f.grow.leftwards
+                , rightwards = composeFold f.grow.rightwards
+                }
+            }
+
+        foldGeneration1 : MixedZipper a (Branch a) -> c -> c
+        foldGeneration1 =
+            MixedZipper.fold myZipFold
+    in
+    MixedNonempty.fold
+        { init = f.init -- : c
+        , grow = foldGeneration1
+        }
 
 
 {-|
 
     import Zipper exposing (Zipper)
-    import Zipper.Mixed
+    import Zipper.Mixed as MixedZipper
     import Zipper.Branch as Branch
-    import Nonempty.Mixed
+    import Nonempty.Mixed as MixedNonempty
 
     Zipper [-1] 0 [1, 2, 3, 4]
         |> fromPath
-        |> foldr defold
+        |> foldr defoldr
         |> path
 
         --> Zipper [-1] 0 [1, 2, 3, 4]
@@ -821,7 +899,7 @@ foldr :
     -> Tree a
     -> result
 foldr f =
-    Nonempty.Mixed.foldr
+    MixedNonempty.foldr
         { cons =
             \zipper trunk ->
                 f.consTrunk
@@ -873,10 +951,10 @@ foldr f =
        -> Tree a
        -> result
    foldl f =
-       Nonempty.Mixed.foldl
+       MixedNonempty.foldl
            { cons = \zipper trunk ->
                f.consTrunk
-                   ( Zipper.Mixed.foldl
+                   ( MixedZipper.foldl
                        { cons = f.consAisle
                        , join = f.join
                        , init = f.initPeriphery trunk
@@ -889,7 +967,7 @@ foldr f =
                cons =
                \zipper trunk ->
                    f.consTrunk
-                       (Zipper.Mixed.foldr
+                       (MixedZipper.foldr
                            { cons = Branch.foldr f >> f.consAisle
                            , join = f.join
                            , left = f.left
