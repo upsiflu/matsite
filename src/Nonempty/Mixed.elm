@@ -10,6 +10,7 @@ module Nonempty.Mixed exposing
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
+    , Error(..), mapLast, second
     )
 
 {-|
@@ -90,21 +91,21 @@ member x =
 
 {-| The first parameter is the head mutation, the second for each tail segment
 -}
-map : (a -> b) -> (h -> i) -> MixedNonempty h a -> MixedNonempty i b
-map fa fu ( h, t ) =
+map : (h -> i) -> (a -> b) -> MixedNonempty h a -> MixedNonempty i b
+map fu fa ( h, t ) =
     ( fu h, List.map fa t )
 
 
 {-| -}
 mapHead : (h -> i) -> MixedNonempty h a -> MixedNonempty i a
 mapHead fu =
-    map identity fu
+    map fu identity
 
 
 {-| -}
 mapTail : (a -> b) -> MixedNonempty h a -> MixedNonempty h b
-mapTail fa =
-    map fa identity
+mapTail =
+    map identity
 
 
 {-| maps the second in a mixed nonempty list
@@ -117,6 +118,22 @@ mapSecond tailOperation ( h, aa ) =
 
         s :: ss ->
             ( h, tailOperation.nonempty s :: ss )
+
+
+{-| -}
+type Error a h
+    = OutOfBounds (MixedNonempty h a)
+
+
+{-| -}
+mapLast : (a -> a) -> MixedNonempty h a -> Result (Error a h) (MixedNonempty h a)
+mapLast fu ( h, aa ) =
+    case List.reverse aa of
+        [] ->
+            Err (OutOfBounds ( h, aa ))
+
+        t :: sil ->
+            Ok ( h, List.reverse (fu t :: sil) )
 
 
 {-| -}
@@ -176,8 +193,8 @@ append l ( h, tai ) =
 
 {-| Grow a new head and transform the old one into a tail segment
 -}
-cons : h -> (h -> a) -> MixedNonempty h a -> MixedNonempty h a
-cons h fu ( t, ail ) =
+cons : (h -> a) -> h -> MixedNonempty h a -> MixedNonempty h a
+cons fu h ( t, ail ) =
     ( h, fu t :: ail )
 
 
@@ -271,3 +288,13 @@ justSingleton ( h, t ) =
 isSingleton : MixedNonempty h a -> Bool
 isSingleton =
     tail >> (==) []
+
+
+second : MixedNonempty a b -> Maybe b
+second ( h, t ) =
+    case t of
+        [] ->
+            Nothing
+
+        a :: _ ->
+            Just a

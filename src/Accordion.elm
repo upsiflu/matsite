@@ -199,7 +199,7 @@ view (Accordion tree) =
                 { renderFocus = Tuple.pair (Expanded { focused = True } [])
                 , renderPeriphery = Tuple.pair (Collapsed [])
                 , transformation =
-                    Tree.mapTail (Tuple.mapFirst (\_ -> Expanded { focused = False } []))
+                    Tree.mapTrace (Tuple.mapFirst (\_ -> Expanded { focused = False } []))
 
                 -->> Tree.mapAisles ( Tuple.mapFirst (\_-> Expanded {focused = False}) |> Branch.map )
                 }
@@ -441,8 +441,8 @@ renderer =
                     ( directAislePlus pWidth Left prev0
                         ++ [ List.map invisible next
                                 ++ directAisle Left prev
-                                ++ [ current ]
-                                ++ directAisle Right next
+                                ++ current
+                                :: directAisle Right next
                                 ++ List.map invisible prev
                                 |> div [ horizontal, bordered brown ]
                            ]
@@ -484,8 +484,7 @@ renderer =
                         Invisible ->
                             ( css [ visibility Css.hidden ], identity )
             in
-            createRenderable currentViewMode currentSegment
-                :: [ subsegments ]
+            [ createRenderable currentViewMode currentSegment, subsegments ]
                 |> div [ vertical, bordered blue ]
                 |> Tuple.pair ( currentViewMode, currentSegment )
     , mergeTree =

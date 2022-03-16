@@ -1,36 +1,43 @@
 module Zipper.Branch exposing
     ( Branch
-    , singleton, merge, fromPath
-    , map, mapChildren, mapNode
-    , forkLeft, forkRight, fork
-    , append, prepend
+    , singleton, create, fromPath
+    , map, mapOffspring, mapNode
+    , forkLeft, forkRight
+    , prepend, append
+    , growRight, growLeft
     , growLeaf, growBranch, growLevel, grow
+    , uncons
     , node, children, nextGeneration, allGenerations
     , path
     , isLeaf
-    , foldl, foldr, defold
+    , Fold, fold, defold
+    , foldl
+    , foldr, defoldr
+    , cons
     )
 
 {-|
 
 @docs Branch
-@docs singleton, merge, fromPath
+@docs singleton, create, fromPath
 
 
-## Map
+# Map
 
-@docs map, mapChildren, mapNode
+@docs map, mapOffspring, mapNode
 
 
-## Transform
+# Grow
 
-@docs forkLeft, forkRight, fork
-@docs append, prepend
+@docs forkLeft, forkRight
+@docs prepend, append
+@docs growRight, growLeft
 @docs growLeaf, growBranch, growLevel, grow
 
 
-## Deconstruct
+# Deconstruct
 
+@docs uncons
 @docs node, children, nextGeneration, allGenerations
 @docs path
 @docs isLeaf
@@ -38,22 +45,28 @@ module Zipper.Branch exposing
 
 ## Fold
 
-@docs foldl, foldr, defold
+@docs Fold, fold, defold
+@docs Foldl, foldl, defoldl
+@docs Foldr, foldr, defoldr
 
 -}
 
-import Fold exposing (Foldr)
+import Fold
 import Nonempty exposing (Nonempty)
-import Nonempty.Mixed exposing (MixedNonempty)
+import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Zipper exposing (Zipper)
-import Zipper.Mixed exposing (MixedZipper)
+import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 
 
 {-| A Zipper.Branch represents a focused path from the root to a leaf in a Tree.
 It consists of an initial node and a list of offspring, beginning with the oldest generation.
 -}
 type Branch a
-    = Branch (MixedNonempty a (MixedZipper a (Branch a)))
+    = Branch
+        (MixedNonempty
+            a
+            (MixedZipper a (Branch a))
+        )
 
 
 
@@ -63,23 +76,23 @@ type Branch a
 {-| -}
 singleton : a -> Branch a
 singleton =
-    Nonempty.Mixed.singleton >> Branch
+    MixedNonempty.singleton
+        >> Branch
 
 
 {-| -}
-merge : a -> List (MixedZipper a (Branch a)) -> Branch a
-merge a =
-    Nonempty.Mixed.create a >> Branch
+create : a -> List (MixedZipper a (Branch a)) -> Branch a
+create a =
+    MixedNonempty.create a
+        >> Branch
 
 
 {-| Generate a long Branch without forks
 -}
 fromPath : Nonempty a -> Branch a
-fromPath ( a, aa ) =
-    Nonempty.Mixed.create
-        a
-        (List.map (singleton >> Zipper.Mixed.singleton >> Zipper.Mixed.deviateBy node) aa)
-        |> Branch
+fromPath =
+    MixedNonempty.mapTail MixedZipper.singleton
+        >> Branch
 
 
 
@@ -97,9 +110,8 @@ fromPath ( a, aa ) =
 -}
 map : (a -> b) -> Branch a -> Branch b
 map fu (Branch br) =
-    Nonempty.Mixed.map
-        (Zipper.Mixed.map9 (map fu) node)
-        fu
+    MixedNonempty.map fu
+        (MixedZipper.map fu (map fu))
         br
         |> Branch
 
@@ -107,90 +119,79 @@ map fu (Branch br) =
 {-| -}
 mapNode : (a -> a) -> Branch a -> Branch a
 mapNode fu (Branch br) =
-    Nonempty.Mixed.mapHead fu
+    MixedNonempty.mapHead fu
         br
         |> Branch
 
 
 {-| -}
-mapChildren : (a -> a) -> Branch a -> Branch a
-mapChildren fu (Branch b) =
-    Nonempty.Mixed.mapTail (Zipper.Mixed.map (map fu)) b
+mapOffspring : (a -> a) -> Branch a -> Branch a
+mapOffspring fu (Branch br) =
+    MixedNonempty.mapTail
+        (MixedZipper.map fu (map fu))
+        br
         |> Branch
 
 
 {-| Insert a branch directly left of the focused child. If there are no children, focus the appended branch
 -}
 forkLeft : Branch a -> Branch a -> Branch a
-forkLeft a (Branch b) =
-    Nonempty.Mixed.mapSecond
-        { nonempty = Zipper.Mixed.insertLeft a
+forkLeft branch (Branch br) =
+    MixedNonempty.mapSecond
+        { nonempty = MixedZipper.insertLeft branch
         , empty =
-            \_ -> [ Zipper.Mixed.singleton a |> Zipper.Mixed.deviateBy node ]
+            \_ -> [ MixedZipper.singleton (node branch) ]
         }
-        b
+        br
         |> Branch
 
 
 {-| Insert a branch directly right of the focused child. If there are no children, focus the appended branch
 -}
 forkRight : Branch a -> Branch a -> Branch a
-forkRight a (Branch b) =
-    Nonempty.Mixed.mapSecond
-        { nonempty = Zipper.Mixed.insertRight a
+forkRight branch (Branch br) =
+    MixedNonempty.mapSecond
+        { nonempty = MixedZipper.insertRight branch
         , empty =
-            \_ -> [ Zipper.Mixed.singleton a |> Zipper.Mixed.deviateBy node ]
+            \_ -> [ MixedZipper.singleton (node branch) ]
         }
-        b
-        |> Branch
-
-
-{-| Insert a branch next to the focused child. The insertion is an implementation detail. If there are no children, focus the appended branch
--}
-fork : Branch a -> Branch a -> Branch a
-fork a (Branch b) =
-    Nonempty.Mixed.mapSecond
-        { nonempty = Zipper.Mixed.insert a
-        , empty =
-            \_ -> [ Zipper.Mixed.singleton a |> Zipper.Mixed.deviateBy node ]
-        }
-        b
+        br
         |> Branch
 
 
 {-| Prepend a branch left of the children. If there are no children, focus the first appended branch. Fail silently if the list of appendages is empty
 -}
 prepend : List (Branch a) -> Branch a -> Branch a
-prepend aa (Branch b) =
+prepend aa (Branch br) =
     case aa of
         [] ->
-            Branch b
+            Branch br
 
-        br :: anch ->
-            Nonempty.Mixed.mapSecond
-                { nonempty = Zipper.Mixed.prepend aa
+        b :: ranch ->
+            MixedNonempty.mapSecond
+                { nonempty = MixedZipper.prepend aa
                 , empty =
-                    \_ -> [ Zipper.Mixed.create node br anch [] ]
+                    \_ -> [ MixedZipper.create (node b) ranch [] ]
                 }
-                b
+                br
                 |> Branch
 
 
 {-| Append a branch right of the children. If there are no children, focus the first appended branch. Fail silently if the list of appendages is empty
 -}
 append : List (Branch a) -> Branch a -> Branch a
-append aa (Branch b) =
+append aa (Branch br) =
     case aa of
         [] ->
-            Branch b
+            Branch br
 
-        br :: anch ->
-            Nonempty.Mixed.mapSecond
-                { nonempty = Zipper.Mixed.append aa
+        b :: ranch ->
+            MixedNonempty.mapSecond
+                { nonempty = MixedZipper.append aa
                 , empty =
-                    \_ -> [ Zipper.Mixed.create node br [] anch ]
+                    \_ -> [ MixedZipper.create (node b) [] ranch ]
                 }
-                b
+                br
                 |> Branch
 
 
@@ -204,11 +205,11 @@ grow list branch =
         list
 
 
-{-| Add a single leaf to the focused end of this Branch to make it longer
+{-| Add a single leaf to the far end of this Branch to make it longer
 -}
 growLeaf : a -> Branch a -> Branch a
-growLeaf lf (Branch b) =
-    Nonempty.Mixed.grow (singleton lf |> Zipper.Mixed.singleton |> Zipper.Mixed.deviateBy node) b
+growLeaf lf (Branch br) =
+    MixedNonempty.grow (MixedZipper.singleton lf) br
         |> Branch
 
 
@@ -219,20 +220,35 @@ growBranch =
     allGenerations >> Nonempty.toList >> grow
 
 
+{-| appends a branch to the left of the leafmost generation
+-}
+growLeft : Branch a -> Branch a -> Branch a
+growLeft branch (Branch br) =
+    MixedNonempty.mapLast (MixedZipper.growLeft branch) br
+        |> Result.withDefault br
+        |> Branch
+
+
+{-| appends a branch to the left of the leafmost generation
+-}
+growRight : Branch a -> Branch a -> Branch a
+growRight branch (Branch br) =
+    MixedNonempty.mapLast (MixedZipper.growRight branch) br
+        |> Result.withDefault br
+        |> Branch
+
+
 {-| -}
 allGenerations : Branch a -> Nonempty (MixedZipper a (Branch a))
-allGenerations (Branch b) =
-    b
-        |> Nonempty.Mixed.mapHead
-            ------(h->a) -> MixedNonempty h a -> Nonempty a
-            (singleton >> Zipper.Mixed.singleton >> Zipper.Mixed.deviateBy node)
+allGenerations (Branch br) =
+    MixedNonempty.mapHead MixedZipper.singleton br
 
 
 {-| Add a branch to the end of this Branch to make it longer
 -}
 growLevel : MixedZipper a (Branch a) -> Branch a -> Branch a
 growLevel lv (Branch b) =
-    Nonempty.Mixed.grow lv b
+    MixedNonempty.grow lv b
         |> Branch
 
 
@@ -240,19 +256,79 @@ growLevel lv (Branch b) =
 ---- DECONSTRUCT ----
 
 
+{-| A fold that tries to adhere very well to the constructor and
+cons/append functions and has less functions
+-}
+type alias Fold f a b =
+    { f
+        | init : a -> b
+        , grow :
+            { leftwards : b -> b -> b
+            , rightwards : b -> b -> b
+            , downwards : a -> b -> b
+            }
+    }
+
+
+{-| -}
+defold : Fold {} a (Branch a)
+defold =
+    { init = singleton
+    , grow =
+        { leftwards = growLeft
+        , rightwards = growRight
+        , downwards = growLeaf
+        }
+    }
+
+
+{-| -}
+fold :
+    Fold f a b
+    -> Branch a
+    -> b
+fold f (Branch br) =
+    MixedNonempty.fold
+        { init = f.init
+        , grow =
+            --: a -> n -> n
+            \generation ->
+                f.grow.downwards generation.focus
+                    >> Fold.list f.grow.leftwards (List.map (fold f) generation.left)
+                    >> Fold.list f.grow.rightwards (List.map (fold f) generation.right)
+        }
+        br
+
+
+
+---- Helpers ----
+
+
+type alias Foldr f a aisle z zB trunk b =
+    { f
+        | consAisle : b -> aisle -> aisle
+        , join : a -> aisle -> aisle -> z
+        , joinBranch : b -> aisle -> aisle -> zB
+        , consTrunk : z -> trunk -> trunk
+        , mergeBranch : a -> trunk -> b
+        , leaf : trunk
+        , left : aisle
+        , right : aisle
+    }
+
+
 {-| `foldr defold ^= identity`
 -}
-defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) Bool
-defold =
-    { mergeBranch = merge
+defoldr : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a)
+defoldr =
+    { mergeBranch = create
     , consTrunk = (::)
     , leaf = []
-    , join = \a l r -> Zipper.Mixed.create node (singleton a) l r
+    , join = MixedZipper.create
     , joinBranch = \a l r -> Zipper.create a l r
     , consAisle = (::)
     , left = []
     , right = []
-    , mergeTree = \a b -> False
     }
 
 
@@ -300,21 +376,20 @@ foldl :
     -> b
 foldl f (Branch b) =
     b
-        |> Nonempty.Mixed.foldl
+        |> MixedNonempty.foldl
             { -- cons : a -> acc -> acc
               -- init : h -> acc
               cons =
                 \zipper trunk ->
                     f.consTrunk
-                        (Zipper.Mixed.foldl
+                        (MixedZipper.foldl
                             -- cons : a -> acc -> acc
-                            -- join : (acc, acc) -> result
                             -- init : focus -> (acc, acc)
                             { cons = foldl f >> f.consAisle
-                            , join = f.join
                             , init = f.init
                             }
                             zipper
+                            |> f.join
                         )
                         trunk
             , init = f.root
@@ -340,15 +415,17 @@ foldr :
     -> b
 foldr f (Branch b) =
     b
-        |> Nonempty.Mixed.foldr
+        |> MixedNonempty.foldr
             { cons =
                 \zipper trunk ->
                     f.consTrunk
-                        (Zipper.Mixed.foldr
+                        (MixedZipper.foldr
                             { cons = foldr f >> f.consAisle
                             , join = f.join
-                            , left = f.left
-                            , right = f.right
+                            , init =
+                                { left = f.left
+                                , right = f.right
+                                }
                             }
                             zipper
                         )
@@ -361,61 +438,62 @@ foldr f (Branch b) =
 {-| -}
 node : Branch a -> a
 node (Branch b) =
-    Nonempty.Mixed.head b
+    MixedNonempty.head b
 
 
 {-| -}
 path : Branch a -> Nonempty a
 path =
     allGenerations
-        >> Nonempty.map Zipper.Mixed.focus
+        >> Nonempty.map MixedZipper.focus
 
 
 {-| -}
 children : Branch a -> List (MixedZipper a (Branch a))
 children (Branch b) =
-    Nonempty.Mixed.tail b
+    MixedNonempty.tail b
 
 
 {-| prunes the focus
 -}
 nextGeneration : Branch a -> Maybe (Zipper (Branch a))
-nextGeneration =
-    cut
-        >> Maybe.map
-            (\( surface, depth ) ->
-                Zipper.Mixed.toZipper (Zipper.Mixed.homogenize surface)
-                    |> Zipper.mapFocus (always depth)
+nextGeneration (Branch br) =
+    MixedNonempty.second br
+        |> Maybe.map
+            (MixedZipper.mapFocus
+                (\single ->
+                    Branch br
+                        |> uncons
+                        |> Tuple.second
+                        |> Maybe.withDefault (singleton single)
+                )
             )
 
 
-{-| this is akin to walking one step towards the leaves and making a cut
+{-| plops the surface and tries to make the rest another nonempty
 -}
-cut : Branch a -> Maybe ( MixedZipper a (Branch a), Branch a )
-cut (Branch b) =
-    case b of
-        ( h, [] ) ->
-            Nothing
+uncons : Branch a -> ( MixedZipper a (Branch a), Maybe (Branch a) )
+uncons (Branch br) =
+    case MixedNonempty.uncons br of
+        ( h, Nothing ) ->
+            ( MixedZipper.singleton h, Nothing )
 
-        ( h, t :: ail ) ->
-            Just
-                ( Zipper.Mixed.mapFocus (always (singleton h)) t
-                , merge (Zipper.Mixed.focus t) ail
-                )
+        ( h, Just ( g, enerations ) ) ->
+            ( MixedZipper.mapFocus (\_ -> h) g, Just (create g.focus enerations) )
 
 
-{-| oppposite operation of `cut`
+{-| opposite operation of `uncons`
 -}
-glue : MixedZipper a (Branch a) -> Branch a -> Branch a
-glue surface (Branch b) =
-    b
-        |> Nonempty.Mixed.cons
-            (Zipper.Mixed.focus surface)
-            (\oldHead -> Zipper.Mixed.deviateBy (always oldHead) surface)
+cons : MixedZipper a (Branch a) -> Branch a -> Branch a
+cons surface (Branch br) =
+    br
+        |> MixedNonempty.cons
+            (\oldHead -> { surface | focus = oldHead })
+            surface.focus
         |> Branch
 
 
 {-| -}
 isLeaf : Branch a -> Bool
 isLeaf (Branch b) =
-    Nonempty.Mixed.isSingleton b
+    MixedNonempty.isSingleton b

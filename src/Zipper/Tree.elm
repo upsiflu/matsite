@@ -7,7 +7,7 @@ module Zipper.Tree exposing
     , up, down
     , root, leaf
     , go, Direction(..), Walk(..), Edge(..), EdgeOperation(..)
-    , map, mapFocus, mapBranch, mapTail, mapAisles
+    , map, mapFocus, mapBranch, mapAisles
     , insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
@@ -19,6 +19,7 @@ module Zipper.Tree exposing
     , petrify
     , foldr, defold
     , ViewMode(..), view
+    , mapTrace
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -90,7 +91,7 @@ import Nonempty exposing (Nonempty)
 import Nonempty.Mixed exposing (MixedNonempty)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
-import Zipper.Mixed exposing (MixedZipper)
+import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 
 
 {-| The Zipper Tree has a head (the several branching lower levels) as well as a tail (the list of upper levels, each having a focus and perhaps alternative branches to go down into).
@@ -126,8 +127,8 @@ fromPath z =
         createLevel : a -> MixedZipper a (Branch a)
         createLevel =
             Branch.singleton
-                >> Zipper.Mixed.singleton
-                >> Zipper.Mixed.deviateBy Branch.node
+                >> MixedZipper.singleton
+                >> MixedZipper.mapFocus Branch.node
     in
     join
         { past = List.map createLevel z.left
@@ -143,9 +144,9 @@ path =
     split
         >> (\s ->
                 Zipper
-                    (List.map Zipper.Mixed.focus s.past)
-                    (Zipper.Mixed.focus s.present)
-                    (List.map Zipper.Mixed.focus s.future)
+                    (List.map .focus s.past)
+                    (.focus s.present)
+                    (List.map .focus s.future)
            )
 
 
@@ -284,9 +285,7 @@ type alias Split a =
 {-| -}
 split : Tree a -> Split a
 split ( z, past ) =
-    { present =
-        Zipper.Mixed.fromZipper z
-            |> Zipper.Mixed.deviateBy Branch.node
+    { present = MixedZipper.mapFocus Branch.node z
     , past = past
     , future = Branch.children z.focus
     }
@@ -297,11 +296,9 @@ join : Split a -> Tree a
 join s =
     merge
         (s.present
-            |> Zipper.Mixed.homogenize
-            --Zipper without future
-            |> Zipper.Mixed.toZipper
+            |> MixedZipper.mapFocus Branch.singleton
             |> Zipper.mapFocus
-                (\a -> Branch.merge (Branch.node a) s.future)
+                (\a -> Branch.create (Branch.node a) s.future)
         )
         s.past
 
@@ -511,10 +508,10 @@ go w =
 defold : Foldr {} a (List (Branch a)) (MixedZipper a (Branch a)) (Zipper (Branch a)) (List (MixedZipper a (Branch a))) (Branch a) (Tree a)
 defold =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> Zipper.Mixed.create Branch.node (Branch.singleton a) l r
+    , join = MixedZipper.create
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch = Branch.merge --: a -> trunk -> b
+    , mergeBranch = Branch.create --: a -> trunk -> b
     , mergeTree = merge -- : z -> trunk -> result
     , leaf = []
     , left = []
@@ -526,10 +523,10 @@ defold =
 mapfold : (a -> b) -> Foldr {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
 mapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> Zipper.Mixed.create Branch.node (Branch.singleton (fu a)) l r -- a -> aisle -> aisle -> z
+    , join = \a l r -> MixedZipper.create (fu a) l r -- a -> aisle -> aisle -> z
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch = fu >> Branch.merge --: a -> trunk -> b
+    , mergeBranch = fu >> Branch.create --: a -> trunk -> b
     , mergeTree = merge -- : z -> trunk -> result
     , leaf = []
     , left = []
@@ -584,9 +581,9 @@ mapFocus =
 
 
 {-| -}
-mapTail : (a -> a) -> Tree a -> Tree a
-mapTail =
-    Zipper.Mixed.deviateBy >> Nonempty.Mixed.mapTail
+mapTrace : (a -> a) -> Tree a -> Tree a
+mapTrace =
+    MixedZipper.mapFocus >> Nonempty.Mixed.mapTail
 
 
 {-| -}
@@ -650,15 +647,9 @@ deleteFocus default tree =
 
 deletePresent : Zipper (Branch a) -> Tree a -> Tree a
 deletePresent default =
-    let
-        pastToPresent : MixedZipper a (Branch a) -> Zipper (Branch a)
-        pastToPresent =
-            Zipper.Mixed.homogenize
-                >> Zipper.Mixed.toZipper
-    in
     Nonempty.Mixed.deleteWithDefault
         default
-        pastToPresent
+        (MixedZipper.mapFocus Branch.singleton)
 
 
 {-| -}
@@ -834,11 +825,13 @@ foldr f =
         { cons =
             \zipper trunk ->
                 f.consTrunk
-                    (Zipper.Mixed.foldr
+                    (MixedZipper.foldr
                         { cons = Branch.foldr f >> f.consAisle
                         , join = f.join
-                        , left = f.left
-                        , right = f.right
+                        , init =
+                            { left = f.left
+                            , right = f.right
+                            }
                         }
                         zipper
                     )
