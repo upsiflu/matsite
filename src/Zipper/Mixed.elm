@@ -83,6 +83,7 @@ still haven't studied category theory...
 
 -}
 
+import Fold
 import Nonempty.Mixed exposing (MixedNonempty)
 
 
@@ -397,7 +398,7 @@ isSingleton z =
 type alias Fold f h a z =
     { f
         | init : h -> z
-        , grow : ( a -> z -> z, a -> z -> z )
+        , grow : { leftwards : a -> z -> z, rightwards : a -> z -> z }
     }
 
 
@@ -405,8 +406,8 @@ type alias Fold f h a z =
 fold : Fold f h a z -> MixedZipper h a -> z
 fold f zipper =
     f.init zipper.focus
-        |> foldThroughList (Tuple.first f.grow) zipper.left
-        |> foldThroughList (Tuple.second f.grow) zipper.right
+        |> Fold.list f.grow.leftwards zipper.left
+        |> Fold.list f.grow.rightwards zipper.right
 
 
 {-|
@@ -420,7 +421,7 @@ fold f zipper =
 defold : Fold {} h a (MixedZipper h a)
 defold =
     { init = singleton
-    , grow = ( growLeft, growRight )
+    , grow = { leftwards = growLeft, rightwards = growRight }
     }
 
 

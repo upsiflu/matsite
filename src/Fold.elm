@@ -56,7 +56,8 @@ type alias Foldr f a aisle z zB trunk b e =
 ---- Helpers
 
 
-{-| -}
+{-| flip the fold argument order to allow for function composition
+-}
 list : (a -> c -> c) -> List a -> c -> c
 list fu l init =
     List.foldl fu init l

@@ -282,16 +282,40 @@ defold =
     }
 
 
-{-| -}
+{-| simplest fold.
+
+  - start at `node` and `init self`
+  - `init` the next generation (MixedZipper) by growing downwards
+  - `grow` the next generation by pre-applying `fold f` to the aisle segments,
+    and composing the output into the horizontal Branch `grow` functions.
+
+-}
 fold :
     Fold f a b
     -> Branch a
     -> b
 fold f (Branch br) =
+    let
+        composeFold : (b -> b -> b) -> Branch a -> (b -> b) -> (b -> b)
+        composeFold fu branch bb =
+            (fold f >> bb >> fu) branch
+
+        myZipFold : MixedZipper.Fold {} a (Branch a) (b -> b)
+        myZipFold =
+            { init = f.grow.downwards
+            , grow =
+                { leftwards = composeFold f.grow.leftwards
+                , rightwards = composeFold f.grow.rightwards
+                }
+            }
+
+        foldGeneration1 : MixedZipper a (Branch a) -> b -> b
+        foldGeneration1 =
+            MixedZipper.fold myZipFold
+    in
     MixedNonempty.fold
         { init = f.init
         , grow =
-            --: a -> n -> n
             \generation ->
                 f.grow.downwards generation.focus
                     >> Fold.list f.grow.leftwards (List.map (fold f) generation.left)
