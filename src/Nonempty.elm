@@ -8,13 +8,12 @@ module Nonempty exposing
     , insert
     , cons
     , append
-    , uncons
+    , uncons, last
     , toList
     , member, head, tail
     , justSingleton, isSingleton, length
     , Fold, fold, defold
     , foldl, foldr
-    , last
     )
 
 {-| A list with at least one element
@@ -44,7 +43,7 @@ module Nonempty exposing
 
 # Deconstruct
 
-@docs uncons
+@docs uncons, last
 @docs toList
 @docs member, head, tail
 @docs justSingleton, isSingleton, length
@@ -298,6 +297,7 @@ foldr f ( h, t ) =
         |> f.merge h
 
 
+{-| -}
 last : Nonempty a -> a
 last ( h, t ) =
     List.last t

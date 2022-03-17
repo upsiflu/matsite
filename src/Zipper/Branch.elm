@@ -2,18 +2,21 @@ module Zipper.Branch exposing
     ( Branch
     , singleton, create, fromPath
     , map, mapOffspring, mapNode
+    , cons
     , forkLeft, forkRight
     , prepend, append
     , growRight, growLeft
     , growLeaf, growBranch, growLevel, grow
-    , uncons
+    , uncons, getLeftmostLeaf, getRightmostLeaf
     , node, children, nextGeneration, allGenerations
     , path
     , isLeaf
     , Fold, fold, defold
     , foldl
-    , foldr, defoldr
-    , DirBranch, cons, defoldWithDirections, getLeftmostLeaf, getRightmostLeaf, zipDirections
+    , Foldr, foldr, defoldr
+    , DirBranch
+    , defoldWithDirections, zipDirections
+    , flatFold
     )
 
 {-|
@@ -29,6 +32,7 @@ module Zipper.Branch exposing
 
 # Grow
 
+@docs cons
 @docs forkLeft, forkRight
 @docs prepend, append
 @docs growRight, growLeft
@@ -37,7 +41,7 @@ module Zipper.Branch exposing
 
 # Deconstruct
 
-@docs uncons
+@docs uncons, getLeftmostLeaf, getRightmostLeaf
 @docs node, children, nextGeneration, allGenerations
 @docs path
 @docs isLeaf
@@ -46,8 +50,18 @@ module Zipper.Branch exposing
 ## Fold
 
 @docs Fold, fold, defold
-@docs Foldl, foldl, defoldl
+
+---
+
+@docs foldl
 @docs Foldr, foldr, defoldr
+
+---
+
+@docs DirBranch
+@docs defoldWithDirections, zipDirections
+
+@docs flatFold
 
 -}
 
@@ -328,6 +342,18 @@ defold =
 
 
 {-| -}
+flatFold : Fold {} a (List a)
+flatFold =
+    { init = List.singleton
+    , grow =
+        { leftwards = (++)
+        , rightwards = (++)
+        , downwards = (::)
+        }
+    }
+
+
+{-| -}
 type alias DirBranch a =
     Branch ( List Direction, a )
 
@@ -415,6 +441,7 @@ fold f (Branch br) =
 ---- Helpers ----
 
 
+{-| -}
 type alias Foldr f a aisle z zB trunk b =
     { f
         | consAisle : b -> aisle -> aisle

@@ -12,17 +12,18 @@ module Zipper.Tree exposing
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
+    , growRootLeft, growRootRight
     , insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
-    , focus, focusedBranch
+    , focus, focusedBranch, getLeftmostRoot, getRightmostRoot
     , path
     , circumference
     , petrify
     , Fold, defold, fold
     , foldr, defoldr
+    , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , DirTree, defoldWithDirections, getLeftmostRoot, getRightmostRoot, zipDirections
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -35,7 +36,7 @@ module Zipper.Tree exposing
 
 ---
 
-@docs animate, fromPath, fromBranch, merge
+@docs animate, fromPath, fromBranch
 @docs join, split, Split
 
 
@@ -49,12 +50,12 @@ module Zipper.Tree exposing
 
 ## Constructive Navigation
 
-@docs go, Direction, Walk, Edge, EdgeOperation
+@docs go, Walk, Edge, EdgeOperation
 
 
 # Map
 
-@docs map, mapFocus, mapBranch, mapTail, mapAisles, mapTrace
+@docs map, mapFocus, mapBranch, mapAisles, mapTrace
 
 
 ## Shrink and Grow
@@ -74,7 +75,7 @@ module Zipper.Tree exposing
 
 # Deconstruct
 
-@docs focus, focusedBranch
+@docs focus, focusedBranch, getLeftmostRoot, getRightmostRoot
 @docs path
 @docs circumference
 @docs petrify
@@ -88,6 +89,10 @@ module Zipper.Tree exposing
 
 @docs foldr, defoldr
 
+---
+
+@docs DirTree, defoldWithDirections, zipDirections
+
 
 ## View
 
@@ -96,10 +101,12 @@ module Zipper.Tree exposing
 -}
 
 import Css exposing (..)
+import Dict exposing (Dict)
 import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
+import List.Extra as List
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Result.Extra as Result
@@ -406,7 +413,18 @@ anyways =
     Fail identity
 
 
-{-| -}
+{-|
+
+    import Zipper.Branch as Branch exposing (Branch)
+
+    tree : Tree Int
+    tree =
+        singleton 0
+            |> growLeaf 1
+            |> growLeaf 2
+            |> growLeft (Branch.fromPath ( 3, [ 4, 5 ] ))
+
+-}
 go : Walk a -> Tree a -> Tree a
 go w =
     case w of
@@ -496,7 +514,16 @@ go w =
             leaf
 
         Find isHere ->
-            identity
+            \t ->
+                let
+                    myDirections =
+                        zipDirections t
+                            |> flatten
+                            |> List.find (Tuple.second >> isHere)
+                            |> Maybe.map Tuple.first
+                            |> Maybe.withDefault []
+                in
+                Fold.list (\d -> go (Walk d Wrap)) (Debug.log "Go directions to target" myDirections) t
 
 
 {-| `foldr defold ^= identity`
@@ -840,6 +867,27 @@ isLeaf =
     MixedNonempty.head >> Zipper.focus >> Branch.isLeaf
 
 
+{-| -}
+flatten : Tree a -> List a
+flatten =
+    fold
+        { init = identity --: b -> c
+        , branch = Branch.flatFold --: Branch.Fold f a b
+        , grow =
+            --:
+            { leftwards = (++) --: b -> c -> c
+            , rightwards = (++) --: b -> c -> c
+            , upwards = (::) --: a -> c -> c
+            }
+        }
+
+
+{-| -}
+toDict : (a -> ( comparable, v )) -> Tree a -> Dict comparable v
+toDict fu =
+    flatten >> List.map fu >> Dict.fromList
+
+
 {-| a simple Fold starting at the focus.
 
   - `branch` folds any sub-branch
@@ -874,6 +922,7 @@ defold =
     }
 
 
+{-| -}
 type alias DirTree a =
     Tree ( List Direction, a )
 
@@ -917,7 +966,14 @@ defoldWithDirections =
     , grow =
         { leftwards = withDirection Left getLeftmostRoot defold.grow.leftwards
         , rightwards = withDirection Right getRightmostRoot defold.grow.rightwards
-        , upwards = Tuple.pair [] >> defold.grow.upwards
+        , upwards =
+            \newNode oldTree ->
+                Up
+                    :: Tuple.first (getRoot oldTree)
+                    |> (<|) Tuple.pair
+                    |> (|>) newNode
+                    |> (<|) defold.grow.upwards
+                    |> (|>) oldTree
         }
     }
 

@@ -1,8 +1,8 @@
 module Fold exposing
     ( Fold
     , Foldr
+    , Direction(..), viewDirection
     , list
-    , Direction(..)
     )
 
 {-| Helpers for folding over lists and Zippers
@@ -10,6 +10,11 @@ module Fold exposing
 @docs Fold
 
 @docs Foldr
+
+
+# Directions
+
+@docs Direction, viewDirection
 
 
 # Helpers
@@ -60,6 +65,26 @@ type Direction
     | Up
     | Down
     | Here
+
+
+{-| -}
+viewDirection : Direction -> String
+viewDirection dir =
+    case dir of
+        Left ->
+            "⪪"
+
+        Right ->
+            "⪫"
+
+        Up ->
+            "⩚"
+
+        Down ->
+            "⩛"
+
+        Here ->
+            "⚬"
 
 
 

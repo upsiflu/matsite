@@ -12,13 +12,13 @@ module Zipper.Mixed exposing
     , insertRight, insertListRight
     , consLeft, consRight
     , focus, periphery
+    , getLeftmost, getRightmost
     , flat
     , isLeftmost, isRightmost, isSingleton
     , length
     , Fold, fold, defold
     , Foldl, foldl, defoldl
     , Foldr, foldr, defoldr
-    , getLeftmost, getRightmost
     )
 
 {-| A Zipper that requires a reversible function for navigations
@@ -59,6 +59,7 @@ Note: This zipper wraps over the edges by default. If you want to implement a di
 # Deconstruct
 
 @docs focus, periphery
+@docs getLeftmost, getRightmost
 
 ---
 

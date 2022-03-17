@@ -1,15 +1,16 @@
-module Accordion.Segment exposing (Orientation(..), Segment, ViewMode(..), changeDirection, continueDirection, empty, preferMode, singleton, view, withBody, withOrientation)
+module Accordion.Segment exposing (Orientation(..), Segment, ViewMode(..), empty, preferMode, setPath, singleton, view, withBody, withOrientation)
 
 {-| Segments only contain immutable data.
 For the view, they can be overloaded with more information.
 -}
 
 import Css exposing (..)
+import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
-import Zipper.Tree as Tree exposing (Direction(..))
+import Zipper.Tree as Tree exposing (Tree)
 
 
 {-| -}
@@ -62,38 +63,18 @@ empty =
 
 
 type alias Path =
-    List Tree.Direction
+    List Direction
 
 
 {-| -}
-changeDirection : Tree.Direction -> ViewMode -> ViewMode
-changeDirection dir viewmode =
+setPath : Path -> ViewMode -> ViewMode
+setPath p viewmode =
     case viewmode of
-        Expanded config path ->
-            Expanded config (dir :: path) |> Debug.log "changing to"
+        Expanded config _ ->
+            Expanded config p
 
-        Collapsed path ->
-            Collapsed (dir :: path) |> Debug.log "changing to"
-
-        Invisible ->
-            Invisible
-
-
-{-| -}
-continueDirection : ViewMode -> ViewMode
-continueDirection viewmode =
-    case viewmode of
-        Expanded config [] ->
-            Expanded config [] |> Debug.log "continuing EMPTY!"
-
-        Expanded config (a :: aa) ->
-            Expanded config (a :: a :: aa) |> Debug.log "continuing"
-
-        Collapsed [] ->
-            Collapsed [] |> Debug.log "continuing EMPTY!"
-
-        Collapsed (a :: aa) ->
-            Collapsed (a :: a :: aa)
+        Collapsed _ ->
+            Collapsed p
 
         Invisible ->
             Invisible
@@ -119,11 +100,19 @@ preferMode preference statusQuo =
         ( Collapsed path0, Collapsed path1 ) ->
             Collapsed (path0 ++ path1)
 
-        ( Collapsed path0, Expanded _ path1 ) ->
-            Collapsed (path0 ++ path1)
+        ( Collapsed path0, Expanded c path1 ) ->
+            if c.focused then
+                Expanded c (path0 ++ path1)
 
-        ( Expanded _ path0, Collapsed path1 ) ->
-            Collapsed (path0 ++ path1)
+            else
+                Collapsed (path0 ++ path1)
+
+        ( Expanded c path0, Collapsed path1 ) ->
+            if c.focused then
+                Expanded c (path0 ++ path1)
+
+            else
+                Collapsed (path0 ++ path1)
 
         ( Expanded config path0, Expanded _ path1 ) ->
             Expanded config (path0 ++ path1)
@@ -141,6 +130,7 @@ view mode s =
             [ css
                 [ overflowY scroll
                 , Css.width (rem 21)
+                , position relative
                 ]
             ]
 
@@ -167,24 +157,6 @@ view mode s =
                 Invisible ->
                     [ css [ opacity (num 0.6), visibility Css.hidden ] ]
 
-        viewDirection : Tree.Direction -> String
-        viewDirection dir =
-            case dir of
-                Left ->
-                    "←"
-
-                Right ->
-                    "→"
-
-                Up ->
-                    "↑"
-
-                Down ->
-                    "↓"
-
-                Here ->
-                    "⚬"
-
         directions =
             case mode of
                 Expanded config path ->
@@ -195,16 +167,22 @@ view mode s =
 
                 Invisible ->
                     []
+
+        overlaid t =
+            Html.div [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100) ] ] [ Html.text t ]
+
+        caption =
+            case s.caption of
+                Just h ->
+                    header s.id h
+
+                --Html.a [href ("#"++s.id)] [Html.text h]
+                Nothing ->
+                    Html.text "𐫱"
     in
     Html.div (default ++ functions ++ magic)
-        [ case s.caption of
-            Just h ->
-                header s.id h
-
-            --Html.a [href ("#"++s.id)] [Html.text h]
-            Nothing ->
-                Html.text "⤋"
-        , Html.text (List.map viewDirection directions |> String.join "")
+        [ caption
+        , overlaid (List.map Fold.viewDirection directions |> String.join "")
 
         --, Html.text "Hoola"
         --, Html.text (List.length directions |> String.fromInt)

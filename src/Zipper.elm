@@ -11,12 +11,12 @@ module Zipper exposing
     , insertRight, insertListRight
     , consLeft, consRight
     , focus, periphery
+    , getLeftmost, getRightmost
     , flat
     , isLeftmost, isRightmost, isSingleton
     , length
-    , fold, defold
+    , Fold, fold, defold
     , foldl, foldr
-    , Fold, getLeftmost, getRightmost
     )
 
 {-|
@@ -54,6 +54,7 @@ This zipper wraps over the edges by default. If you want to implement a differen
 # Deconstruct
 
 @docs focus, periphery
+@docs getLeftmost, getRightmost
 
 ---
 
@@ -67,7 +68,7 @@ This zipper wraps over the edges by default. If you want to implement a differen
 This is actually a CATAMORPHISM and not a traditional fold (I think). But I
 still haven't studied category theory...
 
-@docs fold, defold
+@docs Fold, fold, defold
 
 ---
 
@@ -382,7 +383,7 @@ getLeftmost z =
 {-| -}
 getRightmost : Zipper a -> a
 getRightmost z =
-    List.last z.left |> Maybe.withDefault z.focus
+    List.last z.right |> Maybe.withDefault z.focus
 
 
 {-| -}

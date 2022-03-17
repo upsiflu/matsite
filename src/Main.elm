@@ -1,41 +1,44 @@
 port module Main exposing (..)
 
+import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
-import Url exposing (Url)
 import Css exposing (..)
-import Accordion exposing (Accordion)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
+import Url exposing (Url)
 
 
 port sendMessage : String -> Cmd msg
 
 
 type alias Model =
-  { key : Nav.Key
-  , url : Url
-  , accordion : Accordion Msg
-  }
+    { key : Nav.Key
+    , url : Url
+    , accordion : Accordion Msg
+    }
+
 
 main : Program () Model Msg
 main =
     Browser.application
-        { init = \_ url key ->
-            ( { key = key
-              , url = url
-              , accordion = Accordion.site
-              } 
-            , Cmd.none
-            )
+        { init =
+            \_ url key ->
+                ( { key = key
+                  , url = url
+                  , accordion = Accordion.site
+                  }
+                , Cmd.none
+                )
         , view = view
         , update = update
-        , subscriptions = \_-> Sub.none
+        , subscriptions = \_ -> Sub.none
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
         }
+
 
 
 ---- Update ----
@@ -44,6 +47,7 @@ main =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+
 
 update msg model =
     case msg of
@@ -57,18 +61,27 @@ update msg model =
 
         UrlChanged url ->
             ( { model | url = url }
-            , url.fragment 
-                |> Maybe.map (Debug.log "url="  >> sendMessage)
+            , url.fragment
+                |> Maybe.map (Debug.log "url=" >> sendMessage)
                 |> Maybe.withDefault Cmd.none
             )
 
 
 view model =
+    let
+        viewMode =
+            case model.url.fragment of
+                Nothing ->
+                    Accordion.Default
+
+                Just str ->
+                    Accordion.Target str
+    in
     { title = "Moving across Thresholds"
     , body =
         [ Layout.typography
         , Html.hr [] []
-        , Html.div [] [ Accordion.view model.accordion ]
+        , Html.div [] [ Accordion.view viewMode model.accordion ]
         , Html.hr [] []
         , section
             [ header "example" "Fatigue as creative proposition"
@@ -99,5 +112,5 @@ view model =
             ]
             [ Accordion.vimeoX ]
         ]
-        |> List.map Html.toUnstyled
+            |> List.map Html.toUnstyled
     }

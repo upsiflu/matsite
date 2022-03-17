@@ -6,11 +6,10 @@ module Nonempty.Mixed exposing
     , grow
     , insert, append, cons
     , member, head, tail
-    , uncons, cut
+    , uncons, cut, last, mapLast, second
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
-    , Error(..), last, mapLast, second
     )
 
 {-|
@@ -39,7 +38,7 @@ module Nonempty.Mixed exposing
 # Deconstruct
 
 @docs member, head, tail
-@docs uncons, cut
+@docs uncons, cut, last, mapLast, second
 @docs justSingleton, isSingleton
 
 
@@ -104,8 +103,8 @@ mapHead fu =
 
 {-| -}
 mapTail : (a -> b) -> MixedNonempty h a -> MixedNonempty h b
-mapTail =
-    map identity
+mapTail fu =
+    map identity fu
 
 
 {-| maps the second in a mixed nonempty list
@@ -290,6 +289,7 @@ isSingleton =
     tail >> (==) []
 
 
+{-| -}
 second : MixedNonempty h b -> Maybe b
 second ( h, t ) =
     case t of
@@ -300,6 +300,7 @@ second ( h, t ) =
             Just a
 
 
+{-| -}
 last : MixedNonempty h b -> Result h b
 last ( h, t ) =
     List.last t

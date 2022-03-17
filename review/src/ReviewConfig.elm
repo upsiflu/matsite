@@ -11,6 +11,7 @@ when inside the directory containing this file.
 
 -}
 
+import HtmlToElm
 import NoDeprecated
 import NoExposingEverything
 import NoImportingEverything
@@ -18,7 +19,6 @@ import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
 import NoMissingTypeExpose
 import NoPrematureLetComputation
-import HtmlToElm
 import Review.Rule exposing (Rule)
 
 

@@ -53,13 +53,18 @@ typography =
             [ fontFamilies [ "subarubook_italic", "sans" ] ]
         , Global.selector "h1"
             [ fontFamilies [ "subarumedium", "sans" ]
-            , fontSize (rem 1) ]
+            , fontSize (rem 1)
+            ]
         , Global.selector "p" pStyle
         , Global.selector "h2" h2Style
         , Global.selector ".expanded" expandedStyle
         , Global.selector ".focused" expandedStyle
         ]
-expandedStyle = [ backgroundColor theme.raised ]
+
+
+expandedStyle =
+    [ backgroundColor theme.raised ]
+
 
 unit fu =
     rem (fu 3)
@@ -84,9 +89,10 @@ rhythm =
 p =
     Html.text
         >> List.singleton
-        >> Html.p [(css pStyle)]
+        >> Html.p [ css pStyle ]
 
-pStyle = 
+
+pStyle =
     [ maxWidth rhythm.columnWidth
     , margin4 zero zero rhythm.break zero
     , padding2 zero rhythm.padding
@@ -127,6 +133,7 @@ anchoredLabel t =
                 ]
             ]
 
+
 h2Style =
     [ maxWidth rhythm.columnWidth
     , fontFamilies [ "subarumedium", "sans" ]
@@ -135,6 +142,7 @@ h2Style =
     , color theme.green
     , margin4 rhythm.break zero rhythm.break zero
     ]
+
 
 h2 t =
     let
@@ -178,7 +186,7 @@ header id t =
                 , lineHeight rhythm.default
                 , margin zero
                 ]
-            , Attributes.id (id++"_label")
+            , Attributes.id (id ++ "_label")
             ]
         |> List.singleton
         >> Html.a
