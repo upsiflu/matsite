@@ -1,7 +1,7 @@
 module Zipper.Branch exposing
     ( Branch
     , singleton, create, fromPath
-    , map, mapOffspring, mapNode
+    , map, mapOffspring, mapNode, mapSpine
     , cons
     , forkLeft, forkRight
     , prepend, append
@@ -27,7 +27,7 @@ module Zipper.Branch exposing
 
 # Map
 
-@docs map, mapOffspring, mapNode
+@docs map, mapOffspring, mapNode, mapSpine
 
 
 # Grow
@@ -144,6 +144,15 @@ mapOffspring : (a -> a) -> Branch a -> Branch a
 mapOffspring fu (Branch br) =
     MixedNonempty.mapTail
         (MixedZipper.map fu (map fu))
+        br
+        |> Branch
+
+
+{-| -}
+mapSpine : (a -> a) -> Branch a -> Branch a
+mapSpine fu (Branch br) =
+    MixedNonempty.map fu
+        (MixedZipper.mapFocus fu)
         br
         |> Branch
 

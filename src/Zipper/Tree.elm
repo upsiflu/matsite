@@ -8,7 +8,7 @@ module Zipper.Tree exposing
     , up, down
     , root, leaf
     , go, Walk(..), Edge(..), EdgeOperation(..)
-    , map, mapFocus, mapBranch, mapAisles, mapTrace
+    , map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
@@ -55,7 +55,7 @@ module Zipper.Tree exposing
 
 # Map
 
-@docs map, mapFocus, mapBranch, mapAisles, mapTrace
+@docs map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
 
 
 ## Shrink and Grow
@@ -619,6 +619,13 @@ mapTrace =
 
 
 {-| -}
+mapSpine : (a -> a) -> Tree a -> Tree a
+mapSpine fu =
+    mapBranch (Branch.mapSpine fu)
+        >> mapTrace fu
+
+
+{-| -}
 mapBranch : (Branch a -> Branch a) -> Tree a -> Tree a
 mapBranch =
     Zipper.mapFocus >> MixedNonempty.mapHead
@@ -628,6 +635,12 @@ mapBranch =
 mapAisles : (Branch a -> Branch a) -> Tree a -> Tree a
 mapAisles =
     Zipper.mapPeriphery >> MixedNonempty.mapHead
+
+
+{-| -}
+mapAisleNodes : (a -> a) -> Tree a -> Tree a
+mapAisleNodes =
+    Branch.mapNode >> Zipper.mapPeriphery >> MixedNonempty.mapHead
 
 
 {-| Deletes the focus

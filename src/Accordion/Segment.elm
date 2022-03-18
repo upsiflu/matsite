@@ -1,9 +1,33 @@
-module Accordion.Segment exposing (Orientation(..), Segment, ViewMode(..), empty, preferMode, setPath, singleton, view, withBody, withOrientation)
+module Accordion.Segment exposing
+    ( Segment
+    , empty, singleton
+    , Orientation(..)
+    , withBody, withOrientation
+    , view
+    )
 
-{-| Segments only contain immutable data.
-For the view, they can be overloaded with more information.
+{-| contain the immutable site content
+
+_To render Segments differently based on their position in the tree, use
+[`Segment.Viewmode`](Accordion.Segment.ViewMode)_
+
+@docs Segment
+@docs empty, singleton
+@docs Orientation
+
+
+# Map
+
+@docs withBody, withOrientation
+
+
+# View
+
+@docs view
+
 -}
 
+import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode(..))
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
@@ -40,6 +64,7 @@ withBody body segment =
     { segment | body = Just body }
 
 
+{-| -}
 singleton : String -> Segment msg
 singleton id =
     { caption = Just id
@@ -49,73 +74,14 @@ singleton id =
     }
 
 
+{-| -}
 empty : Segment msg
 empty =
     { caption = Nothing
-    , id = ""
+    , id = "_"
     , body = Nothing
     , orientation = Vertical
     }
-
-
-
----- ViewModel ----
-
-
-type alias Path =
-    List Direction
-
-
-{-| -}
-setPath : Path -> ViewMode -> ViewMode
-setPath p viewmode =
-    case viewmode of
-        Expanded config _ ->
-            Expanded config p
-
-        Collapsed _ ->
-            Collapsed p
-
-        Invisible ->
-            Invisible
-
-
-{-| -}
-type ViewMode
-    = Expanded { focused : Bool } Path
-    | Collapsed Path
-    | Invisible
-
-
-{-| -}
-preferMode : ViewMode -> ViewMode -> ViewMode
-preferMode preference statusQuo =
-    case ( preference, statusQuo ) of
-        ( _, Invisible ) ->
-            Invisible
-
-        ( Invisible, _ ) ->
-            Invisible
-
-        ( Collapsed path0, Collapsed path1 ) ->
-            Collapsed (path0 ++ path1)
-
-        ( Collapsed path0, Expanded c path1 ) ->
-            if c.focused then
-                Expanded c (path0 ++ path1)
-
-            else
-                Collapsed (path0 ++ path1)
-
-        ( Expanded c path0, Collapsed path1 ) ->
-            if c.focused then
-                Expanded c (path0 ++ path1)
-
-            else
-                Collapsed (path0 ++ path1)
-
-        ( Expanded config path0, Expanded _ path1 ) ->
-            Expanded config (path0 ++ path1)
 
 
 
@@ -127,69 +93,109 @@ view : ViewMode -> Segment msg -> Html msg
 view mode s =
     let
         default =
-            [ css
-                [ overflowY scroll
-                , Css.width (rem 21)
-                , position relative
-                ]
-            ]
+            [ css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
 
-        functions =
-            case mode of
-                Expanded f path ->
-                    if f.focused then
-                        [ class "focused" ]
+        imploded =
+            [ css [ opacity (num 0.6), maxHeight zero, maxWidth zero, overflow Css.hidden ] ]
 
-                    else
-                        [ class "expanded" ]
+        invisible =
+            [ css [ opacity (num 0.8), overflow Css.hidden, maxHeight zero ] ]
 
-                _ ->
-                    [ class "collapsed" ]
+        expanded =
+            [ id segmentId, css [ maxHeight (calc (vh 100) minus (rem 4)), overflowY scroll, flexGrow (num 1), position relative ] ]
 
-        magic =
-            case mode of
-                Expanded _ _ ->
-                    [ id s.id, css [ maxHeight (calc (vh 100) minus (rem 4)) ] ]
+        collapsed =
+            [ id segmentId, css [ maxHeight (rem 4), overflow Css.hidden, position relative ] ]
 
-                Collapsed _ ->
-                    [ id s.id, css [ maxHeight (rem 4) ] ]
+        query =
+            if ViewMode.isExpanded mode then
+                "col=lapse"
 
-                Invisible ->
-                    [ css [ opacity (num 0.6), visibility Css.hidden ] ]
+            else
+                ""
 
-        directions =
-            case mode of
-                Expanded config path ->
-                    path
+        ----
+        viewOverlay =
+            Html.text
+                >> List.singleton
+                >> Html.div
+                    [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100) ] ]
 
-                Collapsed path ->
-                    path
+        segmentId =
+            if ViewMode.isVisible mode then
+                s.id
 
-                Invisible ->
-                    []
+            else
+                ""
 
-        overlaid t =
-            Html.div [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100) ] ] [ Html.text t ]
+        viewCaption =
+            Maybe.withDefault "𐫱"
+                >> header query segmentId
 
-        caption =
-            case s.caption of
-                Just h ->
-                    header s.id h
-
-                --Html.a [href ("#"++s.id)] [Html.text h]
-                Nothing ->
-                    Html.text "𐫱"
+        viewBody =
+            Maybe.withDefault (Html.text "")
     in
-    Html.div (default ++ functions ++ magic)
-        [ caption
-        , overlaid (List.map Fold.viewDirection directions |> String.join "")
+    case mode of
+        Focus config ->
+            Html.div
+                (default
+                    ++ (if config.expanded then
+                            expanded
 
-        --, Html.text "Hoola"
-        --, Html.text (List.length directions |> String.fromInt)
-        , case s.body of
-            Just b ->
-                b
+                        else
+                            collapsed
+                       )
+                )
+                [ viewCaption s.caption
+                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewBody s.body
+                , ViewMode.view mode
+                ]
 
-            Nothing ->
-                Html.text ""
-        ]
+        Spine config ->
+            Html.div
+                (default
+                    ++ (if config.expanded then
+                            expanded
+
+                        else
+                            collapsed
+                       )
+                )
+                [ viewCaption s.caption
+                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewBody s.body
+                , ViewMode.view mode
+                ]
+
+        Aisle config ->
+            Html.div (default ++ expanded)
+                [ viewCaption s.caption
+                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewBody s.body
+                , ViewMode.view mode
+                ]
+
+        Periphery config ->
+            Html.div
+                (default
+                    ++ (if not config.visible then
+                            imploded
+
+                        else
+                            collapsed
+                       )
+                )
+                [ viewCaption s.caption
+                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewBody s.body
+                , ViewMode.view mode
+                ]
+
+        Placeholder ->
+            Html.div (default ++ invisible)
+                [ viewCaption s.caption
+                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewBody s.body
+                , ViewMode.view mode
+                ]

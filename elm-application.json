@@ -9,6 +9,10 @@
         "Zipper.Tree",
         "Nonempty",
         "Nonempty.Mixed",
-        "Fold"
+        "Fold",
+        "Accordion",
+        "Accordion.Segment",
+        "Accordion.Segment.ViewMode",
+        "Accordion.Renderable"
     ]
 }

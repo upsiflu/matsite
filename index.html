@@ -5,6 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Main</title>
+	<link rel="preload" href="transitions.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 	<style>
 		body {
 			padding: 0;
@@ -47,7 +48,7 @@
 		}
 
 		.blink {
-			animation: blinker .125s linear infinite;
+			animation: blinker .125s linear 0s 5;
 		}
 
 		@keyframes blinker {
@@ -65,11 +66,12 @@
 		var app = Elm.Main.init({
 			node: document.getElementById('app')
 		});
-		document.getElementsByClassName("focused")[0].scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
+		document.getElementsByClassName("F")[0].scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
 
 		app.ports.sendMessage.subscribe(function (message) {
+			console.log("blink", message);
+			if (message == "") { return }
 			document.getElementById(message).classList.add("blink");
-			setTimeout(() => { document.getElementById(message).classList.remove("blink"); }, 500)
 			document.getElementById(message).scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 		});
 	</script>

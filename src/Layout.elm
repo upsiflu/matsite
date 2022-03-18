@@ -24,6 +24,7 @@ theme =
     , li = rgb 140 140 255
     , green = rgb 80 230 120
     , raised = rgba 255 255 255 0.2
+    , blue = rgb 0 0 255
     }
 
 
@@ -57,13 +58,17 @@ typography =
             ]
         , Global.selector "p" pStyle
         , Global.selector "h2" h2Style
-        , Global.selector ".expanded" expandedStyle
-        , Global.selector ".focused" expandedStyle
+        , Global.selector ".E" expandedStyle
+        , Global.selector ".F" focusedStyle
         ]
 
 
 expandedStyle =
     [ backgroundColor theme.raised ]
+
+
+focusedStyle =
+    [ backgroundColor theme.blue ]
 
 
 unit fu =
@@ -176,7 +181,7 @@ dense =
             ]
 
 
-header id t =
+header query id t =
     Html.text t
         |> List.singleton
         >> Html.h1
@@ -186,11 +191,20 @@ header id t =
                 , lineHeight rhythm.default
                 , margin zero
                 ]
-            , Attributes.id (id ++ "_label")
+            , Attributes.id (id ++ "|label")
             ]
         |> List.singleton
         >> Html.a
-            [ Attributes.href ("#" ++ id)
+            [ Attributes.href
+                ((if query == "" then
+                    ""
+
+                  else
+                    "?" ++ query
+                 )
+                    ++ "#"
+                    ++ id
+                )
             , css
                 [ link
                     [ textDecoration inherit

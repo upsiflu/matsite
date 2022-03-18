@@ -51,10 +51,10 @@ For more concrete discussion of content and structure, check out these **collabo
 
 ## Sketches and Drafts
 
-![](Assets/22-03-07-Components.svg)
+![](asset/22-03-07-Components.svg)
 Sketch of Measures (vertical and horizontal rhythm) and potential Colors, by Flupsi, 22-03-07
 
-![](Assets/22-03-04-Sketch.svg)
+![](asset/22-03-04-Sketch.svg)
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
 
 

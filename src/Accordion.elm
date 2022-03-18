@@ -1,26 +1,79 @@
-module Accordion exposing (Accordion, ViewMode(..), anarchiveX, site, view, vimeoX)
+module Accordion exposing
+    ( Accordion
+    , site
+    , flip, find
+    , view
+    , anarchiveX, vimeoX
+    )
 
-import Accordion.Segment as Segment exposing (Orientation(..), Segment, ViewMode(..))
+{-|
+
+@docs Accordion
+@docs site
+
+
+# Map
+
+@docs flip, find
+
+
+# View
+
+@docs view
+
+---
+
+@docs anarchiveX, vimeoX
+
+-}
+
+import Accordion.Renderable as Renderable exposing (Renderable)
+import Accordion.Segment as Segment exposing (Orientation(..), Segment)
+import Accordion.Segment.ViewMode as ViewSegment
 import Css exposing (..)
 import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Snippets.Festival as Festival
+import Url exposing (Url)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
+{-| -}
 type Accordion msg
-    = Accordion (Tree (Segment msg))
+    = Accordion { tree : Tree (Segment msg), collapsed : Bool }
 
 
+{-| -}
 singleton : Tree (Segment msg) -> Accordion msg
-singleton =
-    Accordion
+singleton tree =
+    Accordion { tree = tree, collapsed = False }
 
 
+{-| -}
+flip : Accordion msg -> Accordion msg
+flip (Accordion config) =
+    Accordion { config | collapsed = not config.collapsed }
+
+
+{-| -}
+find : Url -> Accordion msg -> Accordion msg
+find =
+    .fragment
+        >> Maybe.map (\str -> .id >> (==) str |> Find |> Tree.go |> mapTree)
+        >> Maybe.withDefault identity
+
+
+{-| -}
+mapTree : (Tree (Segment msg) -> Tree (Segment msg)) -> Accordion msg -> Accordion msg
+mapTree fu (Accordion config) =
+    Accordion { config | tree = fu config.tree }
+
+
+{-| -}
 site : Accordion msg
 site =
     let
@@ -64,22 +117,22 @@ site =
         artist =
             horizontalSegment "Artist"
 
-        info =
-            horizontalSegment "Info"
+        info x =
+            horizontalSegment ("Info" ++ x)
 
-        collage =
-            horizontalSegment "Collage"
+        collage x =
+            horizontalSegment ("Collage" ++ x)
 
-        description =
-            horizontalSegment "Description"
+        description x =
+            horizontalSegment ("Description" ++ x)
                 |> setBody Festival.description
 
-        video =
-            horizontalSegment "Video"
+        video x =
+            horizontalSegment ("Video" ++ x)
                 |> setBody Festival.video
 
-        credits =
-            horizontalSegment "Credits"
+        credits x =
+            horizontalSegment ("Credits" ++ x)
 
         newsletter =
             verticalSegment "Subscribe"
@@ -96,26 +149,26 @@ site =
         setDate =
             date >> set
 
-        appendSubtree =
+        appendSubtree x =
             go Down
-                >> setDate "Future Festival - August 22"
+                >> setDate ("Future Festival - August 22" ++ x)
                 >> go Right
-                >> setDate "Future Festival - June 5-19"
+                >> setDate ("Future Festival - June 5-19" ++ x)
                 >> go Right
-                >> setDate "Foregrounding the background - March 23 + 24"
+                >> setDate ("Foregrounding the background - March 23 + 24" ++ x)
                 >> go Right
-                >> setDate "Previous Festival - November 2, 2021"
+                >> setDate ("Previous Festival - November 2, 2021" ++ x)
                 >> go Left
                 >> go Down
-                >> set info
+                >> set (info x)
                 >> go Right
-                >> set collage
+                >> set (collage x)
                 >> go Right
-                >> set description
+                >> set (description x)
                 >> go Right
-                >> set video
+                >> set (video x)
                 >> go Right
-                >> set credits
+                >> set (credits x)
                 >> go Left
                 >> go Left
                 >> go Up
@@ -144,13 +197,13 @@ site =
         |> go Right
         |> go Down
         |> set lab
-        |> appendSubtree
+        |> appendSubtree "."
         |> go Right
         |> set festival
-        |> appendSubtree
+        |> appendSubtree ","
         |> go Right
         |> set artist
-        |> appendSubtree
+        |> appendSubtree ";"
         |> go Left
         |> go Down
         --|> go Down
@@ -159,6 +212,7 @@ site =
         |> singleton
 
 
+{-| -}
 anarchiveX : Html msg
 anarchiveX =
     Html.iframe
@@ -170,6 +224,7 @@ anarchiveX =
         []
 
 
+{-| -}
 vimeoX : Html msg
 vimeoX =
     Html.iframe
@@ -192,98 +247,31 @@ vimeoX =
 
 
 {-| -}
-type ViewMode
-    = Default
-    | Target String
-
-
-{-| -}
-view : ViewMode -> Accordion msg -> Html msg
-view v (Accordion tree) =
+view : Accordion msg -> Html msg
+view (Accordion config) =
     let
-        findTarget =
-            case v of
-                Default ->
-                    identity
+        myFocus =
+            if (Debug.log "config" config.collapsed) then
+                ViewSegment.collapse ViewSegment.focus
 
-                Target str ->
-                    Tree.go (Find (.id >> (==) str))
+            else
+                ViewSegment.focus
     in
-    tree
-        |> findTarget
+    config.tree
         |> Tree.view
             (Tree.Custom renderer
-                { renderFocus = Tuple.pair (Expanded { focused = True } [])
-                , renderPeriphery = Tuple.pair (Collapsed [])
+                { renderFocus = Tuple.pair myFocus
+                , renderPeriphery = Tuple.pair ViewSegment.periphery
                 , transformation =
-                    Tree.mapTrace (Tuple.mapFirst (\_ -> Expanded { focused = False } []))
-                        >> Tree.zipDirections
-                        >> Tree.map (\( path, ( viewmode, segment ) ) -> ( Segment.setPath path viewmode, segment ))
-
-                -->> Tree.mapAisles ( Tuple.mapFirst (\_-> Expanded {focused = False}) |> Branch.map )
+                    Tree.zipDirections
+                        >> Tree.map
+                            (\( path, ( viewmode, segment ) ) -> ( ViewSegment.setPath path viewmode, segment ))
+                        >> Tree.mapSpine (Tuple.mapFirst ViewSegment.makeSpine)
+                        >> Tree.mapAisleNodes (Tuple.mapFirst ViewSegment.makeAisle)
                 }
             )
         |> List.singleton
-        |> Html.div [ css [ backgroundColor (rgb 22 99 11), padding (rem 5) ] ]
-
-
-{-| -}
-type alias Renderable msg =
-    Segment.ViewMode -> Html msg
-
-
-{-| Like this:
--}
-myRenderable : Renderable msg
-myRenderable mode =
-    Segment.view mode (Segment.singleton "test")
-
-
-createRenderable : Segment.ViewMode -> Segment msg -> Renderable msg
-createRenderable innerMode segment =
-    \inheritedMode -> Segment.view (Segment.preferMode inheritedMode innerMode) segment
-
-
-render : Segment.ViewMode -> Renderable msg -> Html msg
-render mode renderable =
-    renderable mode
-
-
-invisible : Renderable msg -> Renderable msg
-invisible =
-    preferMode Invisible
-
-
-collapsed : Renderable msg -> Renderable msg
-collapsed =
-    preferMode (Collapsed [])
-
-
-focused : Renderable msg -> Renderable msg
-focused =
-    preferMode (Expanded { focused = True } [])
-
-
-wrap : (Html msg -> Html msg) -> Renderable msg -> Renderable msg
-wrap wrapper renderable =
-    \inheritedMode -> render inheritedMode renderable |> wrapper
-
-
-
----- more wrappers
-
-
-div : List (Html.Attribute msg) -> List (Renderable msg) -> Renderable msg
-div attr children =
-    \inheritedMode ->
-        List.map (render inheritedMode) children
-            |> Html.div attr
-
-
-{-| -}
-preferMode : Segment.ViewMode -> Renderable msg -> Renderable msg
-preferMode innerMode renderable =
-    \inheritedMode -> renderable (Segment.preferMode inheritedMode innerMode)
+        |> Html.div [ css [ backgroundColor (rgb 22 99 11), padding (rem 1) ] ]
 
 
 repeat i fu target =
@@ -299,7 +287,7 @@ type alias Aisle msg =
 
 
 type alias A msg =
-    ( Segment.ViewMode, Segment msg )
+    ( ViewSegment.ViewMode, Segment msg )
 
 
 {-| a _level_ in the past or future
@@ -393,13 +381,81 @@ renderer =
         bordered color =
             css <|
                 if debugging then
-                    [ border3 (px 8) solid color ]
+                    [ border3 (px 4) solid color ]
 
                 else
                     []
 
-        hideVertically =
-            Html.div [ css [ visibility Css.hidden, overflow Css.hidden, maxHeight (px 0) ] ]
+        consTrunk ( prev, ( currentViewMode, currentSegment ) as current, next ) ( prev0, next0 ) =
+            --< in any branch, chew towards the node of the branch
+            --< in the past, chew towards the present of the tree
+            --< We accumulate vertical futures into the trans side of the tuple
+            --< : z -> trunk -> trunk
+            --< : ( Aisle msg, A msg, Aisle msg ) -> Tuple ( Aisle msg ) -> Tuple ( Aisle msg )
+            let
+                currentRenderable =
+                    [ Renderable.singleton currentSegment ]
+                        |> Renderable.div [ bordered green ]
+            in
+            Renderable.nestAisle currentViewMode <|
+                case currentSegment.orientation of
+                    Horizontal ->
+                        ( prev0
+                            ++ [ Renderable.nestMany ViewSegment.placeholder next
+                                    ++ prev
+                                    ++ Renderable.div [ bordered red ] [ currentRenderable ]
+                                    :: next
+                                    ++ Renderable.nestMany ViewSegment.placeholder prev
+                                    |> Renderable.div [ horizontal, bordered brown ]
+                               ]
+                        , next0
+                        )
+
+                    Vertical ->
+                        ( prev0
+                            ++ [ prev ++ [ currentRenderable ] |> Renderable.div [ vertical, bordered yellow ] ]
+                        , next ++ next0
+                        )
+
+        mergeBranch (( currentViewMode, currentSegment ) as current) ( prev, next ) =
+            --< in any branch, merge its node with its chewed future
+            --< The directions: Down
+            --< : a -> trunk -> b
+            --< : ( ViewMode, Segment ) -> Tuple ( Aisle msg ) -> ( A msg, Renderable msg)
+            let
+                subsegments =
+                    List.reverse prev
+                        ++ next
+                        |> Renderable.div [ vertical, bordered cyan ]
+            in
+            [ Renderable.singleton currentSegment, subsegments ]
+                |> Renderable.div [ vertical, bordered blue ]
+                |> Renderable.nest currentViewMode
+                |> Tuple.pair ( currentViewMode, currentSegment )
+
+        mergeTree ( ( _, headSegment ), present ) ( prev, next ) =
+            --< in the tree, merge its joined present with its chewed context
+            --< : zB -> trunk -> result
+            --< : (A, Zipper (Renderable msg)) -> (Aisle msg, Aisle msg) -> Html msg
+            let
+                currentWindow =
+                    (Renderable.nestMany ViewSegment.placeholder present.right
+                        ++ List.reverse present.left
+                        ++ present.focus
+                        :: present.right
+                        ++ Renderable.nestMany ViewSegment.placeholder present.left
+                    )
+                        |> Renderable.div [ bordered white, orient headSegment ]
+            in
+            prev
+                ++ currentWindow
+                :: next
+                |> Renderable.div [ bordered black, vertical ]
+                |> List.singleton
+                |> Renderable.div [ css [ Css.width (px 8000) ] ]
+                |> List.singleton
+                |> Renderable.div [ css [ backgroundColor black, overflowX scroll ] ]
+                |> Renderable.render ViewSegment.focus
     in
     { consAisle =
         --< in any aisle, chew branches
@@ -418,93 +474,33 @@ renderer =
         --< : (A msg, Renderable msg) -> Aisle -> Aisle -> (A msg, Zipper (Renderable msg))
         \( a, b ) l r ->
             ( a, Zipper.create b l r )
-    , consTrunk =
-        --< in any branch, chew towards the node of the branch
-        --< in the past, chew towards the present of the tree
-        --< We accumulate vertical futures into the trans side of the tuple
-        --< : z -> trunk -> trunk
-        --< : ( Aisle msg, A msg, Aisle msg ) -> Tuple ( Aisle msg ) -> Tuple ( Aisle msg )
-        \( prev, ( currentViewMode, currentSegment ), next ) ( prev0, next0 ) ->
-            let
-                current =
-                    createRenderable currentViewMode currentSegment
-                        |> wrap (List.singleton >> Html.div [ bordered green ])
+    , consTrunk = consTrunk
+    , mergeBranch = mergeBranch
+    , mergeTree = mergeTree
+    , leaf =
+        ( if debugging then
+            [ \_ -> Html.text "❦" ]
 
-                ( pWidth, nWidth ) =
-                    ( List.length prev, List.length next )
-            in
-            case currentSegment.orientation of
-                Horizontal ->
-                    ( prev0
-                        ++ [ List.map invisible next
-                                ++ prev
-                                ++ current
-                                :: next
-                                ++ List.map invisible prev
-                                |> div [ horizontal, bordered brown ]
-                           ]
-                    , next0
-                    )
+          else
+            []
+        , if debugging then
+            [ \_ -> Html.text "" ]
 
-                Vertical ->
-                    ( prev0
-                        ++ [ prev ++ [ current ] |> div [ vertical, bordered yellow ] ]
-                    , next ++ next0
-                    )
-    , mergeBranch =
-        --< in any branch, merge its node with its chewed future
-        --< The directions: Down
-        --< : a -> trunk -> b
-        --< : ( ViewMode, Segment ) -> Tuple ( Aisle msg ) -> ( A msg, Renderable msg)
-        \( currentViewMode, currentSegment ) ( prev, next ) ->
-            let
-                subsegments =
-                    List.reverse prev
-                        ++ next
-                        |> div [ vertical, bordered cyan, subStyle ]
-                        |> subTransform
+          else
+            []
+        )
+    , left =
+        [ if debugging then
+            \_ -> Html.text "☙"
 
-                ( subStyle, subTransform ) =
-                    case currentViewMode of
-                        Expanded _ _ ->
-                            ( css [], identity )
+          else
+            \_ -> Html.text ""
+        ]
+    , right =
+        [ if debugging then
+            \_ -> Html.text "❧"
 
-                        Collapsed _ ->
-                            ( css
-                                [ maxWidth zero
-                                , maxHeight zero
-                                , overflow Css.hidden
-                                ]
-                            , invisible
-                            )
-
-                        Invisible ->
-                            ( css [ visibility Css.hidden ], identity )
-            in
-            [ createRenderable currentViewMode currentSegment, subsegments ]
-                |> div [ vertical, bordered blue ]
-                |> Tuple.pair ( currentViewMode, currentSegment )
-    , mergeTree =
-        --< in the tree, merge its joined present with its chewed context
-        --< : zB -> trunk -> result
-        --< : (A, Zipper (Renderable msg)) -> (Aisle msg, Aisle msg) -> Html msg
-        \( ( currentViewMode, currentSegment ), present ) ( prev, next ) ->
-            let
-                currentWindow =
-                    present
-                        |> Zipper.flat
-                        |> div [ bordered black, orient currentSegment ]
-            in
-            prev
-                ++ [ currentWindow ]
-                ++ next
-                |> div [ bordered black, vertical ]
-                |> List.singleton
-                |> div [ css [ Css.width (px 2000) ] ]
-                |> List.singleton
-                |> div [ css [ backgroundColor black, Css.width (rem 29), overflowX scroll ] ]
-                |> render (Expanded { focused = True } [])
-    , leaf = ( [ \_ -> Html.text "❦" ], [ \_ -> Html.text "" ] )
-    , left = [ [ \_ -> Html.text "☙" ] |> div [] ]
-    , right = [ [ \_ -> Html.text "❧" ] |> div [] ]
+          else
+            \_ -> Html.text ""
+        ]
     }

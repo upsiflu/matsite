@@ -1,0 +1,4 @@
+.segment {
+    transition: all 2.5s cubic-bezier(0, 1, 0, 1);
+    outline   : 10px solid yellowgreen;
+}
