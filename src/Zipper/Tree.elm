@@ -24,6 +24,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
+    , any
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -581,6 +582,12 @@ switch m =
 
         Blurred a ->
             Focused a
+
+
+{-| -}
+any : (a -> Bool) -> Tree a -> Bool
+any fu =
+    flatten >> List.any fu
 
 
 {-| -}

@@ -74,14 +74,44 @@ mapTree fu (Accordion config) =
 
 
 {-| -}
+insertToTree : Branch (Segment msg) -> Tree (Segment msg) -> Tree (Segment msg)
+insertToTree branch tree =
+    let
+        id =
+            Branch.node branch |> .id
+
+        autoSuffix : Int -> String
+        autoSuffix int =
+            let
+                testId =
+                    id ++ "(" ++ String.fromInt int ++ ")"
+            in
+            if Tree.any (.id >> (==) testId) tree then
+                autoSuffix (int + 1)
+
+            else
+                testId
+
+        uniqueId =
+            if Tree.any (.id >> (==) id) tree then
+                autoSuffix 0
+
+            else
+                id
+    in
+    Tree.mapBranch (\_ -> branch |> Branch.mapNode (\segment -> { segment | id = uniqueId })) tree
+
+
+{-| -}
 site : Accordion msg
 site =
     let
         go direction =
             Tree.go (Walk direction (Insert placeholder))
 
+        set : Branch (Segment msg) -> Tree (Segment msg) -> Tree (Segment msg)
         set =
-            always >> Tree.mapBranch
+            insertToTree
 
         verticalSegment x =
             Segment.singleton x
@@ -117,22 +147,22 @@ site =
         artist =
             horizontalSegment "Artist"
 
-        info x =
-            horizontalSegment ("Info" ++ x)
+        info =
+            horizontalSegment "Info"
 
-        collage x =
-            horizontalSegment ("Collage" ++ x)
+        collage =
+            horizontalSegment "Collage"
 
-        description x =
-            horizontalSegment ("Description" ++ x)
+        description =
+            horizontalSegment "Description"
                 |> setBody Festival.description
 
-        video x =
-            horizontalSegment ("Video" ++ x)
+        video =
+            horizontalSegment "Video"
                 |> setBody Festival.video
 
-        credits x =
-            horizontalSegment ("Credits" ++ x)
+        credits =
+            horizontalSegment "Credits"
 
         newsletter =
             verticalSegment "Subscribe"
@@ -149,26 +179,26 @@ site =
         setDate =
             date >> set
 
-        appendSubtree x =
+        appendSubtree =
             go Down
-                >> setDate ("Future Festival - August 22" ++ x)
+                >> setDate "Future Festival - August 22"
                 >> go Right
-                >> setDate ("Future Festival - June 5-19" ++ x)
+                >> setDate "Future Festival - June 5-19"
                 >> go Right
-                >> setDate ("Foregrounding the background - March 23 + 24" ++ x)
+                >> setDate "Foregrounding the background - March 23 + 24"
                 >> go Right
-                >> setDate ("Previous Festival - November 2, 2021" ++ x)
+                >> setDate "Previous Festival - November 2, 2021"
                 >> go Left
                 >> go Down
-                >> set (info x)
+                >> set info
                 >> go Right
-                >> set (collage x)
+                >> set collage
                 >> go Right
-                >> set (description x)
+                >> set description
                 >> go Right
-                >> set (video x)
+                >> set video
                 >> go Right
-                >> set (credits x)
+                >> set credits
                 >> go Left
                 >> go Left
                 >> go Up
@@ -197,13 +227,13 @@ site =
         |> go Right
         |> go Down
         |> set lab
-        |> appendSubtree "."
+        |> appendSubtree
         |> go Right
         |> set festival
-        |> appendSubtree ","
+        |> appendSubtree
         |> go Right
         |> set artist
-        |> appendSubtree ";"
+        |> appendSubtree
         |> go Left
         |> go Down
         --|> go Down
@@ -251,7 +281,7 @@ view : Accordion msg -> Html msg
 view (Accordion config) =
     let
         myFocus =
-            if (Debug.log "config" config.collapsed) then
+            if Debug.log "config" config.collapsed then
                 ViewSegment.collapse ViewSegment.focus
 
             else
@@ -272,14 +302,6 @@ view (Accordion config) =
             )
         |> List.singleton
         |> Html.div [ css [ backgroundColor (rgb 22 99 11), padding (rem 1) ] ]
-
-
-repeat i fu target =
-    if i < 0 then
-        target
-
-    else
-        repeat (i - 1) fu target
 
 
 type alias Aisle msg =
@@ -344,15 +366,6 @@ renderer =
 
                 Vertical ->
                     vertical
-
-        dimmed =
-            css [ opacity (num 0.1) ]
-
-        asNode =
-            css []
-
-        asLeaf =
-            css []
 
         vertical =
             css [ displayFlex, justifyContent flexStart, alignItems center, flexDirection column ]
@@ -431,7 +444,7 @@ renderer =
             [ Renderable.singleton currentSegment, subsegments ]
                 |> Renderable.div [ vertical, bordered blue ]
                 |> Renderable.nest currentViewMode
-                |> Tuple.pair ( currentViewMode, currentSegment )
+                |> Tuple.pair current
 
         mergeTree ( ( _, headSegment ), present ) ( prev, next ) =
             --< in the tree, merge its joined present with its chewed context
