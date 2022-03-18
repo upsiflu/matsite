@@ -181,6 +181,7 @@ dense =
             ]
 
 
+header : String -> String -> String -> Html msg
 header query id t =
     Html.text t
         |> List.singleton

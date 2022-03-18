@@ -26,12 +26,27 @@ main =
     Browser.application
         { init =
             \_ url key ->
-                ( { key = key
-                  , url = url
-                  , accordion = Accordion.site
-                  }
-                , Cmd.none
-                )
+                let
+                    initialAccordion =
+                        Accordion.site
+
+                    initialModel =
+                        { key = key
+                        , url = initialUrl
+                        , accordion = initialAccordion
+                        }
+
+                    initialUrl =
+                        { url | fragment = Just (Accordion.location initialAccordion) }
+                in
+                initialModel
+                    |> (case url.fragment of
+                            Nothing ->
+                                update (LinkClicked (Browser.Internal initialUrl))
+
+                            Just _ ->
+                                update (UrlChanged url)
+                       )
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -49,30 +64,34 @@ type Msg
     | UrlChanged Url.Url
 
 
+update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    ( if url == model.url then
-                        { model | accordion = Accordion.flip model.accordion }
+        LinkClicked (Browser.Internal url) ->
+            ( if url == model.url then
+                { model | accordion = Accordion.flip model.accordion }
 
-                      else
-                        { model | accordion = Accordion.find url model.accordion }
-                    , Nav.pushUrl model.key (Url.toString url)
-                    )
+              else
+                model
+            , Nav.pushUrl model.key (Url.toString url)
+            )
 
-                Browser.External href ->
-                    ( model, Nav.load href )
+        LinkClicked (Browser.External href) ->
+            ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }
+            ( if url /= model.url then
+                { model | accordion = Accordion.find url model.accordion, url = url }
+
+              else
+                model
             , url.fragment
-                |> Maybe.map (Debug.log "url=" >> sendMessage)
+                |> Maybe.map sendMessage
                 |> Maybe.withDefault Cmd.none
             )
 
 
+{-| -}
 view model =
     { title = "Moving across Thresholds"
     , body =

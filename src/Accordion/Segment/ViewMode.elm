@@ -38,6 +38,7 @@ module Accordion.Segment.ViewMode exposing
 
 -}
 
+import Bool.Extra as Bool
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
@@ -91,6 +92,12 @@ hide mode =
 
         _ ->
             mode
+
+
+{-| -}
+implode : ViewMode -> ViewMode
+implode mode =
+    Periphery { visible = False, path = path (Debug.log "imploding" mode) }
 
 
 {-| -}
@@ -202,39 +209,45 @@ We start only with Focus, Spine and Aisle.
 -}
 contextualize : ViewMode -> ViewMode -> ViewMode
 contextualize context =
+    let
+        andIfContext : List (ViewMode -> Bool) -> (ViewMode -> ViewMode) -> (ViewMode -> ViewMode)
+        andIfContext tests fu =
+            if List.map ((|>) context) tests |> Bool.all then
+                fu
+
+            else
+                identity
+
+        andIfInnerMode : (ViewMode -> Bool) -> (ViewMode -> ViewMode) -> (ViewMode -> ViewMode)
+        andIfInnerMode test fu =
+            \innerMode ->
+                if test innerMode then
+                    fu innerMode
+
+                else
+                    innerMode
+    in
     identity
-        >> (if
-                not (isBreadcrumb context)
-                    && (not (isExpanded context) || not (isVisible context))
-            then
-                \innerMode ->
-                    if isDirectChild innerMode then
-                        innerMode
-
-                    else
-                        hide innerMode
-
-            else
-                identity
-           )
-        >> (if isPlaceholder context then
-                always Placeholder
-
-            else
-                identity
-           )
-        >> (if isPeriphery context then
+        >> andIfContext
+            [ isBreadcrumb >> not
+            , \ctx -> not (isExpanded ctx) || not (isVisible ctx)
+            ]
+            (andIfInnerMode
+                (isDirectChild >> not)
                 hide
-
-            else
-                identity
-           )
-        >> (if isFocus context then
-                expand
-
-            else
-                identity
-           )
+            )
+        >> andIfContext [ isPlaceholder ]
+            (always Placeholder)
+        >> andIfContext
+            [ isPeriphery ]
+            (andIfInnerMode
+                (isDirectChild >> not)
+                hide
+            )
+        >> andIfContext [ isFocus ]
+            expand
+        >> andIfContext [ isAisle, not << isFocus, not << isSpine ]
+            implode
 
 
 

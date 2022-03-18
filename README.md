@@ -14,9 +14,11 @@ Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm current
     - [x] vimeo embed (with tracking disabled to comply with EU laws)
     - [ ] Hypertext content
     - [ ] Images (initially served via Google Docs)
-- [ ] Arrange initial content into `Zipper` structure
+- [x] Arrange initial content into `Zipper` structure
 - [x] Create simple theme
-- [ ] Display `Zipper` as Accordion
+- [x] Display `Zipper` as Accordion
+- [x] Allow linking to any Segment inside the Accordion
+- [ ] Animate moving across Segments
 - [ ] Deploy to [movingAcrossThresholds.com](movingAcrossThresholds.com)
 
 ------------------ Milestone #1: MVP done ------------------

@@ -93,12 +93,17 @@ view : ViewMode -> Segment msg -> Html msg
 view mode s =
     let
         default =
-            [ css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
+            case s.orientation of
+                Vertical ->
+                    [ css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
+
+                Horizontal ->
+                    [ css [ overflowY scroll, Css.width (rem 4), position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
 
         imploded =
             [ css [ opacity (num 0.6), maxHeight zero, maxWidth zero, overflow Css.hidden ] ]
 
-        invisible =
+        horizontalPlaceholding =
             [ css [ opacity (num 0.8), overflow Css.hidden, maxHeight zero ] ]
 
         expanded =
@@ -107,19 +112,12 @@ view mode s =
         collapsed =
             [ id segmentId, css [ maxHeight (rem 4), overflow Css.hidden, position relative ] ]
 
-        query =
-            if ViewMode.isExpanded mode then
-                "col=lapse"
-
-            else
-                ""
-
         ----
         viewOverlay =
             Html.text
                 >> List.singleton
                 >> Html.div
-                    [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100) ] ]
+                    [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100), Css.property "writing-mode" "horizontal-tb" ] ]
 
         segmentId =
             if ViewMode.isVisible mode then
@@ -130,7 +128,7 @@ view mode s =
 
         viewCaption =
             Maybe.withDefault "𐫱"
-                >> header query segmentId
+                >> header "" segmentId
 
         viewBody =
             Maybe.withDefault (Html.text "")
@@ -169,7 +167,15 @@ view mode s =
                 ]
 
         Aisle config ->
-            Html.div (default ++ expanded)
+            Html.div
+                (default
+                    ++ (if config.expanded then
+                            expanded
+
+                        else
+                            collapsed
+                       )
+                )
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
                 , viewBody s.body
@@ -193,7 +199,7 @@ view mode s =
                 ]
 
         Placeholder ->
-            Html.div (default ++ invisible)
+            Html.div (default ++ horizontalPlaceholding)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
                 , viewBody s.body

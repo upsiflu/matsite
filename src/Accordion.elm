@@ -4,6 +4,7 @@ module Accordion exposing
     , flip, find
     , view
     , anarchiveX, vimeoX
+    , location
     )
 
 {-|
@@ -57,6 +58,12 @@ singleton tree =
 flip : Accordion msg -> Accordion msg
 flip (Accordion config) =
     Accordion { config | collapsed = not config.collapsed }
+
+
+{-| -}
+location : Accordion msg -> String
+location (Accordion config) =
+    Tree.focus config.tree |> .id
 
 
 {-| -}
@@ -377,19 +384,19 @@ renderer =
             ( css [ justifyContent Css.left ], css [ justifyContent Css.right ] )
 
         ( red, green, blue ) =
-            ( rgb 200 20 40, rgb 90 240 80, rgb 20 20 140 )
+            ( rgb 200 20 40, rgb 10 200 80, rgb 20 20 140 )
 
         ( black, white, yellow ) =
             ( rgb 0 0 0, rgb 255 255 255, rgb 255 255 0 )
 
         ( orange, cyan, magenta ) =
-            ( rgb 250 180 10, rgb 10 205 205, rgb 205 60 180 )
+            ( rgb 250 180 10, rgb 0 180 205, rgb 205 60 180 )
 
         ( brown, grey ) =
             ( rgb 110 70 20, rgb 90 90 90 )
 
         debugging =
-            False
+            True
 
         bordered color =
             css <|
@@ -451,6 +458,31 @@ renderer =
             --< : zB -> trunk -> result
             --< : (A, Zipper (Renderable msg)) -> (Aisle msg, Aisle msg) -> Html msg
             let
+                {-
+                   currentWindow2 =
+                       (((Renderable.nestMany ViewSegment.placeholder present.right
+                           ++ List.reverse present.left
+                           ++ present.focus
+                         )
+                           |> Renderable.div [ bordered magenta, orient headSegment ]
+                        )
+                           :: present.right
+                           ++ Renderable.nestMany ViewSegment.placeholder present.left
+                       )
+                           |> Renderable.div [ bordered white, orient headSegment ]
+                -}
+                aisle : List (Renderable msg)
+                aisle =
+                    Renderable.nestMany ViewSegment.placeholder present.right
+                        ++ List.reverse present.left
+                        ++ present.focus
+                        :: present.right
+                        ++ Renderable.nestMany ViewSegment.placeholder present.left
+
+                body : List (Renderable msg)
+                body =
+                    []
+
                 currentWindow =
                     (Renderable.nestMany ViewSegment.placeholder present.right
                         ++ List.reverse present.left
@@ -465,7 +497,7 @@ renderer =
                 :: next
                 |> Renderable.div [ bordered black, vertical ]
                 |> List.singleton
-                |> Renderable.div [ css [ Css.width (px 8000) ] ]
+                |> Renderable.div [ css [ Css.width (px 14000) ] ]
                 |> List.singleton
                 |> Renderable.div [ css [ backgroundColor black, overflowX scroll ] ]
                 |> Renderable.render ViewSegment.focus
