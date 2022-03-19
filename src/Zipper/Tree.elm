@@ -20,11 +20,11 @@ module Zipper.Tree exposing
     , path
     , circumference
     , petrify
+    , any
     , Fold, defold, fold
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , any
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -80,6 +80,7 @@ module Zipper.Tree exposing
 @docs path
 @docs circumference
 @docs petrify
+@docs any
 
 
 ## Fold

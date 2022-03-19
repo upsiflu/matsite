@@ -1,4 +1,6 @@
-Moving Across Thresholds Website, March 2022
+_Moving Across Thresholds Website, March 2022_
+
+For more details, consult the [specification document](SPECIFICATION.md).
 
 # Design
 

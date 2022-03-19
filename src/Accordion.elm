@@ -2,9 +2,9 @@ module Accordion exposing
     ( Accordion
     , site
     , flip, find
+    , location
     , view
     , anarchiveX, vimeoX
-    , location
     )
 
 {-|
@@ -16,6 +16,11 @@ module Accordion exposing
 # Map
 
 @docs flip, find
+
+
+# Deconstruct
+
+@docs location
 
 
 # View
