@@ -2,6 +2,12 @@ Moving Across Thresholds Website, March 2022
 
 # Design
 
+- [Design](#design)
+  - [Use case](#use-case)
+    - [A Section](#a-section)
+    - [Navigate](#navigate)
+    - [Edit](#edit)
+
 ## Use case
 Visitors open [`movingAcrossThresholds.com`](movingAcrossThresholds.com) and are greeted with a video. Below the video, they find links to open other **section**s.
 
