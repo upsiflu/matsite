@@ -40,6 +40,7 @@ import Snippets.Festival as Festival
 import Url exposing (Url)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
+import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
@@ -231,7 +232,6 @@ site =
         |> set (series 3)
         |> go Right
         |> go Right
-        |> go Right
         |> go Down
         |> set lab
         |> appendSubtree
@@ -312,7 +312,7 @@ view (Accordion config) =
 
 
 type alias Aisle msg =
-    List (Renderable msg)
+    List (B msg)
 
 
 type alias A msg =
@@ -329,21 +329,21 @@ type alias Z msg =
 {-| the _current_ level, tagged by its node
 -}
 type alias ZB msg =
-    ( A msg, Zipper (Renderable msg) )
+    ( A msg, Zipper (B msg) )
 
 
 {-| branch, tagged by its node
 -}
 type alias B msg =
-    ( A msg, Renderable msg )
+    ( A msg, ( Renderable msg, Renderable msg ) )
 
 
 {-| contains accumulated levels, either "cis" or "trans".
-We accumulate vertical futures into the trans side of the tuple
+We accumulate vertical rights into the trans side of the tuple
 whereas we eagerly render horizontal levels
 -}
 type alias Trunk msg =
-    ( Aisle msg, Aisle msg )
+    ( List (Renderable msg), List (Renderable msg) )
 
 
 renderer :
@@ -396,7 +396,7 @@ renderer =
             ( rgb 110 70 20, rgb 90 90 90 )
 
         debugging =
-            True
+            False
 
         bordered color =
             css <|
@@ -406,26 +406,56 @@ renderer =
                 else
                     []
 
-        consTrunk ( prev, ( currentViewMode, currentSegment ) as current, next ) ( prev0, next0 ) =
+        highlightSingle color x =
+            Renderable.div
+                [ css <|
+                    if debugging then
+                        [ backgroundColor color ]
+
+                    else
+                        []
+                ]
+                [ x ]
+
+        highlightMany color =
+            List.map (highlightSingle color)
+
+        ---------------------------------------------------------------------------------------------------------
+        flattenAisle : List (B msg) -> List (Renderable msg)
+        flattenAisle =
+            List.map renderBranch
+
+        renderBranch : B msg -> Renderable msg
+        renderBranch ( a, ( head, body ) ) =
+            Renderable.div [] [ head, body ]
+
+        ----------------------------------------------
+        consTrunk :
+            ( Aisle msg, A msg, Aisle msg )
+            -> ( List (Renderable msg), List (Renderable msg) )
+            -> ( List (Renderable msg), List (Renderable msg) )
+        consTrunk ( left, ( currentViewMode, currentSegment ) as current, right ) ( prev0, next0 ) =
             --< in any branch, chew towards the node of the branch
             --< in the past, chew towards the present of the tree
             --< We accumulate vertical futures into the trans side of the tuple
             --< : z -> trunk -> trunk
-            --< : ( Aisle msg, A msg, Aisle msg ) -> Tuple ( Aisle msg ) -> Tuple ( Aisle msg )
             let
                 currentRenderable =
                     [ Renderable.singleton currentSegment ]
                         |> Renderable.div [ bordered green ]
+
+                ( leftAisle, rightAisle ) =
+                    ( flattenAisle left, flattenAisle right )
             in
             Renderable.nestAisle currentViewMode <|
                 case currentSegment.orientation of
                     Horizontal ->
                         ( prev0
-                            ++ [ Renderable.nestMany ViewSegment.placeholder next
-                                    ++ prev
+                            ++ [ Renderable.nestMany ViewSegment.placeholder rightAisle
+                                    ++ leftAisle
                                     ++ Renderable.div [ bordered red ] [ currentRenderable ]
-                                    :: next
-                                    ++ Renderable.nestMany ViewSegment.placeholder prev
+                                    :: rightAisle
+                                    ++ Renderable.nestMany ViewSegment.placeholder leftAisle
                                     |> Renderable.div [ horizontal, bordered brown ]
                                ]
                         , next0
@@ -433,10 +463,11 @@ renderer =
 
                     Vertical ->
                         ( prev0
-                            ++ [ prev ++ [ currentRenderable ] |> Renderable.div [ vertical, bordered yellow ] ]
-                        , next ++ next0
+                            ++ [ leftAisle ++ [ currentRenderable ] |> Renderable.div [ vertical, bordered yellow ] ]
+                        , rightAisle ++ next0
                         )
 
+        mergeBranch : ( ViewSegment.ViewMode, Segment msg ) -> ( List (Renderable msg), List (Renderable msg) ) -> ( A msg, ( Renderable msg, Renderable msg ) )
         mergeBranch (( currentViewMode, currentSegment ) as current) ( prev, next ) =
             --< in any branch, merge its node with its chewed future
             --< The directions: Down
@@ -448,52 +479,36 @@ renderer =
                         ++ next
                         |> Renderable.div [ vertical, bordered cyan ]
             in
-            [ Renderable.singleton currentSegment, subsegments ]
-                |> Renderable.div [ vertical, bordered blue ]
-                |> Renderable.nest currentViewMode
+            ( Renderable.singleton currentSegment |> Renderable.nest currentViewMode
+            , Renderable.div [ vertical, bordered blue ] [ subsegments ] |> Renderable.nest currentViewMode
+            )
                 |> Tuple.pair current
 
+        mergeTree : ( A msg, Zipper (B msg) ) -> ( List (Renderable msg), List (Renderable msg) ) -> Html msg
         mergeTree ( ( _, headSegment ), present ) ( prev, next ) =
             --< in the tree, merge its joined present with its chewed context
             --< : zB -> trunk -> result
-            --< : (A, Zipper (Renderable msg)) -> (Aisle msg, Aisle msg) -> Html msg
+            --< : (A, Zipper (Renderable msg)) -> Trunk msg -> Html msg
             let
-                {-
-                   currentWindow2 =
-                       (((Renderable.nestMany ViewSegment.placeholder present.right
-                           ++ List.reverse present.left
-                           ++ present.focus
-                         )
-                           |> Renderable.div [ bordered magenta, orient headSegment ]
-                        )
-                           :: present.right
-                           ++ Renderable.nestMany ViewSegment.placeholder present.left
-                       )
-                           |> Renderable.div [ bordered white, orient headSegment ]
-                -}
-                aisle : List (Renderable msg)
+                ( leftAisle, ( a, ( head, body ) ), rightAisle ) =
+                    ( flattenAisle present.left, present.focus, flattenAisle present.right )
+
+                aisle : Renderable msg
                 aisle =
-                    Renderable.nestMany ViewSegment.placeholder present.right
-                        ++ List.reverse present.left
-                        ++ present.focus
-                        :: present.right
-                        ++ Renderable.nestMany ViewSegment.placeholder present.left
+                    Renderable.div [ bordered magenta, orient headSegment ]
+                        (Renderable.nestMany ViewSegment.placeholder rightAisle
+                            ++ List.reverse leftAisle
+                            ++ head
+                            :: rightAisle
+                            ++ Renderable.nestMany ViewSegment.placeholder leftAisle
+                        )
 
-                body : List (Renderable msg)
-                body =
-                    []
-
-                currentWindow =
-                    (Renderable.nestMany ViewSegment.placeholder present.right
-                        ++ List.reverse present.left
-                        ++ present.focus
-                        :: present.right
-                        ++ Renderable.nestMany ViewSegment.placeholder present.left
-                    )
-                        |> Renderable.div [ bordered white, orient headSegment ]
+                composition =
+                    Renderable.div [ bordered white, vertical ]
+                        [ aisle, highlightSingle brown body ]
             in
             prev
-                ++ currentWindow
+                ++ composition
                 :: next
                 |> Renderable.div [ bordered black, vertical ]
                 |> List.singleton
@@ -505,8 +520,10 @@ renderer =
     { consAisle =
         --< in any aisle, chew branches
         --< : b -> aisle -> aisle
-        --< : (A msg, Renderable msg) -> List (Renderable msg) -> List (Renderable msg)
-        Tuple.second >> (::)
+        --< : (A msg, Renderable msg) -> List (A msg, Renderable msg) -> List (A msg, Renderable msg)
+        --Field `consAisle` expected `B msg -> Aisle msg -> Aisle msg`,
+        --found `                     B msg -> List (Renderable msg, Renderable msg) -> List (Renderable msg, Renderable msg)`
+        (::)
     , join =
         --< in any past or future level, join the preferred segment with the aisles
         --< : a -> aisle -> aisle -> z
@@ -516,9 +533,11 @@ renderer =
     , joinBranch =
         --< in the present of the tree, join the focused branch with the aisles
         --< : b -> aisle -> aisle -> zB
-        --< : (A msg, Renderable msg) -> Aisle -> Aisle -> (A msg, Zipper (Renderable msg))
+        --< : (A msg, Renderable msg) -> Aisle -> Aisle -> (A msg, Zipper ((A msg, Renderable msg) msg))
+        --Field `joinBranch` expected `B msg -> Aisle msg -> Aisle msg -> ZB msg`, found
+        --                             B msg -> List (Renderable msg, Renderable msg) -> List (Renderable msg, Renderable msg) -> (A msg, Zipper (Renderable msg, Renderable msg))`
         \( a, b ) l r ->
-            ( a, Zipper.create b l r )
+            ( a, Zipper.create ( a, b ) l r )
     , consTrunk = consTrunk
     , mergeBranch = mergeBranch
     , mergeTree = mergeTree
@@ -534,18 +553,6 @@ renderer =
           else
             []
         )
-    , left =
-        [ if debugging then
-            \_ -> Html.text "☙"
-
-          else
-            \_ -> Html.text ""
-        ]
-    , right =
-        [ if debugging then
-            \_ -> Html.text "❧"
-
-          else
-            \_ -> Html.text ""
-        ]
+    , left = []
+    , right = []
     }

@@ -248,9 +248,20 @@ contextualize context =
             expand
         >> andIfContext [ isAisle, not << isFocus, not << isSpine ]
             implode
+        >> andIfContext [ isPeriphery ]
+            (andIfInnerMode
+                isFocusedChild
+                implode
+            )
+        >> andIfContext [ isPlaceholder ]
+            (andIfInnerMode
+                isFocusedChild
+                implode
+            )
 
 
 
+------ rules are definitely wrong!
 ---- Deconstruct ----
 
 
@@ -349,6 +360,12 @@ isBreadcrumb =
 isOffspring : ViewMode -> Bool
 isOffspring =
     path >> List.member Down
+
+
+{-| -}
+isFocusedChild : ViewMode -> Bool
+isFocusedChild =
+    path >> List.head >> (==) (Just Down)
 
 
 {-| -}
