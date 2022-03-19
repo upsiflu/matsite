@@ -19,17 +19,20 @@ A Segment consists of a unique **id**, an optional **caption**, and an optional 
 
 ## Layout of a Segment
 
-A Segment's momentary **ViewMode** depends on its position in the Tree and the accordion's state. It exclusively determines how a Segment is rendered.
+The `ViewMode` determines how Segments are rendered differently, depending on their position in the tree, and on the Accordion's state.
+
+- When a Segment is _collapsed_, only the caption will display; when _expanded_, both caption and body (if any) will display. For now, the Accordion decides on this mode. Besides **Default** and **Collapsed**, there is a third mode, namely **Placeholder**, which causes the Segment to render as a buffer for the present to remain centered.
+
+- A Segment's momentary **role** depends on the relative `path` from the Focus in the Tree
 
 1. `*P*` **Parent**: collapsed
 2. `*F*` **Focus**: expanded if accordion is expanded
 3. `A,B` **Aisle**: expanded if accordion is expanded
 4. `P,F` **Breadcrumb**: collapsed
 5. `L,R` **BreadcrumbAisle**: collapsed
-6. `:_:` **Placeholder**: hidden but takes up space
-7. `. .` **Imploded**: takes up no space
+6. `:_:` **Periphery**: imploded (takes no space at all)
+7. `. .` **None**
 
-When a Segment is **collapsed**, only the caption will display; when **expanded**, both caption and body will display.
 
 ## Interactivity of a Segment
 
