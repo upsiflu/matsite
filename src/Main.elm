@@ -40,7 +40,7 @@ main =
                         { url | fragment = Just (Accordion.location initialAccordion) }
                 in
                 initialModel
-                    |> (case url.fragment of
+                    |> (case Debug.log "initialize with fragment" url.fragment of
                             Nothing ->
                                 update (LinkClicked (Browser.Internal initialUrl))
 
@@ -80,14 +80,16 @@ update msg model =
             ( model, Nav.load href )
 
         UrlChanged url ->
-            ( if url /= model.url then
-                { model | accordion = Accordion.find url model.accordion, url = url }
+            let
+                newModel =
+                    if Debug.log "new url" url /= Debug.log "current url" model.url then
+                        { model | accordion = Accordion.find url model.accordion, url = url }
 
-              else
-                model
-            , url.fragment
-                |> Maybe.map sendMessage
-                |> Maybe.withDefault Cmd.none
+                    else
+                        model
+            in
+            ( newModel
+            , Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> sendMessage
             )
 
 

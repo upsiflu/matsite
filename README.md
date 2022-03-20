@@ -89,5 +89,5 @@ npm install -g elm-live
 ```
 
 ```sh
-elm-live src/Main.elm -- --output=main.js
+elm-live src/Main.elm -v --host=192.168.178.93 --pushstate --port=8000 -- --output=main.js --debug
 ```

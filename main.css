@@ -1,0 +1,16 @@
+.default,
+.collapsed {
+  position: relative;
+}
+.Center {
+  width: calc(100vw - 8rem);
+  overflow: scroll;
+  flex-shrink: 0;
+}
+.Center .🀱 {
+  min-width: 21rem;
+}
+
+.🁣:not(.hasBody) {
+  /* rotated text */
+}

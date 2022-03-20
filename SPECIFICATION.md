@@ -54,10 +54,11 @@ On the screen, you can always see three vertically laid-out partitions: the `pas
                          P1
                          P0
                          *P
-_b0_b1_r0_r1:L1 L0 A1 A0 *F B0 B1 R0 R1:l1_l0_a1_a0_ 
+_b0_b1_r0_r1:L1 L0 X1 X0 *F Y0 Y1 R0 R1:l1_l0_a1_a0_ 
                          F0
                          F1
 ```
+
 - _`L` are horizontal Segments from left `Aisle` or `Breadcrumb`_
 - _`R` are horizontal right `BreadcrumbAisle` Segments_
 - _`*F`, `A` and `B` are the `Focus` with horizontal `Aisle`s_

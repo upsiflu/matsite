@@ -27,7 +27,7 @@ _To render Segments differently based on their position in the tree, use
 
 -}
 
-import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode(..))
+import Accordion.Segment.ViewMode as ViewMode exposing (Role(..), ViewMode(..))
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
@@ -92,39 +92,61 @@ empty =
 view : ViewMode -> Segment msg -> Html msg
 view mode s =
     let
-        default =
+        defaultLayout =
+            if
+                s.orientation
+                    == Horizontal
+                    && s.body
+                    == Nothing
+            then
+                [ id segmentId, css [ overflowY scroll, Css.maxWidth (rem 4), position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
+
+            else
+                [ id segmentId, css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
+
+        collapsedLayout =
+            if ViewMode.role mode == Focus then
+                if s.orientation == Horizontal then
+                    [ id segmentId, css [ overflowY scroll, Css.maxWidth zero, position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
+
+                else
+                    [ id segmentId, css [ overflowY scroll, Css.width (rem 21), Css.maxHeight zero, position relative ], ViewMode.toClass mode ]
+
+            else
+                defaultLayout
+
+        placeholderLayout =
+            if s.orientation == Horizontal then
+                [ css [ overflowY scroll, Css.maxWidth zero, position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
+
+            else
+                [ css [ overflowY scroll, Css.width (rem 21), Css.maxHeight zero, position relative ], ViewMode.toClass mode ]
+
+        orientationToString =
             case s.orientation of
-                Vertical ->
-                    [ css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
-
                 Horizontal ->
-                    [ css [ overflowY scroll, Css.width (rem 4), position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
+                    "🀱"
 
-        imploded =
-            [ css [ opacity (num 0.6), maxHeight zero, maxWidth zero, overflow Css.hidden ] ]
+                Vertical ->
+                    "🁣"
 
-        horizontalPlaceholding =
-            [ css [ opacity (num 0.8), overflow Css.hidden, maxHeight zero ] ]
-
-        expanded =
-            [ id segmentId, css [ maxHeight (calc (vh 100) minus (rem 4)), overflowY scroll, flexGrow (num 1), position relative ] ]
-
-        collapsed =
-            [ id segmentId, css [ maxHeight (rem 4), overflow Css.hidden, position relative ] ]
+        viewOrientation =
+            Html.div [ css [ position absolute, left zero, top zero ] ]
+                [ Html.text orientationToString ]
 
         ----
         viewOverlay =
             Html.text
                 >> List.singleton
                 >> Html.div
-                    [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgb 0 0 100), Css.property "writing-mode" "horizontal-tb" ] ]
+                    [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgba 255 255 0 0.1), Css.property "writing-mode" "horizontal-tb" ] ]
 
         segmentId =
-            if ViewMode.isVisible mode then
-                s.id
+            if mode == Placeholder then
+                ""
 
             else
-                ""
+                s.id
 
         viewCaption =
             Maybe.withDefault "𐫱"
@@ -132,76 +154,46 @@ view mode s =
 
         viewBody =
             Maybe.withDefault (Html.text "")
+
+        highlight =
+            case ViewMode.role mode of
+                Parent ->
+                    css [ backgroundColor (rgb 10 10 255) ]
+
+                Aisle ->
+                    css [ backgroundColor (rgba 255 255 255 0.1) ]
+
+                Focus ->
+                    css [ backgroundColor (rgba 0 0 255 0.5) ]
+
+                _ ->
+                    css []
+
+        structureClass =
+            classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", s.body /= Nothing ) ]
     in
     case mode of
-        Focus config ->
-            Html.div
-                (default
-                    ++ (if config.expanded then
-                            expanded
-
-                        else
-                            collapsed
-                       )
-                )
+        Default path ->
+            Html.div [ ViewMode.toClass mode, class "default", class orientationToString, id segmentId, structureClass ]
                 [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
+                , viewOrientation
                 , ViewMode.view mode
                 ]
 
-        Spine config ->
-            Html.div
-                (default
-                    ++ (if config.expanded then
-                            expanded
-
-                        else
-                            collapsed
-                       )
-                )
+        Collapsed path ->
+            Html.div [ ViewMode.toClass mode, class "collapsed", class orientationToString, id segmentId, structureClass ]
                 [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
+                , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
-                , ViewMode.view mode
-                ]
-
-        Aisle config ->
-            Html.div
-                (default
-                    ++ (if config.expanded then
-                            expanded
-
-                        else
-                            collapsed
-                       )
-                )
-                [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
-                , viewBody s.body
-                , ViewMode.view mode
-                ]
-
-        Periphery config ->
-            Html.div
-                (default
-                    ++ (if not config.visible then
-                            imploded
-
-                        else
-                            collapsed
-                       )
-                )
-                [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
-                , viewBody s.body
+                , viewOrientation
                 , ViewMode.view mode
                 ]
 
         Placeholder ->
-            Html.div (default ++ horizontalPlaceholding)
+            Html.div [ ViewMode.toClass mode, class "placeholder", class orientationToString, id segmentId, structureClass ]
                 [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection (ViewMode.path mode) |> String.join "")
                 , viewBody s.body
                 , ViewMode.view mode
                 ]

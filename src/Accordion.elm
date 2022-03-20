@@ -2,7 +2,7 @@ module Accordion exposing
     ( Accordion
     , site
     , flip, find
-    , location
+    , location, focus
     , view
     , anarchiveX, vimeoX
     )
@@ -20,7 +20,9 @@ module Accordion exposing
 
 # Deconstruct
 
-@docs location
+Get textual representations fo use in Url and animation
+
+@docs location, focus
 
 
 # View
@@ -33,15 +35,15 @@ module Accordion exposing
 
 -}
 
-import Accordion.Renderable as Renderable exposing (Renderable)
 import Accordion.Segment as Segment exposing (Orientation(..), Segment)
-import Accordion.Segment.ViewMode as ViewSegment
+import Accordion.Segment.ViewMode as ViewSegment exposing (Role(..), ViewMode(..))
 import Css exposing (..)
 import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Snippets.Festival as Festival
+import String exposing (left)
 import Url exposing (Url)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
@@ -67,17 +69,46 @@ flip (Accordion config) =
 
 
 {-| -}
-location : Accordion msg -> String
-location (Accordion config) =
-    Tree.focus config.tree |> .id
+reset : Accordion msg -> Accordion msg
+reset (Accordion config) =
+    Accordion { config | collapsed = False }
 
 
 {-| -}
+location : Accordion msg -> String
+location (Accordion config) =
+    if Tree.isRoot config.tree then
+        ""
+
+    else
+        config.tree |> Tree.up |> Tree.focus |> .id
+
+
+{-| -}
+focus : Accordion msg -> String
+focus (Accordion config) =
+    if Tree.isRoot config.tree then
+        Debug.log "Weirdly, this tree's focus is on root" ""
+
+    else
+        config.tree |> Tree.focus |> .id |> Debug.log "This tree is not on root"
+
+
+{-| The Url encodes the parent of the focus!
+-}
 find : Url -> Accordion msg -> Accordion msg
-find =
-    .fragment
-        >> Maybe.map (\str -> .id >> (==) str |> Find |> Tree.go |> mapTree)
-        >> Maybe.withDefault identity
+find { fragment } =
+    let
+        goToId =
+            \str -> .id >> (==) str |> Find |> Tree.go
+    in
+    case Debug.log "Find path" fragment of
+        Just parent ->
+            mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
+                >> reset
+
+        Nothing ->
+            mapTree Tree.root |> Debug.log "Sadly, there was no fragment."
 
 
 {-| -}
@@ -292,272 +323,160 @@ vimeoX =
 view : Accordion msg -> Html msg
 view (Accordion config) =
     let
-        myFocus =
-            if Debug.log "config" config.collapsed then
-                ViewSegment.collapse ViewSegment.focus
+        viewMode =
+            if config.collapsed then
+                Collapsed
 
             else
-                ViewSegment.focus
+                Default
+
+        toHtml : C msg -> Html msg
+        toHtml { up, left, x, here, y, right, down } =
+            let
+                direction =
+                    case Tree.focus config.tree |> .orientation of
+                        Horizontal ->
+                            row
+
+                        Vertical ->
+                            column
+
+                north =
+                    List.reverse up
+
+                west =
+                    List.reverse left
+
+                center =
+                    List.reverse x
+                        ++ here
+                        :: y
+                        |> Html.div [ class "Center", css [ displayFlex, flexDirection direction ] ]
+
+                east =
+                    right
+
+                south =
+                    down
+
+                present =
+                    Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
+                        (west ++ center :: east)
+            in
+            north
+                ++ present
+                :: south
+                |> Html.div [ class "Accordion", css [ displayFlex, flexDirection column ] ]
     in
     config.tree
+        |> Tree.zipDirections
+        |> Tree.map (\( path, segment ) -> ( viewMode path, segment ))
         |> Tree.view
-            (Tree.Custom renderer
-                { renderFocus = Tuple.pair myFocus
-                , renderPeriphery = Tuple.pair ViewSegment.periphery
-                , transformation =
-                    Tree.zipDirections
-                        >> Tree.map
-                            (\( path, ( viewmode, segment ) ) -> ( ViewSegment.setPath path viewmode, segment ))
-                        >> Tree.mapSpine (Tuple.mapFirst ViewSegment.makeSpine)
-                        >> Tree.mapAisleNodes (Tuple.mapFirst ViewSegment.makeAisle)
-                }
-            )
-        |> List.singleton
-        |> Html.div [ css [ backgroundColor (rgb 22 99 11), padding (rem 1) ] ]
-
-
-type alias Aisle msg =
-    List (B msg)
+            (Tree.Uniform renderTree { toHtml = toHtml })
 
 
 type alias A msg =
     ( ViewSegment.ViewMode, Segment msg )
 
 
-{-| a _level_ in the past or future
-Depending on its orientation, its third element (next) will need to be pushed back
--}
-type alias Z msg =
-    ( Aisle msg, A msg, Aisle msg )
-
-
-{-| the _current_ level, tagged by its node
--}
-type alias ZB msg =
-    ( A msg, Zipper (B msg) )
-
-
-{-| branch, tagged by its node
--}
 type alias B msg =
-    ( A msg, ( Renderable msg, Renderable msg ) )
+    { orientation : Orientation, role : ViewSegment.Role, here : Html msg, left : List (Html msg), right : List (Html msg), down : List (Html msg) }
 
 
-{-| contains accumulated levels, either "cis" or "trans".
-We accumulate vertical rights into the trans side of the tuple
-whereas we eagerly render horizontal levels
--}
-type alias Trunk msg =
-    ( List (Renderable msg), List (Renderable msg) )
+type alias C msg =
+    { up : List (Html msg), left : List (Html msg), x : List (Html msg), here : Html msg, y : List (Html msg), right : List (Html msg), down : List (Html msg) }
 
 
-renderer :
-    Foldr
-        --f:
-        {}
-        --a:
-        (A msg)
-        --aisle:
-        (Aisle msg)
-        --z:
-        (Z msg)
-        ---zB: (List (Html msg))
-        (ZB msg)
-        --trunk:
-        (Trunk msg)
-        --b:
-        (B msg)
-        --e:
-        (Html msg)
-renderer =
-    let
-        orient { orientation } =
-            case orientation of
-                Horizontal ->
-                    horizontal
-
-                Vertical ->
-                    vertical
-
-        vertical =
-            css [ displayFlex, justifyContent flexStart, alignItems center, flexDirection column ]
-
-        horizontal =
-            css [ displayFlex, justifyContent center ]
-
-        ( leftAligned, rightAligned ) =
-            ( css [ justifyContent Css.left ], css [ justifyContent Css.right ] )
-
-        ( red, green, blue ) =
-            ( rgb 200 20 40, rgb 10 200 80, rgb 20 20 140 )
-
-        ( black, white, yellow ) =
-            ( rgb 0 0 0, rgb 255 255 255, rgb 255 255 0 )
-
-        ( orange, cyan, magenta ) =
-            ( rgb 250 180 10, rgb 0 180 205, rgb 205 60 180 )
-
-        ( brown, grey ) =
-            ( rgb 110 70 20, rgb 90 90 90 )
-
-        debugging =
-            False
-
-        bordered color =
-            css <|
-                if debugging then
-                    [ border3 (px 4) solid color ]
-
-                else
-                    []
-
-        highlightSingle color x =
-            Renderable.div
-                [ css <|
-                    if debugging then
-                        [ backgroundColor color ]
-
-                    else
-                        []
-                ]
-                [ x ]
-
-        highlightMany color =
-            List.map (highlightSingle color)
-
-        ---------------------------------------------------------------------------------------------------------
-        flattenAisle : List (B msg) -> List (Renderable msg)
-        flattenAisle =
-            List.map renderBranch
-
-        renderBranch : B msg -> Renderable msg
-        renderBranch ( a, ( head, body ) ) =
-            Renderable.div [] [ head, body ]
-
-        ----------------------------------------------
-        consTrunk :
-            ( Aisle msg, A msg, Aisle msg )
-            -> ( List (Renderable msg), List (Renderable msg) )
-            -> ( List (Renderable msg), List (Renderable msg) )
-        consTrunk ( left, ( currentViewMode, currentSegment ) as current, right ) ( prev0, next0 ) =
-            --< in any branch, chew towards the node of the branch
-            --< in the past, chew towards the present of the tree
-            --< We accumulate vertical futures into the trans side of the tuple
-            --< : z -> trunk -> trunk
-            let
-                currentRenderable =
-                    [ Renderable.singleton currentSegment ]
-                        |> Renderable.div [ bordered green ]
-
-                ( leftAisle, rightAisle ) =
-                    ( flattenAisle left, flattenAisle right )
-            in
-            Renderable.nestAisle currentViewMode <|
-                case currentSegment.orientation of
+{-| -}
+renderBranch : Branch.Fold {} (A msg) (B msg)
+renderBranch =
+    { init =
+        \( mode, segment ) ->
+            { orientation = segment.orientation, role = ViewSegment.role mode, here = Segment.view mode segment, left = [], right = [], down = [] }
+    , grow =
+        { downwards =
+            \( mode, segment ) b ->
+                case segment.orientation of
                     Horizontal ->
-                        ( prev0
-                            ++ [ Renderable.nestMany ViewSegment.placeholder rightAisle
-                                    ++ leftAisle
-                                    ++ Renderable.div [ bordered red ] [ currentRenderable ]
-                                    :: rightAisle
-                                    ++ Renderable.nestMany ViewSegment.placeholder leftAisle
-                                    |> Renderable.div [ horizontal, bordered brown ]
-                               ]
-                        , next0
-                        )
+                        { b | right = b.right ++ [ Segment.view mode segment ] }
 
                     Vertical ->
-                        ( prev0
-                            ++ [ leftAisle ++ [ currentRenderable ] |> Renderable.div [ vertical, bordered yellow ] ]
-                        , rightAisle ++ next0
-                        )
+                        { b | down = b.down ++ [ Segment.view mode segment ] }
+        , leftwards =
+            \{ orientation, here } b ->
+                case orientation of
+                    Horizontal ->
+                        { b | left = here :: b.left }
 
-        mergeBranch : ( ViewSegment.ViewMode, Segment msg ) -> ( List (Renderable msg), List (Renderable msg) ) -> ( A msg, ( Renderable msg, Renderable msg ) )
-        mergeBranch (( currentViewMode, currentSegment ) as current) ( prev, next ) =
-            --< in any branch, merge its node with its chewed future
-            --< The directions: Down
-            --< : a -> trunk -> b
-            --< : ( ViewMode, Segment ) -> Tuple ( Aisle msg ) -> ( A msg, Renderable msg)
-            let
-                subsegments =
-                    List.reverse prev
-                        ++ next
-                        |> Renderable.div [ vertical, bordered cyan ]
-            in
-            ( Renderable.singleton currentSegment |> Renderable.nest currentViewMode
-            , Renderable.div [ vertical, bordered blue ] [ subsegments ] |> Renderable.nest currentViewMode
-            )
-                |> Tuple.pair current
+                    Vertical ->
+                        { b | down = here :: b.down }
+        , rightwards =
+            \{ orientation, here } b ->
+                case orientation of
+                    Horizontal ->
+                        { b | right = here :: b.left }
 
-        mergeTree : ( A msg, Zipper (B msg) ) -> ( List (Renderable msg), List (Renderable msg) ) -> Html msg
-        mergeTree ( ( _, headSegment ), present ) ( prev, next ) =
-            --< in the tree, merge its joined present with its chewed context
-            --< : zB -> trunk -> result
-            --< : (A, Zipper (Renderable msg)) -> Trunk msg -> Html msg
-            let
-                ( leftAisle, ( a, ( head, body ) ), rightAisle ) =
-                    ( flattenAisle present.left, present.focus, flattenAisle present.right )
+                    Vertical ->
+                        { b | down = b.down ++ [ here ] }
+        }
+    }
 
-                aisle : Renderable msg
-                aisle =
-                    Renderable.div [ bordered magenta, orient headSegment ]
-                        (Renderable.nestMany ViewSegment.placeholder rightAisle
-                            ++ List.reverse leftAisle
-                            ++ head
-                            :: rightAisle
-                            ++ Renderable.nestMany ViewSegment.placeholder leftAisle
-                        )
 
-                composition =
-                    Renderable.div [ bordered white, vertical ]
-                        [ aisle, highlightSingle brown body ]
-            in
-            prev
-                ++ composition
-                :: next
-                |> Renderable.div [ bordered black, vertical ]
-                |> List.singleton
-                |> Renderable.div [ css [ Css.width (px 14000) ] ]
-                |> List.singleton
-                |> Renderable.div [ css [ backgroundColor black, overflowX scroll ] ]
-                |> Renderable.render ViewSegment.focus
-    in
-    { consAisle =
-        --< in any aisle, chew branches
-        --< : b -> aisle -> aisle
-        --< : (A msg, Renderable msg) -> List (A msg, Renderable msg) -> List (A msg, Renderable msg)
-        --Field `consAisle` expected `B msg -> Aisle msg -> Aisle msg`,
-        --found `                     B msg -> List (Renderable msg, Renderable msg) -> List (Renderable msg, Renderable msg)`
-        (::)
-    , join =
-        --< in any past or future level, join the preferred segment with the aisles
-        --< : a -> aisle -> aisle -> z
-        --< : (ViewMode, Segment) -> Aisle -> Aisle -> (Aisle msg, (ViewMode, Segment), Aisle msg)
-        \a prev next ->
-            ( List.reverse prev, a, next )
-    , joinBranch =
-        --< in the present of the tree, join the focused branch with the aisles
-        --< : b -> aisle -> aisle -> zB
-        --< : (A msg, Renderable msg) -> Aisle -> Aisle -> (A msg, Zipper ((A msg, Renderable msg) msg))
-        --Field `joinBranch` expected `B msg -> Aisle msg -> Aisle msg -> ZB msg`, found
-        --                             B msg -> List (Renderable msg, Renderable msg) -> List (Renderable msg, Renderable msg) -> (A msg, Zipper (Renderable msg, Renderable msg))`
-        \( a, b ) l r ->
-            ( a, Zipper.create ( a, b ) l r )
-    , consTrunk = consTrunk
-    , mergeBranch = mergeBranch
-    , mergeTree = mergeTree
-    , leaf =
-        ( if debugging then
-            [ \_ -> Html.text "❦" ]
+renderTree : Tree.Fold {} (A msg) (B msg) (C msg)
+renderTree =
+    { init =
+        \{ orientation, here, down } ->
+            case orientation of
+                Horizontal ->
+                    { up = []
+                    , left = []
+                    , x = []
+                    , here = here
+                    , y = []
+                    , right = down
+                    , down = []
+                    }
 
-          else
-            []
-        , if debugging then
-            [ \_ -> Html.text "" ]
+                Vertical ->
+                    { up = []
+                    , left = []
+                    , x = []
+                    , here = here
+                    , y = []
+                    , right = []
+                    , down = down
+                    }
+    , branch = renderBranch
+    , grow =
+        { upwards =
+            \( mode, segment ) c ->
+                case segment.orientation of
+                    Horizontal ->
+                        { c | left = c.left ++ [ Segment.view mode segment ] }
 
-          else
-            []
-        )
-    , left = []
-    , right = []
+                    Vertical ->
+                        { c | up = Segment.view mode segment :: c.up }
+        , leftwards =
+            \branch c ->
+                case ( branch.role, branch.orientation ) of
+                    ( Aisle, _ ) ->
+                        { c | x = c.x ++ [ branch.here ] }
+
+                    ( _, Horizontal ) ->
+                        { c | left = c.left ++ [ branch.here ] }
+
+                    ( _, Vertical ) ->
+                        { c | up = c.up ++ [ branch.here ] }
+        , rightwards =
+            \branch c ->
+                case ( branch.role, branch.orientation ) of
+                    ( Aisle, _ ) ->
+                        { c | y = c.y ++ [ branch.here ] }
+
+                    ( _, Horizontal ) ->
+                        { c | right = c.right ++ [ branch.here ] }
+
+                    ( _, Vertical ) ->
+                        { c | down = c.down ++ [ branch.here ] }
+        }
     }

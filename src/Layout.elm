@@ -58,17 +58,7 @@ typography =
             ]
         , Global.selector "p" pStyle
         , Global.selector "h2" h2Style
-        , Global.selector ".E" expandedStyle
-        , Global.selector ".F" focusedStyle
         ]
-
-
-expandedStyle =
-    [ backgroundColor theme.raised ]
-
-
-focusedStyle =
-    [ backgroundColor theme.blue ]
 
 
 unit fu =
@@ -122,7 +112,7 @@ anchoredLabel t =
             ]
         |> List.singleton
         >> Html.a
-            [ Attributes.href ("#" ++ sanitisedString)
+            [ Attributes.href sanitisedString
             , css
                 [ link
                     [ textDecoration inherit
