@@ -2,8 +2,9 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withBody, withOrientation, withoutCaption, withAdditionalClasses
+    , withBody, withOrientation, withoutCaption, withAdditionalAttributes
     , view
+    , orientationToString
     )
 
 {-| contain the immutable site content
@@ -18,7 +19,7 @@ _To render Segments differently based on their position in the tree, use
 
 # Map
 
-@docs withBody, withOrientation, withoutCaption, withAdditionalClasses
+@docs withBody, withOrientation, withoutCaption, withAdditionalAttributes
 
 
 # View
@@ -43,7 +44,7 @@ type alias Segment msg =
     , id : String
     , body : Maybe (Html msg)
     , orientation : Orientation
-    , additionalClasses : List String
+    , additionalAttributes : List (Html.Attribute Never)
     }
 
 
@@ -72,9 +73,9 @@ withoutCaption segment =
 
 
 {-| -}
-withAdditionalClasses : List String -> Segment msg -> Segment msg
-withAdditionalClasses cc segment =
-    { segment | additionalClasses = cc ++ segment.additionalClasses }
+withAdditionalAttributes : List (Html.Attribute Never) -> Segment msg -> Segment msg
+withAdditionalAttributes cc segment =
+    { segment | additionalAttributes = cc ++ segment.additionalAttributes }
 
 
 {-| -}
@@ -84,7 +85,7 @@ singleton id =
     , id = String.replace " " "-" id
     , body = Nothing
     , orientation = Vertical
-    , additionalClasses = []
+    , additionalAttributes = []
     }
 
 
@@ -95,7 +96,7 @@ empty =
     , id = "_"
     , body = Nothing
     , orientation = Vertical
-    , additionalClasses = []
+    , additionalAttributes = []
     }
 
 
@@ -119,35 +120,9 @@ view mode s =
             else
                 [ id segmentId, css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
 
-        collapsedLayout =
-            if ViewMode.role mode == Focus then
-                if s.orientation == Horizontal then
-                    [ id segmentId, css [ overflowY scroll, Css.maxWidth zero, position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
-
-                else
-                    [ id segmentId, css [ overflowY scroll, Css.width (rem 21), Css.maxHeight zero, position relative ], ViewMode.toClass mode ]
-
-            else
-                defaultLayout
-
-        placeholderLayout =
-            if s.orientation == Horizontal then
-                [ css [ overflowY scroll, Css.maxWidth zero, position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
-
-            else
-                [ css [ overflowY scroll, Css.width (rem 21), Css.maxHeight zero, position relative ], ViewMode.toClass mode ]
-
-        orientationToString =
-            case s.orientation of
-                Horizontal ->
-                    "🀱"
-
-                Vertical ->
-                    "🁣"
-
         viewOrientation =
             Html.div [ css [ position absolute, left zero, top zero ] ]
-                [ Html.text orientationToString ]
+                [ Html.text (orientationToString s.orientation) ]
 
         ----
         viewOverlay =
@@ -184,17 +159,16 @@ view mode s =
                 _ ->
                     css []
 
-        additionalClasses =
-            s.additionalClasses
-                |> List.map (\c -> ( c, True ))
-                |> classList
+        additionalAttributes =
+            s.additionalAttributes
+                |> List.map (Attributes.map never)
 
         structureClass =
             classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", s.body /= Nothing ) ]
     in
     case mode of
         Default path ->
-            Html.div [ ViewMode.toClass mode, class "default", class orientationToString, id segmentId, structureClass, additionalClasses ]
+            Html.div (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -203,7 +177,7 @@ view mode s =
                 ]
 
         Collapsed path ->
-            Html.div [ ViewMode.toClass mode, class "collapsed", class orientationToString, id segmentId, structureClass, additionalClasses ]
+            Html.div (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -212,8 +186,18 @@ view mode s =
                 ]
 
         Placeholder ->
-            Html.div [ ViewMode.toClass mode, class "placeholder", class orientationToString, id segmentId, structureClass, additionalClasses ]
+            Html.div (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewBody s.body
                 , ViewMode.view mode
                 ]
+
+
+{-| -}
+orientationToString orientation =
+    case orientation of
+        Horizontal ->
+            "🀱"
+
+        Vertical ->
+            "🁣"

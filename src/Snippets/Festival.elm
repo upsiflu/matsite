@@ -35,13 +35,18 @@ video =
             , Attr.style "left" "0"
             , Attr.style "width" "100%"
             , Attr.style "height" "100%"
+            , Attr.attribute "byline" "false"
+            , Attr.attribute "portrait" "false"
             , Attr.src "https://player.vimeo.com/video/685421693?h=482dd66dac&app_id=122963"
             , Attr.width 1280
             , Attr.height 720
             , Attr.attribute "frameborder" "0"
-            , Attr.attribute "allow" "autoplay; fullscreen; picture-in-picture"
+            , Attr.attribute "allow" "fullscreen; picture-in-picture"
             , Attr.attribute "allowfullscreen" ""
             , Attr.title "&#039;MaT - Foregrounding the background&#039; at Radialsystem 2022"
+
+            -- , Attr.attribute "color" "50e678"
+            , Attr.attribute "dnt" "true"
             ]
             []
         ]

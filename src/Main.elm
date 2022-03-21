@@ -12,6 +12,8 @@ import Url exposing (Url)
 
 
 port pleaseCenter : String -> Cmd msg
+
+
 port pleaseConfirm : String -> Cmd msg
 
 
@@ -90,8 +92,8 @@ update msg model =
                         model
             in
             ( newModel
-            , Cmd.batch 
-                [Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> pleaseCenter
+            , Cmd.batch
+                [ Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> pleaseCenter
                 , Accordion.location newModel.accordion |> Debug.log "confirming" |> pleaseConfirm
                 ]
             )
@@ -122,7 +124,7 @@ view model =
                 , backgroundColor (rgb 100 200 200)
                 ]
             ]
-            [ Accordion.anarchiveX ]
+            []
         , Html.div
             [ css
                 [ displayFlex

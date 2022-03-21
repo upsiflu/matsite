@@ -77,6 +77,8 @@
 
 		app.ports.pleaseCenter.subscribe(function (message) {
 			document.getElementById(message)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+			document.getElementsByClassName("Center")[0]?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+			console.log (document.getElementsByClassName("Center"));
 		});
 		app.ports.pleaseConfirm.subscribe(function (message) {
 			document.getElementById(message)?.classList.add("blink");

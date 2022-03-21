@@ -1,102 +1,98 @@
-.Accordion {
+.Accordion1 {
   align-items: center;
-  min-width  : fit-content;
+  min-width: fit-content;
 }
 
-.default,
-.collapsed {
-  position   : relative;
-  max-height : calc(100vh - 4rem);
-  overflow   : scroll;
-  transition : all 1s;
+.Accordion1 .default,
+.Accordion1 .collapsed {
+  position: relative;
+  max-height: calc(100vh - 4rem);
+  overflow: scroll;
+  transition: all 1s;
   flex-shrink: 0;
 }
 
-.Accordion>.🁣 {
-
+.Accordion1 > .🁣 {
   min-width: 20rem;
 }
 
-.Present {
-  min-width      : 100vw;
+.Accordion1 .Present {
+  min-width: 100vw;
   justify-content: center;
 }
 
-.Center {
-  width      : 100vw;
-  overflow   : scroll;
+.Accordion1 .Center {
+  width: 100vw;
+  overflow: scroll;
   flex-shrink: 0;
-  padding    : 0 2rem;
-  position   : relative;
-  z-index    : 1;
-}
-
-.west,
-.east {
+  padding: 0 2rem;
   position: relative;
-  z-index : 2;
-  margin  : -1.5rem -2rem;
+  z-index: 1;
 }
 
-.east {
-  background: rgba(0, 0, 0, .5);
-
+.Accordion1 .west,
+.Accordion1 .east {
+  position: relative;
+  z-index: 2;
+  margin: -1.5rem -2rem;
 }
 
-.Center .🀱.hasBody {
+.Accordion1 .east {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.Accordion1 .Center .🀱.hasBody {
   min-width: 21rem;
 }
 
-.Center {}
-
-.west {
+.Accordion1 .west {
   justify-content: flex-end;
 }
 
-.east {
+.Accordion1 .east {
   justify-content: flex-start;
 }
 
-.🀱:not(.hasBody) {
+.Accordion1 .🀱:not(.hasBody) {
   /* rotated text */
   writing-mode: vertical-rl;
 }
 
-.F {
-  background: rgba(255, 255, 255, .1)
+.Accordion1 .F {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.P {
+.Accordion1 .P {
   /* background: rgba(0, 0, 255, .8) */
   /* outline       : 1px dashed blue;
   outline-offset: -1px; */
-  background: rgba(255, 255, 255, .1);
-  overflow  : visible;
-  outline   : none;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: visible;
+  outline: none;
 }
 
-.P H1 {
-  overflow   : visible;
+.Accordion1 .P H1 {
+  overflow: visible;
   white-space: nowrap;
 }
 
-.p {
-  background: rgba(255, 255, 255, .1)
+.Accordion1 .p {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.B>a {
-  background    : hsl(0, 0%, 10%);
-  height        : fit-content;
-  outline       : none;
+.Accordion1 .B > a {
+  background: hsl(0, 0%, 10%);
+  height: fit-content;
+  outline: none;
   mix-blend-mode: lighten;
 }
 
-.two-wide {
-  width    : 42rem rem;
+.Accordion1 .two-wide {
+  width: 42rem rem;
   max-width: calc(100vw - 4rem);
 }
 
-.grow {
+.Accordion1 .grow {
   flex-grow: 1;
   max-width: calc(100vw - 4rem);
 }

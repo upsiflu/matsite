@@ -35,6 +35,7 @@ Get textual representations fo use in Url and animation
 
 -}
 
+import Accordion.Attributable as Cls exposing (Att)
 import Accordion.Segment as Segment exposing (Orientation(..), Segment)
 import Accordion.Segment.ViewMode as ViewSegment exposing (Role(..), ViewMode(..))
 import Css exposing (..)
@@ -208,7 +209,7 @@ site =
         video =
             Segment.singleton ""
                 |> Segment.withOrientation Horizontal
-                |> Segment.withAdditionalClasses [ "grow" ]
+                |> Segment.withAdditionalAttributes [ class "grow" ]
                 |> Segment.withBody Festival.video
                 |> Branch.singleton
 
@@ -327,6 +328,91 @@ vimeoX =
 
 
 {-| -}
+toHtml2 : Orientation -> C msg -> Html msg
+toHtml2 orientation { up, left, x, here, y, right, down } =
+    let
+        addOffsets : String -> List (R msg) -> List (R msg)
+        addOffsets side =
+            List.indexedMap (\offset -> Cls.withAttributes [ class side, css [ Css.property "--offset" (String.fromInt offset) ] ])
+
+        north =
+            addOffsets "north" up
+                |> List.reverse
+
+        west =
+            addOffsets "west" left
+                |> List.reverse
+
+        nearWest =
+            addOffsets "nearWest" x
+                |> List.reverse
+
+        center =
+            [ Cls.withAttributes [ class "here" ] here ]
+
+        nearEast =
+            addOffsets "nearEast" y
+
+        east =
+            addOffsets "east" right
+
+        south =
+            addOffsets "south" down
+    in
+    [ north, west, nearWest, center, nearEast, east, south ]
+        |> List.concat
+        |> List.map (Cls.viewWith [ class ("(" ++ Segment.orientationToString orientation ++ ")") ])
+        |> Html.div [ class "Accordion2" ]
+
+
+{-| -}
+toHtml : Orientation -> C msg -> Html msg
+toHtml orientation { up, left, x, here, y, right, down } =
+    let
+        direction =
+            case orientation of
+                Horizontal ->
+                    row
+
+                Vertical ->
+                    column
+
+        north =
+            List.reverse up |> List.map Cls.view
+
+        west =
+            List.reverse left |> List.map Cls.view
+
+        center =
+            List.reverse x
+                ++ here
+                :: y
+                |> List.map Cls.view
+                |> Html.div [ class "Center", css [ displayFlex, flexDirection direction ] ]
+
+        east =
+            List.map Cls.view right
+
+        south =
+            List.map Cls.view down
+
+        maxLenght =
+            Basics.max (List.length west) (List.length east) |> (*) 4 |> toFloat
+
+        withSymmetricWidth className =
+            Html.div [ class className, css [ Css.width (rem maxLenght), flexShrink zero, displayFlex, flexDirection row ] ]
+
+        present =
+            Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
+                [ withSymmetricWidth "west" west, center, withSymmetricWidth "east" east ]
+    in
+    north
+        ++ present
+        :: south
+        |> Html.div [ class "Accordion1", css [ displayFlex, flexDirection column ] ]
+
+
+{-| -}
 view : Accordion msg -> Html msg
 view (Accordion config) =
     let
@@ -337,73 +423,35 @@ view (Accordion config) =
             else
                 Default
 
-        toHtml : C msg -> Html msg
-        toHtml { up, left, x, here, y, right, down } =
-            let
-                direction =
-                    case Tree.focus config.tree |> .orientation of
-                        Horizontal ->
-                            row
-
-                        Vertical ->
-                            column
-
-                north =
-                    List.reverse up
-
-                west =
-                    List.reverse left
-
-                center =
-                    List.reverse x
-                        ++ here
-                        :: y
-                        |> Html.div [ class "Center", css [ displayFlex, flexDirection direction ] ]
-
-                east =
-                    right
-
-                south =
-                    down
-
-                wLength =
-                    List.length west
-
-                eLenght =
-                    List.length east
-
-                maxLenght =
-                    Basics.max wLength eLenght |> (*) 4 |> toFloat
-
-                withSymmetricWidth className =
-                    Html.div [ class className, css [ Css.width (rem maxLenght), flexShrink zero, displayFlex, flexDirection row ] ]
-
-                present =
-                    Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
-                        [ withSymmetricWidth "west" west, center, withSymmetricWidth "east" east ]
-            in
-            north
-                ++ present
-                :: south
-                |> Html.div [ class "Accordion", css [ displayFlex, flexDirection column ] ]
+        focalSegment =
+            Tree.focus config.tree
     in
     config.tree
         |> Tree.zipDirections
         |> Tree.map (\( path, segment ) -> ( viewMode path, segment ))
         |> Tree.view
-            (Tree.Uniform renderTree { toHtml = toHtml })
+            (Tree.Uniform renderTree { toHtml = toHtml focalSegment.orientation })
 
 
 type alias A msg =
     ( ViewSegment.ViewMode, Segment msg )
 
 
+type alias R msg =
+    Att (Html msg)
+
+
+renderSegment : ViewSegment.ViewMode -> Segment msg -> R msg
+renderSegment mode =
+    Cls.create (Segment.view mode)
+
+
 type alias B msg =
-    { orientation : Orientation, role : ViewSegment.Role, here : Html msg, nest : List (Html msg), left : List (Html msg), right : List (Html msg), down : List (Html msg) }
+    { orientation : Orientation, role : ViewSegment.Role, here : R msg, nest : List (R msg), left : List (R msg), right : List (R msg), down : List (R msg) }
 
 
 type alias C msg =
-    { up : List (Html msg), left : List (Html msg), x : List (Html msg), here : Html msg, nest : List (Html msg), y : List (Html msg), right : List (Html msg), down : List (Html msg) }
+    { up : List (R msg), left : List (R msg), x : List (R msg), here : R msg, nest : List (R msg), y : List (R msg), right : List (R msg), down : List (R msg) }
 
 
 {-| -}
@@ -411,7 +459,7 @@ renderBranch : Branch.Fold {} (A msg) (B msg)
 renderBranch =
     { init =
         \( mode, segment ) ->
-            { orientation = segment.orientation, role = ViewSegment.role mode, here = Segment.view mode segment, nest = [], left = [], right = [], down = [] }
+            { orientation = segment.orientation, role = ViewSegment.role mode, here = renderSegment mode segment, nest = [], left = [], right = [], down = [] }
     , grow =
         let
             nest inner b =
@@ -421,10 +469,10 @@ renderBranch =
             \( mode, segment ) b ->
                 case segment.orientation of
                     Horizontal ->
-                        { b | right = b.right ++ [ Segment.view mode segment ] }
+                        { b | right = b.right ++ [ renderSegment mode segment ] }
 
                     Vertical ->
-                        { b | down = b.down ++ [ Segment.view mode segment ] }
+                        { b | down = b.down ++ [ renderSegment mode segment ] }
         , leftwards =
             \inner ->
                 nest inner
@@ -476,10 +524,10 @@ renderTree =
             \( mode, segment ) c ->
                 case segment.orientation of
                     Horizontal ->
-                        { c | left = c.left ++ [ Segment.view mode segment ] }
+                        { c | left = c.left ++ [ renderSegment mode segment ] }
 
                     Vertical ->
-                        { c | up = c.up ++ [ Segment.view mode segment ] }
+                        { c | up = c.up ++ [ renderSegment mode segment ] }
         , leftwards =
             \inner ->
                 nest inner
