@@ -48,7 +48,7 @@
 		}
 
 		.blink {
-			animation: blinker .125s linear 0s 5;
+			animation: blinker .1s linear 0s 4;
 		}
 
 		@keyframes blinker {
@@ -56,10 +56,11 @@
 				opacity: 0;
 			}
 		}
-		.Accordion .default, .Accordion .collapsed, .Accordion .placeholder {
+
+		.Accordion .default,
+		.Accordion .collapsed,
+		.Accordion .placeholder {
 			/* max-width: 0; max-height: 0; */
-			transition:max-width 0.5s;
-			overflow:hidden;
 		}
 	</style>
 	<script src="main.js"></script>
@@ -74,11 +75,11 @@
 		});
 		document.getElementsByClassName("F")[0]?.scrollIntoView({ behavior: "auto", block: "center", inline: "center" });
 
-		app.ports.sendMessage.subscribe(function (message) {
-			console.log("blink", message);
-			if (message == "") { return }
-			document.getElementById(message)?.classList.add("blink");
+		app.ports.pleaseCenter.subscribe(function (message) {
 			document.getElementById(message)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+		});
+		app.ports.pleaseConfirm.subscribe(function (message) {
+			document.getElementById(message)?.classList.add("blink");
 		});
 	</script>
 </body>

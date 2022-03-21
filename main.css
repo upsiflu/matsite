@@ -1,16 +1,102 @@
+.Accordion {
+  align-items: center;
+  min-width  : fit-content;
+}
+
 .default,
 .collapsed {
-  position: relative;
-}
-.Center {
-  width: calc(100vw - 8rem);
-  overflow: scroll;
+  position   : relative;
+  max-height : calc(100vh - 4rem);
+  overflow   : scroll;
+  transition : all 1s;
   flex-shrink: 0;
 }
-.Center .🀱 {
+
+.Accordion>.🁣 {
+
+  min-width: 20rem;
+}
+
+.Present {
+  min-width      : 100vw;
+  justify-content: center;
+}
+
+.Center {
+  width      : 100vw;
+  overflow   : scroll;
+  flex-shrink: 0;
+  padding    : 0 2rem;
+  position   : relative;
+  z-index    : 1;
+}
+
+.west,
+.east {
+  position: relative;
+  z-index : 2;
+  margin  : -1.5rem -2rem;
+}
+
+.east {
+  background: rgba(0, 0, 0, .5);
+
+}
+
+.Center .🀱.hasBody {
   min-width: 21rem;
 }
 
-.🁣:not(.hasBody) {
+.Center {}
+
+.west {
+  justify-content: flex-end;
+}
+
+.east {
+  justify-content: flex-start;
+}
+
+.🀱:not(.hasBody) {
   /* rotated text */
+  writing-mode: vertical-rl;
+}
+
+.F {
+  background: rgba(255, 255, 255, .1)
+}
+
+.P {
+  /* background: rgba(0, 0, 255, .8) */
+  /* outline       : 1px dashed blue;
+  outline-offset: -1px; */
+  background: rgba(255, 255, 255, .1);
+  overflow  : visible;
+  outline   : none;
+}
+
+.P H1 {
+  overflow   : visible;
+  white-space: nowrap;
+}
+
+.p {
+  background: rgba(255, 255, 255, .1)
+}
+
+.B>a {
+  background    : hsl(0, 0%, 10%);
+  height        : fit-content;
+  outline       : none;
+  mix-blend-mode: lighten;
+}
+
+.two-wide {
+  width    : 42rem rem;
+  max-width: calc(100vw - 4rem);
+}
+
+.grow {
+  flex-grow: 1;
+  max-width: calc(100vw - 4rem);
 }

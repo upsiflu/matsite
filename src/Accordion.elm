@@ -94,6 +94,7 @@ focus (Accordion config) =
         config.tree |> Tree.focus |> .id |> Debug.log "This tree is not on root"
 
 
+
 {-| The Url encodes the parent of the focus!
 -}
 find : Url -> Accordion msg -> Accordion msg
@@ -169,6 +170,8 @@ site =
 
         setBody =
             Segment.withBody >> Branch.mapNode
+        noCaption =
+            Segment.withoutCaption |> Branch.mapNode
 
         emptySegment =
             Segment.empty |> Branch.singleton
@@ -200,10 +203,14 @@ site =
         description =
             horizontalSegment "Description"
                 |> setBody Festival.description
+                |> noCaption
 
         video =
-            horizontalSegment "Video"
-                |> setBody Festival.video
+            Segment.singleton ""
+                |> Segment.withOrientation Horizontal
+                |> Segment.withAdditionalClasses ["grow"]
+                |> Segment.withBody Festival.video
+                |> Branch.singleton
 
         credits =
             horizontalSegment "Credits"
@@ -359,9 +366,16 @@ view (Accordion config) =
                 south =
                     down
 
+                wLength = List.length west
+                eLenght = List.length east
+                maxLenght = Basics.max wLength eLenght |> (*) 4 |> toFloat
+                withSymmetricWidth className =
+                    Html.div [ class className, css [Css.width ((rem maxLenght)), flexShrink zero, displayFlex, flexDirection row] ]
+
                 present =
                     Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
-                        (west ++ center :: east)
+                        [withSymmetricWidth "west" west, center, withSymmetricWidth "east" east]
+
             in
             north
                 ++ present
@@ -432,8 +446,8 @@ renderTree =
                     , left = []
                     , x = []
                     , here = here
-                    , y = []
-                    , right = down
+                    , y = down
+                    , right = []
                     , down = []
                     }
 
@@ -442,9 +456,9 @@ renderTree =
                     , left = []
                     , x = []
                     , here = here
-                    , y = []
+                    , y = down
                     , right = []
-                    , down = down
+                    , down = []
                     }
     , branch = renderBranch
     , grow =
@@ -455,7 +469,7 @@ renderTree =
                         { c | left = c.left ++ [ Segment.view mode segment ] }
 
                     Vertical ->
-                        { c | up = Segment.view mode segment :: c.up }
+                        { c | up = c.up ++ [Segment.view mode segment] }
         , leftwards =
             \branch c ->
                 case ( branch.role, branch.orientation ) of

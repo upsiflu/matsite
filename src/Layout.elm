@@ -121,7 +121,7 @@ anchoredLabel t =
                 , visited
                     [ color theme.li
                     ]
-                , outline3 (px 1) dashed theme.li
+                --, outline3 (px 1) dashed theme.li
                 , display block
                 , padding2 rhythm.verticalPadding rhythm.padding
                 , maxWidth rhythm.columnWidth
@@ -204,7 +204,7 @@ header query id t =
                 , visited
                     [ color theme.li
                     ]
-                , outline3 (px 1) dashed theme.li
+                --, outline3 (px 1) dashed theme.li
                 , display block
                 , padding2 rhythm.verticalPadding rhythm.padding
                 , maxWidth rhythm.columnWidth

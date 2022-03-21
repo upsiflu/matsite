@@ -11,7 +11,8 @@ import Layout exposing (..)
 import Url exposing (Url)
 
 
-port sendMessage : String -> Cmd msg
+port pleaseCenter : String -> Cmd msg
+port pleaseConfirm : String -> Cmd msg
 
 
 type alias Model =
@@ -89,7 +90,10 @@ update msg model =
                         model
             in
             ( newModel
-            , Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> sendMessage
+            , Cmd.batch 
+                [Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> pleaseCenter
+                , Accordion.location newModel.accordion |> Debug.log "confirming" |> pleaseConfirm
+                ]
             )
 
 

@@ -2,7 +2,7 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withBody, withOrientation
+    , withBody, withOrientation, withoutCaption, withAdditionalClasses
     , view
     )
 
@@ -18,7 +18,7 @@ _To render Segments differently based on their position in the tree, use
 
 # Map
 
-@docs withBody, withOrientation
+@docs withBody, withOrientation, withoutCaption, withAdditionalClasses
 
 
 # View
@@ -43,6 +43,7 @@ type alias Segment msg =
     , id : String
     , body : Maybe (Html msg)
     , orientation : Orientation
+    , additionalClasses : List String
     }
 
 
@@ -63,6 +64,15 @@ withBody : Html msg -> Segment msg -> Segment msg
 withBody body segment =
     { segment | body = Just body }
 
+{-| -}
+withoutCaption : Segment msg -> Segment msg
+withoutCaption segment =
+    { segment | caption = Nothing }
+
+{-| -}
+withAdditionalClasses : List String -> Segment msg -> Segment msg
+withAdditionalClasses cc segment =
+    { segment | additionalClasses = cc++segment.additionalClasses }
 
 {-| -}
 singleton : String -> Segment msg
@@ -71,6 +81,7 @@ singleton id =
     , id = String.replace " " "-" id
     , body = Nothing
     , orientation = Vertical
+    , additionalClasses = []
     }
 
 
@@ -81,6 +92,7 @@ empty =
     , id = "_"
     , body = Nothing
     , orientation = Vertical
+    , additionalClasses = []
     }
 
 
@@ -169,12 +181,17 @@ view mode s =
                 _ ->
                     css []
 
+        additionalClasses =
+            s.additionalClasses
+                |> List.map (\c -> (c, True))
+                |> classList
+
         structureClass =
             classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", s.body /= Nothing ) ]
     in
     case mode of
         Default path ->
-            Html.div [ ViewMode.toClass mode, class "default", class orientationToString, id segmentId, structureClass ]
+            Html.div [ ViewMode.toClass mode, class "default", class orientationToString, id segmentId, structureClass, additionalClasses ]
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -183,7 +200,7 @@ view mode s =
                 ]
 
         Collapsed path ->
-            Html.div [ ViewMode.toClass mode, class "collapsed", class orientationToString, id segmentId, structureClass ]
+            Html.div [ ViewMode.toClass mode, class "collapsed", class orientationToString, id segmentId, structureClass, additionalClasses ]
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -192,7 +209,7 @@ view mode s =
                 ]
 
         Placeholder ->
-            Html.div [ ViewMode.toClass mode, class "placeholder", class orientationToString, id segmentId, structureClass ]
+            Html.div [ ViewMode.toClass mode, class "placeholder", class orientationToString, id segmentId, structureClass, additionalClasses ]
                 [ viewCaption s.caption
                 , viewBody s.body
                 , ViewMode.view mode

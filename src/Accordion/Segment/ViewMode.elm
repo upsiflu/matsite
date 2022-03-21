@@ -118,7 +118,7 @@ signature mode =
             "Ba"
 
         Periphery ->
-            "P"
+            "p"
 
         None ->
             "[-]"
