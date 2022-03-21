@@ -94,7 +94,6 @@ focus (Accordion config) =
         config.tree |> Tree.focus |> .id |> Debug.log "This tree is not on root"
 
 
-
 {-| The Url encodes the parent of the focus!
 -}
 find : Url -> Accordion msg -> Accordion msg
@@ -170,6 +169,7 @@ site =
 
         setBody =
             Segment.withBody >> Branch.mapNode
+
         noCaption =
             Segment.withoutCaption |> Branch.mapNode
 
@@ -208,7 +208,7 @@ site =
         video =
             Segment.singleton ""
                 |> Segment.withOrientation Horizontal
-                |> Segment.withAdditionalClasses ["grow"]
+                |> Segment.withAdditionalClasses [ "grow" ]
                 |> Segment.withBody Festival.video
                 |> Branch.singleton
 
@@ -366,16 +366,21 @@ view (Accordion config) =
                 south =
                     down
 
-                wLength = List.length west
-                eLenght = List.length east
-                maxLenght = Basics.max wLength eLenght |> (*) 4 |> toFloat
+                wLength =
+                    List.length west
+
+                eLenght =
+                    List.length east
+
+                maxLenght =
+                    Basics.max wLength eLenght |> (*) 4 |> toFloat
+
                 withSymmetricWidth className =
-                    Html.div [ class className, css [Css.width ((rem maxLenght)), flexShrink zero, displayFlex, flexDirection row] ]
+                    Html.div [ class className, css [ Css.width (rem maxLenght), flexShrink zero, displayFlex, flexDirection row ] ]
 
                 present =
                     Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
-                        [withSymmetricWidth "west" west, center, withSymmetricWidth "east" east]
-
+                        [ withSymmetricWidth "west" west, center, withSymmetricWidth "east" east ]
             in
             north
                 ++ present
@@ -394,11 +399,11 @@ type alias A msg =
 
 
 type alias B msg =
-    { orientation : Orientation, role : ViewSegment.Role, here : Html msg, left : List (Html msg), right : List (Html msg), down : List (Html msg) }
+    { orientation : Orientation, role : ViewSegment.Role, here : Html msg, nest : List (Html msg), left : List (Html msg), right : List (Html msg), down : List (Html msg) }
 
 
 type alias C msg =
-    { up : List (Html msg), left : List (Html msg), x : List (Html msg), here : Html msg, y : List (Html msg), right : List (Html msg), down : List (Html msg) }
+    { up : List (Html msg), left : List (Html msg), x : List (Html msg), here : Html msg, nest : List (Html msg), y : List (Html msg), right : List (Html msg), down : List (Html msg) }
 
 
 {-| -}
@@ -406,8 +411,12 @@ renderBranch : Branch.Fold {} (A msg) (B msg)
 renderBranch =
     { init =
         \( mode, segment ) ->
-            { orientation = segment.orientation, role = ViewSegment.role mode, here = Segment.view mode segment, left = [], right = [], down = [] }
+            { orientation = segment.orientation, role = ViewSegment.role mode, here = Segment.view mode segment, nest = [], left = [], right = [], down = [] }
     , grow =
+        let
+            nest inner b =
+                ( inner, { b | nest = b.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
+        in
         { downwards =
             \( mode, segment ) b ->
                 case segment.orientation of
@@ -417,49 +426,50 @@ renderBranch =
                     Vertical ->
                         { b | down = b.down ++ [ Segment.view mode segment ] }
         , leftwards =
-            \{ orientation, here } b ->
-                case orientation of
-                    Horizontal ->
-                        { b | left = here :: b.left }
+            \inner ->
+                nest inner
+                    >> (\( { orientation, here }, b ) ->
+                            case orientation of
+                                Horizontal ->
+                                    { b | left = here :: b.left }
 
-                    Vertical ->
-                        { b | down = here :: b.down }
+                                Vertical ->
+                                    { b | down = here :: b.down }
+                       )
         , rightwards =
-            \{ orientation, here } b ->
-                case orientation of
-                    Horizontal ->
-                        { b | right = here :: b.left }
+            \inner ->
+                nest inner
+                    >> (\( { orientation, here }, b ) ->
+                            case orientation of
+                                Horizontal ->
+                                    { b | right = here :: b.left }
 
-                    Vertical ->
-                        { b | down = b.down ++ [ here ] }
+                                Vertical ->
+                                    { b | down = b.down ++ [ here ] }
+                       )
         }
     }
 
 
 renderTree : Tree.Fold {} (A msg) (B msg) (C msg)
 renderTree =
+    let
+        nest inner c =
+            ( inner, { c | nest = c.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
+    in
     { init =
-        \{ orientation, here, down } ->
-            case orientation of
-                Horizontal ->
-                    { up = []
-                    , left = []
-                    , x = []
-                    , here = here
-                    , y = down
-                    , right = []
-                    , down = []
-                    }
-
-                Vertical ->
-                    { up = []
-                    , left = []
-                    , x = []
-                    , here = here
-                    , y = down
-                    , right = []
-                    , down = []
-                    }
+        \branch ->
+            nest branch
+                { up = []
+                , left = []
+                , x = []
+                , here = branch.here
+                , nest = []
+                , y = []
+                , right = []
+                , down = []
+                }
+                |> Tuple.second
     , branch = renderBranch
     , grow =
         { upwards =
@@ -469,28 +479,34 @@ renderTree =
                         { c | left = c.left ++ [ Segment.view mode segment ] }
 
                     Vertical ->
-                        { c | up = c.up ++ [Segment.view mode segment] }
+                        { c | up = c.up ++ [ Segment.view mode segment ] }
         , leftwards =
-            \branch c ->
-                case ( branch.role, branch.orientation ) of
-                    ( Aisle, _ ) ->
-                        { c | x = c.x ++ [ branch.here ] }
+            \inner ->
+                nest inner
+                    >> (\( branch, c ) ->
+                            case ( branch.role, branch.orientation ) of
+                                ( Aisle, _ ) ->
+                                    { c | x = c.x ++ [ branch.here ] }
 
-                    ( _, Horizontal ) ->
-                        { c | left = c.left ++ [ branch.here ] }
+                                ( _, Horizontal ) ->
+                                    { c | left = c.left ++ [ branch.here ] }
 
-                    ( _, Vertical ) ->
-                        { c | up = c.up ++ [ branch.here ] }
+                                ( _, Vertical ) ->
+                                    { c | up = c.up ++ [ branch.here ] }
+                       )
         , rightwards =
-            \branch c ->
-                case ( branch.role, branch.orientation ) of
-                    ( Aisle, _ ) ->
-                        { c | y = c.y ++ [ branch.here ] }
+            \inner ->
+                nest inner
+                    >> (\( branch, c ) ->
+                            case ( branch.role, branch.orientation ) of
+                                ( Aisle, _ ) ->
+                                    { c | y = c.y ++ [ branch.here ] }
 
-                    ( _, Horizontal ) ->
-                        { c | right = c.right ++ [ branch.here ] }
+                                ( _, Horizontal ) ->
+                                    { c | right = c.right ++ [ branch.here ] }
 
-                    ( _, Vertical ) ->
-                        { c | down = c.down ++ [ branch.here ] }
+                                ( _, Vertical ) ->
+                                    { c | down = c.down ++ [ branch.here ] }
+                       )
         }
     }

@@ -64,15 +64,18 @@ withBody : Html msg -> Segment msg -> Segment msg
 withBody body segment =
     { segment | body = Just body }
 
+
 {-| -}
 withoutCaption : Segment msg -> Segment msg
 withoutCaption segment =
     { segment | caption = Nothing }
 
+
 {-| -}
 withAdditionalClasses : List String -> Segment msg -> Segment msg
 withAdditionalClasses cc segment =
-    { segment | additionalClasses = cc++segment.additionalClasses }
+    { segment | additionalClasses = cc ++ segment.additionalClasses }
+
 
 {-| -}
 singleton : String -> Segment msg
@@ -183,7 +186,7 @@ view mode s =
 
         additionalClasses =
             s.additionalClasses
-                |> List.map (\c -> (c, True))
+                |> List.map (\c -> ( c, True ))
                 |> classList
 
         structureClass =
