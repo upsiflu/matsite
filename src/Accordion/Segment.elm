@@ -44,6 +44,7 @@ type alias Segment msg =
     , id : String
     , body : Maybe (Html msg)
     , orientation : Orientation
+    , columnCount : Int
     , additionalAttributes : List (Html.Attribute Never)
     }
 
@@ -85,6 +86,7 @@ singleton id =
     , id = String.replace " " "-" id
     , body = Nothing
     , orientation = Vertical
+    , columnCount = 1
     , additionalAttributes = []
     }
 
@@ -96,6 +98,7 @@ empty =
     , id = "_"
     , body = Nothing
     , orientation = Vertical
+    , columnCount = 1
     , additionalAttributes = []
     }
 
@@ -160,7 +163,8 @@ view mode s =
                     css []
 
         additionalAttributes =
-            s.additionalAttributes
+            css [ Css.property "--column-count" (String.fromInt s.columnCount)]
+                :: s.additionalAttributes
                 |> List.map (Attributes.map never)
 
         structureClass =

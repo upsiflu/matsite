@@ -1,0 +1,72 @@
+.Accordion2 {
+  --w            : 3rem;
+  --h            : 21rem;
+  /* heights */
+  --hereHeight   : calc(100vh - 4rem);
+  --northHeight  : calc(var(--w) * var(--northCount));
+  --southHeight  : calc(var(--w) * var(--southCount));
+  height         : calc(var(--northHeight) + var(var(--hereHeight)) + var(--southHeight));
+  /* widths */
+  --westWidth    : calc(var(--w) * var(--westCount));
+  --nearWestWidth: calc(var(--w) * var(--nearWestCount));
+  --hereWidth    : calc(var(--h) * var(--nearWestCount));
+  --nearEastWidth: calc(var(--w) * var(--nearEastCount));
+  --eastWidth    : calc(var(--w) * var(--eastCount));
+  width          : calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth));
+}
+
+.Accordion2>.default,
+.Accordion1>.collapsed {
+  position   : relative;
+  max-height : var(--hereHeight);
+  overflow   : scroll;
+  transition : all 1s;
+  flex-shrink: 0;
+}
+
+.Accordion2>.🁣 {
+  width: 21rem;
+}
+
+.Accordion2>.hasBody {
+  width: calc(var(--cols) * 21rem);
+}
+
+
+.Accordion2 .🀱:not(.hasBody) {
+  /* rotated text */
+  writing-mode: vertical-rl;
+}
+
+.Accordion2 .F {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.Accordion2 .P {
+  /* background: rgba(0, 0, 255, .8) */
+  /* outline       : 1px dashed blue;
+  outline-offset: -1px; */
+  background: rgba(255, 255, 255, 0.1);
+  overflow  : visible;
+  outline   : none;
+}
+
+.Accordion2 .P H1 {
+  overflow   : visible;
+  white-space: nowrap;
+}
+
+.Accordion2 .p {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.Accordion2 .B>a {
+  background    : hsl(0, 0%, 10%);
+  height        : fit-content;
+  outline       : none;
+  mix-blend-mode: lighten;
+}
+
+.Accordion2 .grow {
+  max-width: calc(100vw - 4rem);
+}

@@ -17,7 +17,7 @@ module Zipper.Tree exposing
     , prepend, append
     , consLeft, consRight
     , focus, focusedBranch, getLeftmostRoot, getRightmostRoot
-    , isRoot
+    , isRoot, getAisleNodes
     , path
     , circumference
     , petrify
@@ -77,7 +77,7 @@ module Zipper.Tree exposing
 
 # Deconstruct
 
-@docs focus, focusedBranch, getLeftmostRoot, getRightmostRoot
+@docs focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
 @docs isRoot
 @docs path
 @docs circumference
@@ -653,6 +653,7 @@ mapAisleNodes =
     Branch.mapNode >> Zipper.mapPeriphery >> MixedNonempty.mapHead
 
 
+
 {-| Deletes the focus
 
 See [Zipper#deleteFocus](Zipper#deleteFocus) for the case handling in the
@@ -832,6 +833,10 @@ focus : Tree a -> a
 focus =
     MixedNonempty.head >> Zipper.focus >> Branch.node
 
+{-|-}
+getAisleNodes : Tree a -> Zipper a
+getAisleNodes =
+    MixedNonempty.head >> Zipper.map Branch.node
 
 {-| -}
 getRoot : Tree a -> a

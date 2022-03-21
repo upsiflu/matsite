@@ -64,7 +64,8 @@
 		}
 	</style>
 	<script src="main.js"></script>
-	<link href="main.css" rel="stylesheet">
+	<link href="Accordion.css" rel="stylesheet">
+	<link href="Accordion2.css" rel="stylesheet">
 </head>
 
 <body>
@@ -78,7 +79,7 @@
 		app.ports.pleaseCenter.subscribe(function (message) {
 			document.getElementById(message)?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 			document.getElementsByClassName("Center")[0]?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-			console.log (document.getElementsByClassName("Center"));
+			console.log(document.getElementsByClassName("Center"));
 		});
 		app.ports.pleaseConfirm.subscribe(function (message) {
 			document.getElementById(message)?.classList.add("blink");

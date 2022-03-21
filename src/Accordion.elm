@@ -328,94 +328,87 @@ vimeoX =
 
 
 {-| -}
-toHtml2 : Orientation -> C msg -> Html msg
-toHtml2 orientation { up, left, x, here, y, right, down } =
+toHtml2 : C msg -> Html msg
+toHtml2 { up, left, x, here, y, right, down } =
     let
-        addOffsets : String -> List (R msg) -> List (R msg)
-        addOffsets side =
-            List.indexedMap (\offset -> Cls.withAttributes [ class side, css [ Css.property "--offset" (String.fromInt offset) ] ])
+        addOffsets : { area : String, regardColumnCount : Bool} -> List (R msg) -> (List (R msg), Int)
+        addOffsets config =
+            List.foldl
+                (\(s, r) (list, i) -> 
+                    let
+                        actualColumns =
+                            if config.regardColumnCount then s.columnCount else 1
 
-        north =
-            addOffsets "north" up
-                |> List.reverse
+                        j = i+actualColumns
+                    in
+                    ((s
+                    , Cls.withAttributes 
+                        [ class config.area
+                        , css 
+                            [ Css.property "--columnCount" (String.fromInt actualColumns)
+                            , Css.property "--offset" (String.fromInt i) 
+                            ] 
+                        ] r
+                     ) ::list, j)
+                )
+                ([], 0)
+                
 
-        west =
-            addOffsets "west" left
-                |> List.reverse
+        ---
 
-        nearWest =
-            addOffsets "nearWest" x
-                |> List.reverse
+        (north, northCount) =
+            addOffsets {area="north",regardColumnCount=False} up
+                |> Tuple.mapFirst List.reverse
 
-        center =
-            [ Cls.withAttributes [ class "here" ] here ]
+        (west, westCount) =
+            addOffsets {area="west",regardColumnCount=False} left
+                |> Tuple.mapFirst  List.reverse
 
-        nearEast =
-            addOffsets "nearEast" y
+        (nearWest, nearWestCount) =
+            addOffsets {area="nearWest",regardColumnCount=True} x
+                |> Tuple.mapFirst  List.reverse
 
-        east =
-            addOffsets "east" right
+        (center, hereCount) =
+            addOffsets {area="here",regardColumnCount=True} [here]
 
-        south =
-            addOffsets "south" down
+        (nearEast, nearEastCount) =
+            addOffsets {area="nearEast",regardColumnCount=True} y
+
+        (east, eastCount) =
+            addOffsets {area="east",regardColumnCount=False} right
+
+        (south, southCount) =
+            addOffsets {area="south",regardColumnCount=False} down
+
+        sendToCss key value = css [ Css.property ("--"++key) (String.fromInt value) ]
+
+        orientation = Tuple.first >> .orientation
     in
     [ north, west, nearWest, center, nearEast, east, south ]
+        |> List.map Tuple.first >> Cls.viewWith [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ]
         |> List.concat
-        |> List.map (Cls.viewWith [ class ("(" ++ Segment.orientationToString orientation ++ ")") ])
-        |> Html.div [ class "Accordion2" ]
-
-
-{-| -}
-toHtml : Orientation -> C msg -> Html msg
-toHtml orientation { up, left, x, here, y, right, down } =
-    let
-        direction =
-            case orientation of
-                Horizontal ->
-                    row
-
-                Vertical ->
-                    column
-
-        north =
-            List.reverse up |> List.map Cls.view
-
-        west =
-            List.reverse left |> List.map Cls.view
-
-        center =
-            List.reverse x
-                ++ here
-                :: y
-                |> List.map Cls.view
-                |> Html.div [ class "Center", css [ displayFlex, flexDirection direction ] ]
-
-        east =
-            List.map Cls.view right
-
-        south =
-            List.map Cls.view down
-
-        maxLenght =
-            Basics.max (List.length west) (List.length east) |> (*) 4 |> toFloat
-
-        withSymmetricWidth className =
-            Html.div [ class className, css [ Css.width (rem maxLenght), flexShrink zero, displayFlex, flexDirection row ] ]
-
-        present =
-            Html.div [ class "Present", css [ displayFlex, flexDirection row ] ]
-                [ withSymmetricWidth "west" west, center, withSymmetricWidth "east" east ]
-    in
-    north
-        ++ present
-        :: south
-        |> Html.div [ class "Accordion1", css [ displayFlex, flexDirection column ] ]
+        |> Html.div 
+            [ class "Accordion2"
+            , sendToCss "northCount" northCount
+            , sendToCss "westCount" westCount
+            , sendToCss "nearWestCount" nearWestCount
+            , sendToCss "hereCount" hereCount
+            , sendToCss "nearEastCount" nearEastCount
+            , sendToCss "eastCount" eastCount
+            , sendToCss "southCount" southCount
+             ]
 
 
 {-| -}
 view : Accordion msg -> Html msg
 view (Accordion config) =
     let
+        columnCount =
+            Tree.getAisleNodes config.tree 
+                |> Zipper.flat 
+                |> List.map .columnCount
+                |> List.sum
+
         viewMode =
             if config.collapsed then
                 Collapsed
@@ -423,14 +416,12 @@ view (Accordion config) =
             else
                 Default
 
-        focalSegment =
-            Tree.focus config.tree
     in
     config.tree
         |> Tree.zipDirections
         |> Tree.map (\( path, segment ) -> ( viewMode path, segment ))
         |> Tree.view
-            (Tree.Uniform renderTree { toHtml = toHtml focalSegment.orientation })
+            (Tree.Uniform renderTree { toHtml = toHtml2 })
 
 
 type alias A msg =
@@ -438,12 +429,12 @@ type alias A msg =
 
 
 type alias R msg =
-    Att (Html msg)
+    (Segment msg, Att (Html msg))
 
 
 renderSegment : ViewSegment.ViewMode -> Segment msg -> R msg
-renderSegment mode =
-    Cls.create (Segment.view mode)
+renderSegment mode segment =
+    (segment, Cls.create (Segment.view mode) segment)
 
 
 type alias B msg =
