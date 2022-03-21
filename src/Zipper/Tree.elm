@@ -16,8 +16,8 @@ module Zipper.Tree exposing
     , insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
-    , focus, focusedBranch, getLeftmostRoot, getRightmostRoot
-    , isRoot, getAisleNodes
+    , focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
+    , isRoot
     , path
     , circumference
     , petrify
@@ -413,10 +413,6 @@ type EdgeOperation a
     | Fail (a -> a)
 
 
-anyways =
-    Fail identity
-
-
 {-|
 
     import Zipper.Branch as Branch exposing (Branch)
@@ -653,7 +649,6 @@ mapAisleNodes =
     Branch.mapNode >> Zipper.mapPeriphery >> MixedNonempty.mapHead
 
 
-
 {-| Deletes the focus
 
 See [Zipper#deleteFocus](Zipper#deleteFocus) for the case handling in the
@@ -833,10 +828,12 @@ focus : Tree a -> a
 focus =
     MixedNonempty.head >> Zipper.focus >> Branch.node
 
-{-|-}
+
+{-| -}
 getAisleNodes : Tree a -> Zipper a
 getAisleNodes =
     MixedNonempty.head >> Zipper.map Branch.node
+
 
 {-| -}
 getRoot : Tree a -> a

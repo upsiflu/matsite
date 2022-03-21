@@ -163,8 +163,7 @@ view mode s =
                     css []
 
         additionalAttributes =
-            css [ Css.property "--column-count" (String.fromInt s.columnCount)]
-                :: s.additionalAttributes
+            s.additionalAttributes
                 |> List.map (Attributes.map never)
 
         structureClass =

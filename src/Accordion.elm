@@ -331,63 +331,72 @@ vimeoX =
 toHtml2 : C msg -> Html msg
 toHtml2 { up, left, x, here, y, right, down } =
     let
-        addOffsets : { area : String, regardColumnCount : Bool} -> List (R msg) -> (List (R msg), Int)
+        addOffsets : { area : String, regardColumnCount : Bool } -> List (R msg) -> ( List (R msg), Int )
         addOffsets config =
             List.foldl
-                (\(s, r) (list, i) -> 
+                (\( s, r ) ( list, i ) ->
                     let
                         actualColumns =
-                            if config.regardColumnCount then s.columnCount else 1
+                            if config.regardColumnCount then
+                                s.columnCount
 
-                        j = i+actualColumns
+                            else
+                                1
+
+                        j =
+                            i + actualColumns
                     in
-                    ((s
-                    , Cls.withAttributes 
-                        [ class config.area
-                        , css 
-                            [ Css.property "--columnCount" (String.fromInt actualColumns)
-                            , Css.property "--offset" (String.fromInt i) 
-                            ] 
-                        ] r
-                     ) ::list, j)
+                    ( ( s
+                      , Cls.withAttributes
+                            [ class config.area
+                            , css
+                                [ Css.property "--columnNum" (String.fromInt actualColumns)
+                                , Css.property "--offset" (String.fromInt (i - 1))
+                                ]
+                            ]
+                            r
+                      )
+                        :: list
+                    , j
+                    )
                 )
-                ([], 0)
-                
+                ( [], 0 )
 
         ---
-
-        (north, northCount) =
-            addOffsets {area="north",regardColumnCount=False} up
+        ( north, northCount ) =
+            addOffsets { area = "north", regardColumnCount = False } up
                 |> Tuple.mapFirst List.reverse
 
-        (west, westCount) =
-            addOffsets {area="west",regardColumnCount=False} left
-                |> Tuple.mapFirst  List.reverse
+        ( west, westCount ) =
+            addOffsets { area = "west", regardColumnCount = False } left
+                |> Tuple.mapFirst List.reverse
 
-        (nearWest, nearWestCount) =
-            addOffsets {area="nearWest",regardColumnCount=True} x
-                |> Tuple.mapFirst  List.reverse
+        ( nearWest, nearWestCount ) =
+            addOffsets { area = "nearWest", regardColumnCount = True } x
+                |> Tuple.mapFirst List.reverse
 
-        (center, hereCount) =
-            addOffsets {area="here",regardColumnCount=True} [here]
+        ( center, hereCount ) =
+            addOffsets { area = "here", regardColumnCount = True } [ here ]
 
-        (nearEast, nearEastCount) =
-            addOffsets {area="nearEast",regardColumnCount=True} y
+        ( nearEast, nearEastCount ) =
+            addOffsets { area = "nearEast", regardColumnCount = True } y
 
-        (east, eastCount) =
-            addOffsets {area="east",regardColumnCount=False} right
+        ( east, eastCount ) =
+            addOffsets { area = "east", regardColumnCount = False } right
 
-        (south, southCount) =
-            addOffsets {area="south",regardColumnCount=False} down
+        ( south, southCount ) =
+            addOffsets { area = "south", regardColumnCount = False } down
 
-        sendToCss key value = css [ Css.property ("--"++key) (String.fromInt value) ]
+        sendToCss key value =
+            css [ Css.property ("--" ++ key) (String.fromInt value) ]
 
-        orientation = Tuple.first >> .orientation
+        orientation =
+            Tuple.first >> .orientation
     in
     [ north, west, nearWest, center, nearEast, east, south ]
-        |> List.map Tuple.first >> Cls.viewWith [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ]
+        |> List.map (List.map (Tuple.second >> Cls.viewWith [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ]))
         |> List.concat
-        |> Html.div 
+        |> Html.div
             [ class "Accordion2"
             , sendToCss "northCount" northCount
             , sendToCss "westCount" westCount
@@ -396,26 +405,19 @@ toHtml2 { up, left, x, here, y, right, down } =
             , sendToCss "nearEastCount" nearEastCount
             , sendToCss "eastCount" eastCount
             , sendToCss "southCount" southCount
-             ]
+            ]
 
 
 {-| -}
 view : Accordion msg -> Html msg
 view (Accordion config) =
     let
-        columnCount =
-            Tree.getAisleNodes config.tree 
-                |> Zipper.flat 
-                |> List.map .columnCount
-                |> List.sum
-
         viewMode =
             if config.collapsed then
                 Collapsed
 
             else
                 Default
-
     in
     config.tree
         |> Tree.zipDirections
@@ -429,12 +431,12 @@ type alias A msg =
 
 
 type alias R msg =
-    (Segment msg, Att (Html msg))
+    ( Segment msg, Att (Html msg) )
 
 
 renderSegment : ViewSegment.ViewMode -> Segment msg -> R msg
 renderSegment mode segment =
-    (segment, Cls.create (Segment.view mode) segment)
+    ( segment, Cls.create (Segment.view mode) segment )
 
 
 type alias B msg =
