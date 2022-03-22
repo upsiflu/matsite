@@ -2,10 +2,9 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withBody, withOrientation, withoutCaption, withAdditionalAttributes, increaseColumnCount, decreaseColumnCount
-    , view
-    , orientationToString
-    ,structureClass, hasBody
+    , withBody, withOrientation, withoutCaption, withAdditionalAttributes
+    , view, structureClass, orientationToString, hasBody
+    , decreaseColumnCount, increaseColumnCount
     )
 
 {-| contain the immutable site content
@@ -33,9 +32,9 @@ import Accordion.Segment.ViewMode as ViewMode exposing (Role(..), ViewMode(..))
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Keyed as Keyed
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
+import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
 import Zipper.Tree as Tree exposing (Tree)
 
@@ -74,15 +73,18 @@ withoutCaption : Segment msg -> Segment msg
 withoutCaption segment =
     { segment | caption = Nothing }
 
+
 {-| -}
 increaseColumnCount : Segment msg -> Segment msg
 increaseColumnCount segment =
     { segment | columnCount = segment.columnCount + 1 }
 
+
 {-| -}
 decreaseColumnCount : Segment msg -> Segment msg
 decreaseColumnCount segment =
     { segment | columnCount = segment.columnCount - 1 }
+
 
 {-| -}
 withAdditionalAttributes : List (Html.Attribute Never) -> Segment msg -> Segment msg
@@ -119,7 +121,7 @@ empty =
 
 
 {-| -}
-view : ViewMode -> Segment msg -> (String, Html msg)
+view : ViewMode -> Segment msg -> ( String, Html msg )
 view mode s =
     let
         defaultLayout =
@@ -153,57 +155,50 @@ view mode s =
                 s.id
 
         viewCaption =
-            Maybe.withDefault ""--"𐫱"
+            Maybe.withDefault ""
+                --"𐫱"
                 >> header "" segmentId
+
+        notIf bool =
+            if bool then
+                \_ -> Html.text ""
+
+            else
+                identity
 
         viewBody =
             Maybe.withDefault (Html.text "")
 
-        highlight =
-            case ViewMode.role mode of
-                Parent ->
-                    css [ backgroundColor (rgb 10 10 255) ]
-
-                Aisle ->
-                    css [ backgroundColor (rgba 255 255 255 0.1) ]
-
-                Focus ->
-                    css [ backgroundColor (rgba 0 0 255 0.5) ]
-
-                _ ->
-                    css []
-
         additionalAttributes =
             s.additionalAttributes
                 |> List.map (Attributes.map never)
-
     in
     Tuple.pair s.id <|
-    case mode of
-        Default path ->
-            Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection path |> String.join "")
-                , viewBody s.body
-                , viewOrientation
-                , ViewMode.view mode
-                ]
+        case mode of
+            Default { path, isLeaf } ->
+                Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
+                    , viewOverlay (List.map Fold.viewDirection path |> String.join "")
+                    , viewBody s.body
+                    , viewOrientation
+                    , ViewMode.view mode
+                    ]
 
-        Collapsed path ->
-            Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                [ viewCaption s.caption
-                , viewOverlay (List.map Fold.viewDirection path |> String.join "")
-                , viewBody s.body
-                , viewOrientation
-                , ViewMode.view mode
-                ]
+            Collapsed { path, isLeaf } ->
+                Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
+                    , viewOverlay (List.map Fold.viewDirection path |> String.join "")
+                    , viewBody s.body
+                    , viewOrientation
+                    , ViewMode.view mode
+                    ]
 
-        Placeholder ->
-            Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                [ viewCaption s.caption
-                , viewBody s.body
-                , ViewMode.view mode
-                ]
+            Placeholder ->
+                Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+                    [ viewCaption s.caption
+                    , viewBody s.body
+                    , ViewMode.view mode
+                    ]
 
 
 {-| -}
@@ -214,11 +209,14 @@ orientationToString orientation =
 
         Vertical ->
             "🁣"
-{-|-}
+
+
+{-| -}
 structureClass s =
     classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", hasBody s ) ]
 
-{-|-}
+
+{-| -}
 hasBody : Segment a -> Bool
 hasBody =
     .body >> (/=) Nothing

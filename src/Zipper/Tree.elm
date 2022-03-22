@@ -9,6 +9,7 @@ module Zipper.Tree exposing
     , root, leaf
     , go, Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
+    , positionalMap
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
@@ -58,6 +59,7 @@ module Zipper.Tree exposing
 # Map
 
 @docs map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
+@docs positionalMap
 
 
 ## Shrink and Grow
@@ -523,7 +525,7 @@ go w =
                             |> Maybe.map Tuple.first
                             |> Maybe.withDefault []
                 in
-                Fold.list (\d -> go (Walk d Wrap)) ( myDirections) t
+                Fold.list (\d -> go (Walk d Wrap)) myDirections t
 
 
 {-| `foldr defold ^= identity`
@@ -567,6 +569,30 @@ mapfold fu =
 
 
 {-| -}
+positionalMapfold : { leaf : a -> b, other : a -> b } -> Foldr {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
+positionalMapfold fus =
+    { consAisle = (::) --: b -> aisle -> aisle
+    , join = \a l r -> MixedZipper.create (fus.other a) l r -- a -> aisle -> aisle -> z
+    , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
+    , consTrunk = (::) --: z -> trunk -> trunk
+    , mergeBranch =
+        \a trunk ->
+            if trunk == [] then
+                Branch.create (fus.leaf a) trunk
+                --: a -> trunk -> b
+
+            else
+                Branch.create (fus.other a) trunk
+
+    --: a -> trunk -> b
+    , mergeTree = create -- : z -> trunk -> result
+    , leaf = []
+    , left = []
+    , right = []
+    }
+
+
+{-| -}
 type Marked a
     = Focused a
     | Blurred a
@@ -593,6 +619,12 @@ any fu =
 map : (a -> b) -> Tree a -> Tree b
 map fu =
     foldr (mapfold fu)
+
+
+{-| -}
+positionalMap : { leaf : a -> b, other : a -> b } -> Tree a -> Tree b
+positionalMap fu =
+    foldr (positionalMapfold fu)
 
 
 {-| -}
@@ -1208,7 +1240,6 @@ type ViewMode f a msg viewmodel aisle z zB trunk b c html
 view : ViewMode f a msg viewmodel aisle z zB trunk b c html -> Tree a -> html
 view viewMode =
     case viewMode of
-
         Uniform f config ->
             fold f >> config.toHtml
 

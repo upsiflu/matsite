@@ -32,9 +32,13 @@ import List.Extra as List
 
 {-| -}
 type ViewMode
-    = Default (List Direction)
-    | Collapsed (List Direction)
+    = Default Position
+    | Collapsed Position
     | Placeholder
+
+
+type alias Position =
+    { path : List Direction, isLeaf : Bool }
 
 
 {-| The Role is a human-readable representation of the path
@@ -52,20 +56,17 @@ type Role
 {-| -}
 role : ViewMode -> Role
 role mode =
-    case mode of
-        Placeholder ->
+    case path mode of
+        Nothing ->
             None
 
-        Collapsed p ->
-            role (Default p)
-
-        Default [] ->
+        Just [] ->
             Focus
 
-        Default [ Up ] ->
+        Just [ Up ] ->
             Parent
 
-        Default (Up :: s) ->
+        Just (Up :: s) ->
             if List.member Down s then
                 Periphery
 
@@ -75,7 +76,7 @@ role mode =
             else
                 BreadcrumbAisle
 
-        Default s ->
+        Just s ->
             if List.member Down s then
                 Periphery
 
@@ -88,7 +89,7 @@ path : ViewMode -> Maybe (List Direction)
 path mode =
     case mode of
         Default p ->
-            Just p
+            Just p.path
 
         _ ->
             Nothing

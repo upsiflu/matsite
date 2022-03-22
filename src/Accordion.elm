@@ -3,9 +3,8 @@ module Accordion exposing
     , site
     , flip, find
     , location, focus
-    , view
+    , Remainder, view
     , anarchiveX, vimeoX
-    , Remainder
     )
 
 {-|
@@ -44,6 +43,7 @@ import Fold exposing (Direction(..), Foldr)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
+import Html.Styled.Keyed as Keyed
 import Snippets.Festival as Festival
 import String exposing (left)
 import Url exposing (Url)
@@ -51,7 +51,6 @@ import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
-import Html.Styled.Keyed as Keyed
 
 
 {-| -}
@@ -90,7 +89,8 @@ location (Accordion config) =
 {-| -}
 focus : Accordion msg -> String
 focus (Accordion config) =
-    if Tree.isRoot config.tree then ""
+    if Tree.isRoot config.tree then
+        ""
 
     else
         config.tree |> Tree.focus |> .id
@@ -332,7 +332,7 @@ vimeoX =
 
 
 {-| -}
-toHtml2 : List (R msg) -> C msg -> (Html msg, Remainder msg)
+toHtml2 : List (R msg) -> C msg -> ( Html msg, Remainder msg )
 toHtml2 remainder { up, left, x, here, y, right, down } =
     let
         addOffsets : { area : String, regardColumnCount : Bool } -> List (R msg) -> ( List (R msg), Int )
@@ -403,31 +403,31 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
                 |> List.concat
 
         visibleIds =
-            List.map (Tuple.first >> .id) visibleRs |> Debug.log ("VISIBLE")
+            List.map (Tuple.first >> .id) visibleRs |> Debug.log "VISIBLE"
 
         invisibleRs =
             remainder
                 |> List.filter (Tuple.first >> .id >> (\invisibleId -> List.member invisibleId visibleIds) >> not)
-                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class ("vanishing") ])) 
+                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class "vanishing" ]))
 
         invisibleIds =
             invisibleRs
-                |> List.map (Tuple.first >> .id) |> Debug.log ("INVISIBLE")
-
+                |> List.map (Tuple.first >> .id)
+                |> Debug.log "INVISIBLE"
     in
     visibleRs
         |> (++) invisibleRs
         |> List.sortBy (Tuple.first >> .id)
-        |> (\sortedR -> (sortedR, sortedR))
+        |> (\sortedR -> ( sortedR, sortedR ))
         |> Tuple.mapFirst (List.map (Tuple.second >> Cls.view))
-        |> Tuple.mapFirst 
-            (   (++) 
-                    [ ("_centerBackground", Html.li [class "centerBackground"] [Html.text " "])
-                    , ("_hereBackground", Html.li [class "hereBackground"] [Html.text " "])
-                    , ("_screenBackground", Html.li [class "screenBackground"] [Html.text " "])
-                    , ("_westIndicator", Html.li [class "westIndicator"] [Html.text " "])
-                    , ("_eastIndicator", Html.li [class "eastIndicator"] [Html.text " "])
-                    ]
+        |> Tuple.mapFirst
+            ((++)
+                [ ( "_centerBackground", Html.li [ class "centerBackground" ] [ Html.text "\u{00A0}" ] )
+                , ( "_hereBackground", Html.li [ class "hereBackground" ] [ Html.text "\u{00A0}" ] )
+                , ( "_screenBackground", Html.li [ class "screenBackground" ] [ Html.text "\u{00A0}" ] )
+                , ( "_westIndicator", Html.li [ class "westIndicator" ] [ Html.text "\u{00A0}" ] )
+                , ( "_eastIndicator", Html.li [ class "eastIndicator" ] [ Html.text "\u{00A0}" ] )
+                ]
                 >> Keyed.ul
                     [ class "Accordion2"
                     , sendToCss "northCount" northCount
@@ -438,15 +438,17 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
                     , sendToCss "eastCount" eastCount
                     , sendToCss "southCount" southCount
                     , class (Segment.orientationToString (orientation here))
-                    , classList [("hasBody", List.any (Tuple.first >> Segment.hasBody) (nearWest++center++nearEast))]
-                    ] 
+                    , classList [ ( "hasBody", List.any (Tuple.first >> Segment.hasBody) (nearWest ++ center ++ nearEast) ) ]
+                    ]
             )
 
-type alias Remainder msg = 
+
+type alias Remainder msg =
     List (R msg)
 
+
 {-| -}
-view : Remainder msg -> Accordion msg -> (Html msg, Remainder msg)
+view : Remainder msg -> Accordion msg -> ( Html msg, Remainder msg )
 view remainder (Accordion config) =
     let
         viewMode =
@@ -458,7 +460,10 @@ view remainder (Accordion config) =
     in
     config.tree
         |> Tree.zipDirections
-        |> Tree.map (\( path, segment ) -> ( viewMode path, segment ))
+        |> Tree.positionalMap
+            { leaf = \( path, segment ) -> ( viewMode { path = path, isLeaf = True }, segment )
+            , other = \( path, segment ) -> ( viewMode { path = path, isLeaf = False }, segment )
+            }
         |> Tree.view
             (Tree.Uniform renderTree { toHtml = toHtml2 remainder })
 
@@ -466,8 +471,10 @@ view remainder (Accordion config) =
 type alias A msg =
     ( ViewSegment.ViewMode, Segment msg )
 
-type alias Keyed msg = 
-    (String, Html msg)
+
+type alias Keyed msg =
+    ( String, Html msg )
+
 
 type alias R msg =
     ( Segment msg, Att (Keyed msg) )
