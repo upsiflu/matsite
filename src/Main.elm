@@ -21,6 +21,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
+    , prerendered : (Html Msg, Accordion.Remainder Msg)
     }
 
 
@@ -37,6 +38,7 @@ main =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
+                        , prerendered = Accordion.view  [] initialAccordion
                         }
 
                     initialUrl =
@@ -69,10 +71,15 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
+    let
+        prerender m =
+            { m | prerendered = Accordion.view (Tuple.second m.prerendered) m.accordion  }
+    in
+
     case msg of
         LinkClicked (Browser.Internal url) ->
             ( if url == model.url then
-                { model | accordion = Accordion.flip model.accordion }
+                { model | accordion = Accordion.flip model.accordion } |> prerender
 
               else
                 model
@@ -86,7 +93,7 @@ update msg model =
             let
                 newModel =
                     if Debug.log "new url" url /= Debug.log "current url" model.url then
-                        { model | accordion = Accordion.find url model.accordion, url = url }
+                        { model | accordion = Accordion.find url model.accordion, url = url } |> prerender
 
                     else
                         model
@@ -105,7 +112,7 @@ view model =
     , body =
         [ Layout.typography
         , Html.hr [] []
-        , Html.div [] [ Accordion.view model.accordion ]
+        , Html.div [] [ Tuple.first model.prerendered ]
         , Html.hr [] []
         , section
             [ header "" "example" "Fatigue as creative proposition"
@@ -115,26 +122,26 @@ view model =
             , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
             , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
             ]
-        , Html.div
-            [ css
-                [ displayFlex
-                , position relative
-                , width (vw 100)
-                , height (vh 100)
-                , backgroundColor (rgb 100 200 200)
-                ]
-            ]
-            []
-        , Html.div
-            [ css
-                [ displayFlex
-                , position relative
-                , width (vw 100)
-                , height (vh 100)
-                , backgroundColor (rgb 100 200 200)
-                ]
-            ]
-            [ Accordion.vimeoX ]
+        -- , Html.div
+        --     [ css
+        --         [ displayFlex
+        --         , position relative
+        --         , width (vw 100)
+        --         , height (vh 100)
+        --         , backgroundColor (rgb 100 200 200)
+        --         ]
+        --     ]
+        --     []
+        -- , Html.div
+        --     [ css
+        --         [ displayFlex
+        --         , position relative
+        --         , width (vw 100)
+        --         , height (vh 100)
+        --         , backgroundColor (rgb 100 200 200)
+        --         ]
+        --     ]
+        --     [ Accordion.vimeoX ]
         ]
             |> List.map Html.toUnstyled
     }

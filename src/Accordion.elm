@@ -5,6 +5,7 @@ module Accordion exposing
     , location, focus
     , view
     , anarchiveX, vimeoX
+    , Remainder
     )
 
 {-|
@@ -27,7 +28,7 @@ Get textual representations fo use in Url and animation
 
 # View
 
-@docs view
+@docs Remainder, view
 
 ---
 
@@ -50,6 +51,7 @@ import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
+import Html.Styled.Keyed as Keyed
 
 
 {-| -}
@@ -200,6 +202,8 @@ site =
 
         collage =
             horizontalSegment "Collage"
+                |> setBody Festival.collage
+                |> noCaption
 
         description =
             horizontalSegment "Description"
@@ -209,9 +213,10 @@ site =
         video =
             Segment.singleton ""
                 |> Segment.withOrientation Horizontal
-                |> Segment.withAdditionalAttributes [ class "grow" ]
+                |> Segment.increaseColumnCount
                 |> Segment.withBody Festival.video
                 |> Branch.singleton
+                |> noCaption
 
         credits =
             horizontalSegment "Credits"
@@ -328,8 +333,8 @@ vimeoX =
 
 
 {-| -}
-toHtml2 : C msg -> Html msg
-toHtml2 { up, left, x, here, y, right, down } =
+toHtml2 : List (R msg) -> C msg -> (Html msg, Remainder msg)
+toHtml2 remainder { up, left, x, here, y, right, down } =
     let
         addOffsets : { area : String, regardColumnCount : Bool } -> List (R msg) -> ( List (R msg), Int )
         addOffsets config =
@@ -350,8 +355,8 @@ toHtml2 { up, left, x, here, y, right, down } =
                       , Cls.withAttributes
                             [ class config.area
                             , css
-                                [ Css.property "--columnNum" (String.fromInt actualColumns)
-                                , Css.property "--offset" (String.fromInt (i - 1))
+                                [ Css.property "--columnCount" (String.fromInt actualColumns)
+                                , Css.property "--offset" (String.fromInt i)
                                 ]
                             ]
                             r
@@ -392,25 +397,53 @@ toHtml2 { up, left, x, here, y, right, down } =
 
         orientation =
             Tuple.first >> .orientation
-    in
-    [ north, west, nearWest, center, nearEast, east, south ]
-        |> List.map (List.map (Tuple.second >> Cls.viewWith [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ]))
-        |> List.concat
-        |> Html.div
-            [ class "Accordion2"
-            , sendToCss "northCount" northCount
-            , sendToCss "westCount" westCount
-            , sendToCss "nearWestCount" nearWestCount
-            , sendToCss "hereCount" hereCount
-            , sendToCss "nearEastCount" nearEastCount
-            , sendToCss "eastCount" eastCount
-            , sendToCss "southCount" southCount
-            ]
 
+        visibleRs =
+            [ north, west, nearWest, center, nearEast, east, south ]
+                |> List.map (List.map (Tuple.mapSecond (Cls.withAttributes [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ])))
+                |> List.concat
+
+        visibleIds =
+            List.map (Tuple.first >> .id) visibleRs
+
+        invisibleRs =
+            remainder
+                |> List.filter (Tuple.first >> .id >> (\invisibleId -> List.member invisibleId visibleIds) >> not)
+                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class ("vanishing") ]))
+
+
+    in
+    visibleRs
+        |> (++) invisibleRs
+        |> List.sortBy (Tuple.first >> .id)
+        |> (\sortedR -> (sortedR, sortedR))
+        |> Tuple.mapFirst (List.map (Tuple.second >> Cls.view))
+        |> Tuple.mapFirst 
+            (   (++) 
+                    [ ("_centerBackground", Html.div [class "centerBackground"] [Html.text " "])
+                    , ("_hereBackground", Html.div [class "hereBackground"] [Html.text " "])
+                    , ("_screenBackground", Html.div [class "screenBackground"] [Html.text " "])
+                    ]
+                >> Keyed.ul
+                    [ class "Accordion2"
+                    , sendToCss "northCount" northCount
+                    , sendToCss "westCount" westCount
+                    , sendToCss "nearWestCount" nearWestCount
+                    , sendToCss "hereCount" hereCount
+                    , sendToCss "nearEastCount" nearEastCount
+                    , sendToCss "eastCount" eastCount
+                    , sendToCss "southCount" southCount
+                    , class (Segment.orientationToString (orientation here))
+                    , classList [("hasBody", List.any (Tuple.first >> Segment.hasBody) (nearWest++center++nearEast))]
+                    ] 
+            )
+
+type alias Remainder msg = 
+    List (R msg)
 
 {-| -}
-view : Accordion msg -> Html msg
-view (Accordion config) =
+view : Remainder msg -> Accordion msg -> (Html msg, Remainder msg)
+view remainder (Accordion config) =
     let
         viewMode =
             if config.collapsed then
@@ -423,15 +456,17 @@ view (Accordion config) =
         |> Tree.zipDirections
         |> Tree.map (\( path, segment ) -> ( viewMode path, segment ))
         |> Tree.view
-            (Tree.Uniform renderTree { toHtml = toHtml2 })
+            (Tree.Uniform renderTree { toHtml = toHtml2 remainder })
 
 
 type alias A msg =
     ( ViewSegment.ViewMode, Segment msg )
 
+type alias Keyed msg = 
+    (String, Html msg)
 
 type alias R msg =
-    ( Segment msg, Att (Html msg) )
+    ( Segment msg, Att (Keyed msg) )
 
 
 renderSegment : ViewSegment.ViewMode -> Segment msg -> R msg

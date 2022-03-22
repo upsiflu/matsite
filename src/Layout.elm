@@ -58,6 +58,7 @@ typography =
             ]
         , Global.selector "p" pStyle
         , Global.selector "h2" h2Style
+        , Global.selector "img" imgStyle
         ]
 
 
@@ -91,6 +92,10 @@ pStyle =
     [ maxWidth rhythm.columnWidth
     , margin4 zero zero rhythm.break zero
     , padding2 zero rhythm.padding
+    ]
+
+imgStyle =
+    [ maxWidth (pct 100)
     ]
 
 

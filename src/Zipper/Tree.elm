@@ -1200,34 +1200,14 @@ foldr f =
 
 
 {-| -}
-type ViewMode f a msg viewmodel aisle z zB trunk b c
-    = Default { renderFocus : a -> Html msg, renderPeriphery : a -> Html msg }
-    | Partitioned { renderFocus : a -> Html msg, renderPeriphery : a -> Html msg }
-    | Custom
-        (Foldr f viewmodel aisle z zB trunk b (Html msg))
-        { renderFocus : a -> viewmodel
-        , renderPeriphery : a -> viewmodel
-        , transformation : Tree viewmodel -> Tree viewmodel
-        }
-    | Uniform (Fold f a b c) { toHtml : c -> Html msg }
+type ViewMode f a msg viewmodel aisle z zB trunk b c html
+    = Uniform (Fold f a b c) { toHtml : c -> html }
 
 
 {-| -}
-view : ViewMode f a msg viewmodel aisle z zB trunk b c -> Tree a -> Html msg
+view : ViewMode f a msg viewmodel aisle z zB trunk b c html -> Tree a -> html
 view viewMode =
     case viewMode of
-        Default rendering ->
-            mapDistinct rendering.renderFocus rendering.renderPeriphery
-                >> foldr viewFolder
-
-        Partitioned rendering ->
-            mapDistinct rendering.renderFocus rendering.renderPeriphery
-                >> foldr viewFolder3
-
-        Custom renderer rendering ->
-            mapDistinct rendering.renderFocus rendering.renderPeriphery
-                >> rendering.transformation
-                >> foldr renderer
 
         Uniform f config ->
             fold f >> config.toHtml

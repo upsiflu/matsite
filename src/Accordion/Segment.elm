@@ -2,9 +2,10 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withBody, withOrientation, withoutCaption, withAdditionalAttributes
+    , withBody, withOrientation, withoutCaption, withAdditionalAttributes, increaseColumnCount, decreaseColumnCount
     , view
     , orientationToString
+    ,structureClass, hasBody
     )
 
 {-| contain the immutable site content
@@ -24,7 +25,7 @@ _To render Segments differently based on their position in the tree, use
 
 # View
 
-@docs view
+@docs view, structureClass, orientationToString, hasBody
 
 -}
 
@@ -32,6 +33,7 @@ import Accordion.Segment.ViewMode as ViewMode exposing (Role(..), ViewMode(..))
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
+import Html.Styled.Keyed as Keyed
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
@@ -72,6 +74,15 @@ withoutCaption : Segment msg -> Segment msg
 withoutCaption segment =
     { segment | caption = Nothing }
 
+{-| -}
+increaseColumnCount : Segment msg -> Segment msg
+increaseColumnCount segment =
+    { segment | columnCount = segment.columnCount + 1 }
+
+{-| -}
+decreaseColumnCount : Segment msg -> Segment msg
+decreaseColumnCount segment =
+    { segment | columnCount = segment.columnCount - 1 }
 
 {-| -}
 withAdditionalAttributes : List (Html.Attribute Never) -> Segment msg -> Segment msg
@@ -108,7 +119,7 @@ empty =
 
 
 {-| -}
-view : ViewMode -> Segment msg -> Html msg
+view : ViewMode -> Segment msg -> (String, Html msg)
 view mode s =
     let
         defaultLayout =
@@ -166,12 +177,11 @@ view mode s =
             s.additionalAttributes
                 |> List.map (Attributes.map never)
 
-        structureClass =
-            classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", s.body /= Nothing ) ]
     in
+    Tuple.pair s.id <|
     case mode of
         Default path ->
-            Html.div (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
+            Html.div (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -180,7 +190,7 @@ view mode s =
                 ]
 
         Collapsed path ->
-            Html.div (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
+            Html.div (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -189,7 +199,7 @@ view mode s =
                 ]
 
         Placeholder ->
-            Html.div (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass :: additionalAttributes)
+            Html.div (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewBody s.body
                 , ViewMode.view mode
@@ -204,3 +214,11 @@ orientationToString orientation =
 
         Vertical ->
             "🁣"
+{-|-}
+structureClass s =
+    classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", hasBody s ) ]
+
+{-|-}
+hasBody : Segment a -> Bool
+hasBody =
+    .body >> (/=) Nothing
