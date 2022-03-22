@@ -58,7 +58,9 @@ typography =
             ]
         , Global.selector "p" pStyle
         , Global.selector "h2" h2Style
-        , Global.selector "img" imgStyle
+        , Global.selector ".bleeding" bleedingStyle
+        , Global.selector "img" bleedingStyle
+        , Global.selector ".richtext" [overflowY scroll]
         ]
 
 
@@ -94,8 +96,9 @@ pStyle =
     , padding2 zero rhythm.padding
     ]
 
-imgStyle =
-    [ maxWidth (pct 100)
+bleedingStyle =
+    [ maxWidth (calc (pct 100) plus (px 6))
+    , margin (px -3)
     ]
 
 

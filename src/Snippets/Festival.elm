@@ -3,7 +3,7 @@ import Css exposing (..)
 
 
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr
+import Html.Styled.Attributes as Attr exposing (css)
 
 
 description =
@@ -29,32 +29,32 @@ collage =
         []
 
 video =
-    div
-        [ Attr.class "TextformatterVideoEmbed"
-        , Attr.style "position" "relative"
-        , Attr.style "margin" "1em 0"
-        , Attr.style "padding-bottom" "56.25%"
-        , Attr.style "height" "0"
-        , Attr.style "overflow" "hidden"
-        ]
-        [ iframe
-            [ Attr.style "position" "absolute"
-            , Attr.style "top" "0"
-            , Attr.style "left" "0"
-            , Attr.style "width" "100%"
-            , Attr.style "height" "100%"
-            , Attr.attribute "byline" "false"
-            , Attr.attribute "portrait" "false"
-            , Attr.src "https://player.vimeo.com/video/685421693?h=482dd66dac&app_id=122963"
-            , Attr.width 1280
-            , Attr.height 720
-            , Attr.attribute "frameborder" "0"
-            , Attr.attribute "allow" "fullscreen; picture-in-picture"
-            , Attr.attribute "allowfullscreen" ""
-            , Attr.title "&#039;MaT - Foregrounding the background&#039; at Radialsystem 2022"
-
-            -- , Attr.attribute "color" "50e678"
-            , Attr.attribute "dnt" "true"
+    div [Attr.class "bleeding" ]
+        [div
+            [ Attr.class "TextformatterVideoEmbed"
+            , Attr.style "position" "relative"
+            , Attr.style "padding-bottom" "56.25%"
+            , Attr.style "height" "0"
+            , Attr.style "overflow" "hidden"
             ]
-            []
-        ]
+            [ iframe
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "0"
+                , Attr.style "left" "0"
+                , Attr.style "width" "100%"
+                , Attr.style "height" "100%"
+                , Attr.attribute "byline" "false"
+                , Attr.attribute "portrait" "false"
+                , Attr.src "https://player.vimeo.com/video/685421693?h=482dd66dac&app_id=122963"
+                , Attr.width 1280
+                , Attr.height 720
+                , Attr.attribute "frameborder" "0"
+                , Attr.attribute "allow" "fullscreen; picture-in-picture"
+                , Attr.attribute "allowfullscreen" ""
+                , Attr.title "&#039;MaT - Foregrounding the background&#039; at Radialsystem 2022"
+
+                -- , Attr.attribute "color" "50e678"
+                , Attr.attribute "dnt" "true"
+                ]
+                []
+            ]]

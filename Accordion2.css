@@ -7,8 +7,12 @@
 }
 
 .vanishing {
-  transition: all 10s;
-  overflow  : hidden;
+  transition: all 1.5s !important;
+  overflow  : hidden !important;
+}
+
+.vanishing * {
+  white-space: nowrap
 }
 
 :root {
@@ -25,7 +29,7 @@
   --northHeight    : calc(var(--w) * var(--northCount));
   --hereHeight     : calc(100vh - 4rem);
   --southHeight    : calc(var(--w) * var(--southCount));
-  --height         : calc(var(--northHeight) + var(--hereHeight) + var(--southHeight));
+  --height         : max(calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)), 100vh);
   height           : var(--height);
   /* y starting from the bottom edge */
   --northY         : calc(var(--height) - var(--northHeight));
@@ -39,7 +43,6 @@
   --eastWidth      : calc(var(--w) * var(--eastCount));
   --width          : max(calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)), var(--northSouthWidth));
   width            : var(--width);
-  overflow         : scroll;
   position         : relative;
   margin           : auto;
   /* x starting from the right edge */
@@ -57,12 +60,39 @@
   --hereB          : calc(var(--northHeight) + var(--hereHeight));
 }
 
+/* ===========================================================================================
+*  change layout when focus is horizontally subdivided and no segment in the center has a body
+*  ===========================================================================================
+*/
 .Accordion2.🀱:not(.hasBody) {
-  --h: var(--unit);
+  --nearWestWidth: calc(var(--w) * var(--nearWestCount));
+  --nearEastWidth: calc(var(--w) * var(--nearEastCount));
+  --width        : max(calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)), var(--northSouthWidth));
+  width          : var(--width);
+}
+
+/* rotated text */
+.Accordion2.🀱:not(.hasBody) .nearEast.🀱,
+.Accordion2.🀱:not(.hasBody) .nearWest.🀱 {
+  writing-mode: vertical-rl;
+}
+
+.Accordion2.🀱:not(.hasBody)>.nearWest {
+  top  : var(--northHeight);
+  right: calc(var(--nearWestX) + var(--offset) * var(--w));
+}
+
+.Accordion2.🀱:not(.hasBody)>.nearEast {
+  top : var(--northHeight);
+  left: calc(var(--nearEastX) + var(--offset) * var(--w));
 }
 
 
 
+/* =================================================
+*  change layout when focus is vertically subdivided 
+*  =================================================
+*/
 .Accordion2.🁣 {
   --nearWestWidth : 0rem;
   --nearEastWidth : 0rem;
@@ -90,7 +120,7 @@
   top   : calc(var(--northHeight) + var(--nearWestHeight));
 }
 
-
+/* North and South */
 .Accordion2>.north.🁣 {
   left  : var(--northSouthX);
   width : var(--northSouthWidth);
@@ -103,10 +133,18 @@
   top  : calc(var(--southY) + var(--offset) * var(--w));
 }
 
+/* West and East */
 .Accordion2>.west.🀱 {
   top  : var(--northHeight);
   right: calc(var(--westX) + var(--offset) * var(--w));
 }
+
+.Accordion2>.east.🀱 {
+  top : var(--northHeight);
+  left: calc(var(--eastX) + var(--offset) * var(--w));
+}
+
+/* The Center */
 
 .Accordion2>.nearWest {
   top  : var(--northHeight);
@@ -123,18 +161,19 @@
   left: calc(var(--nearEastX) + var(--offset) * var(--h));
 }
 
-.Accordion2>.east.🀱 {
-  top : var(--northHeight);
-  left: calc(var(--eastX) + var(--offset) * var(--w));
-}
+/* All non-placeholder segments */
 
 .Accordion2>.default,
 .Accordion2>.collapsed {
-  position  : absolute;
-  max-height: var(--hereHeight);
-  overflow  : scroll;
-  transition: all .5s;
+  position      : absolute;
+  max-height    : var(--hereHeight);
+  overflow-x    : visible;
+  transition    : all .3s;
+  display       : flex;
+  flex-direction: column;
 }
+
+/* Horizontal segments */
 
 .Accordion2>.🁣 {
   width: var(--h);
@@ -145,14 +184,14 @@
   width             : calc(var(--displayedColumns) * var(--column));
 }
 
+/* rotated text */
 .Accordion2 .west.🀱:not(.hasBody),
 .Accordion2 .east.🀱:not(.hasBody) {
-  /* rotated text */
   writing-mode: vertical-rl;
 }
 
 .Accordion2 .F {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .Accordion2 .P {
@@ -191,8 +230,8 @@
   left      : var(--hereL);
   top       : var(--northHeight);
   position  : absolute;
-  outline   : 1px dashed rgba(255, 255, 255, .1);
-  transition: all .8s;
+  outline   : 0.5px dashed rgba(0, 0, 0, .5);
+  transition: all .7s;
 }
 
 .Accordion2>.centerBackground {
@@ -202,8 +241,35 @@
   top       : var(--northHeight);
   position  : absolute;
   background: rgba(255, 255, 255, 0.127);
-  transition: all .8s;
+  transition: all .5s;
 }
+
+.Accordion2>.westIndicator {
+  width         : 0.5px;
+  height        : var(--height);
+  left          : calc(var(--westWidth) + var(--nearWestWidth) - 1px - 1rem);
+  top           : 0px;
+  position      : absolute;
+  background    : rgb(33, 33, 128);
+  transition    : all .8s;
+  z-index       : 3;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+}
+
+.Accordion2>.eastIndicator {
+  width         : 0.5px;
+  height        : var(--height);
+  right         : calc(var(--eastWidth) + var(--nearEastWidth) - 1px - 1rem);
+  top           : 0px;
+  position      : absolute;
+  background    : rgb(33, 33, 128);
+  transition    : all .8s;
+  z-index       : 3;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+}
+
 
 .Accordion2>.screenBackground {
   --screenWidth: calc(100vw - 4rem);
@@ -214,4 +280,9 @@
   position     : absolute;
   outline      : 1px dashed rgba(255, 255, 255, .01);
   transition   : all .05s;
+}
+
+.Accordion2 {
+  list-style: none;
+  padding   : 0;
 }

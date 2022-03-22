@@ -45,7 +45,7 @@ main =
                         { url | fragment = Just (Accordion.location initialAccordion) }
                 in
                 initialModel
-                    |> (case Debug.log "initialize with fragment" url.fragment of
+                    |> (case url.fragment of
                             Nothing ->
                                 update (LinkClicked (Browser.Internal initialUrl))
 
@@ -92,7 +92,7 @@ update msg model =
         UrlChanged url ->
             let
                 newModel =
-                    if Debug.log "new url" url /= Debug.log "current url" model.url then
+                    if url /= model.url then
                         { model | accordion = Accordion.find url model.accordion, url = url } |> prerender
 
                     else
@@ -100,8 +100,8 @@ update msg model =
             in
             ( newModel
             , Cmd.batch
-                [ Accordion.focus newModel.accordion |> Debug.log "centering in viewport" |> pleaseCenter
-                , Accordion.location newModel.accordion |> Debug.log "confirming" |> pleaseConfirm
+                [ Accordion.focus newModel.accordion |> pleaseCenter
+                , Accordion.location newModel.accordion |>  pleaseConfirm
                 ]
             )
 
@@ -111,17 +111,17 @@ view model =
     { title = "Moving across Thresholds"
     , body =
         [ Layout.typography
-        , Html.hr [] []
+        -- , Html.hr [] []
         , Html.div [] [ Tuple.first model.prerendered ]
-        , Html.hr [] []
-        , section
-            [ header "" "example" "Fatigue as creative proposition"
-            , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-            , h2 "This Subheading is weirdäö@%&äÄ'"
-            , dense "For more concrete discussion of content and structure, check out these collaborative docs."
-            , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-            , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-            ]
+        -- , Html.hr [] []
+        -- , section
+        --     [ header "" "example" "Fatigue as creative proposition"
+        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        --     , h2 "This Subheading is weirdäö@%&äÄ'"
+        --     , dense "For more concrete discussion of content and structure, check out these collaborative docs."
+        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
+        --     ]
         -- , Html.div
         --     [ css
         --         [ displayFlex

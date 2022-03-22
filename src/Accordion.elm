@@ -90,11 +90,10 @@ location (Accordion config) =
 {-| -}
 focus : Accordion msg -> String
 focus (Accordion config) =
-    if Tree.isRoot config.tree then
-        Debug.log "Weirdly, this tree's focus is on root" ""
+    if Tree.isRoot config.tree then ""
 
     else
-        config.tree |> Tree.focus |> .id |> Debug.log "This tree is not on root"
+        config.tree |> Tree.focus |> .id
 
 
 {-| The Url encodes the parent of the focus!
@@ -105,13 +104,13 @@ find { fragment } =
         goToId =
             \str -> .id >> (==) str |> Find |> Tree.go
     in
-    case Debug.log "Find path" fragment of
+    case fragment of
         Just parent ->
             mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
                 >> reset
 
         Nothing ->
-            mapTree Tree.root |> Debug.log "Sadly, there was no fragment."
+            mapTree Tree.root
 
 
 {-| -}
@@ -404,13 +403,16 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
                 |> List.concat
 
         visibleIds =
-            List.map (Tuple.first >> .id) visibleRs
+            List.map (Tuple.first >> .id) visibleRs |> Debug.log ("VISIBLE")
 
         invisibleRs =
             remainder
                 |> List.filter (Tuple.first >> .id >> (\invisibleId -> List.member invisibleId visibleIds) >> not)
-                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class ("vanishing") ]))
+                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class ("vanishing") ])) 
 
+        invisibleIds =
+            invisibleRs
+                |> List.map (Tuple.first >> .id) |> Debug.log ("INVISIBLE")
 
     in
     visibleRs
@@ -420,9 +422,11 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
         |> Tuple.mapFirst (List.map (Tuple.second >> Cls.view))
         |> Tuple.mapFirst 
             (   (++) 
-                    [ ("_centerBackground", Html.div [class "centerBackground"] [Html.text " "])
-                    , ("_hereBackground", Html.div [class "hereBackground"] [Html.text " "])
-                    , ("_screenBackground", Html.div [class "screenBackground"] [Html.text " "])
+                    [ ("_centerBackground", Html.li [class "centerBackground"] [Html.text " "])
+                    , ("_hereBackground", Html.li [class "hereBackground"] [Html.text " "])
+                    , ("_screenBackground", Html.li [class "screenBackground"] [Html.text " "])
+                    , ("_westIndicator", Html.li [class "westIndicator"] [Html.text " "])
+                    , ("_eastIndicator", Html.li [class "eastIndicator"] [Html.text " "])
                     ]
                 >> Keyed.ul
                     [ class "Accordion2"

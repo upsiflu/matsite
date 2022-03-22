@@ -523,7 +523,7 @@ go w =
                             |> Maybe.map Tuple.first
                             |> Maybe.withDefault []
                 in
-                Fold.list (\d -> go (Walk d Wrap)) (Debug.log "Go directions to target" myDirections) t
+                Fold.list (\d -> go (Walk d Wrap)) ( myDirections) t
 
 
 {-| `foldr defold ^= identity`

@@ -153,7 +153,7 @@ view mode s =
                 s.id
 
         viewCaption =
-            Maybe.withDefault "𐫱"
+            Maybe.withDefault ""--"𐫱"
                 >> header "" segmentId
 
         viewBody =
@@ -181,7 +181,7 @@ view mode s =
     Tuple.pair s.id <|
     case mode of
         Default path ->
-            Html.div (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+            Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -190,7 +190,7 @@ view mode s =
                 ]
 
         Collapsed path ->
-            Html.div (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+            Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewOverlay (List.map Fold.viewDirection path |> String.join "")
                 , viewBody s.body
@@ -199,7 +199,7 @@ view mode s =
                 ]
 
         Placeholder ->
-            Html.div (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+            Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                 [ viewCaption s.caption
                 , viewBody s.body
                 , ViewMode.view mode
