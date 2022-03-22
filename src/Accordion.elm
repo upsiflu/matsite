@@ -425,6 +425,7 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
                 [ ( "_centerBackground", Html.li [ class "centerBackground" ] [ Html.text "\u{00A0}" ] )
                 , ( "_hereBackground", Html.li [ class "hereBackground" ] [ Html.text "\u{00A0}" ] )
                 , ( "_screenBackground", Html.li [ class "screenBackground" ] [ Html.text "\u{00A0}" ] )
+                , ( "_screenBackground", Html.li [ class "screenBackground2 parallax-child" ] [ Html.text "\u{00A0}" ] )
                 , ( "_westIndicator", Html.li [ class "westIndicator" ] [ Html.text "\u{00A0}" ] )
                 , ( "_eastIndicator", Html.li [ class "eastIndicator" ] [ Html.text "\u{00A0}" ] )
                 ]

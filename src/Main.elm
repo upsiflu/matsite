@@ -112,7 +112,7 @@ view model =
     , body =
         [ Layout.typography
         -- , Html.hr [] []
-        , Html.div [] [ Tuple.first model.prerendered ]
+        , Html.div [ Attributes.class "overflow"] [ Tuple.first model.prerendered ]
         -- , Html.hr [] []
         -- , section
         --     [ header "" "example" "Fatigue as creative proposition"

@@ -38,6 +38,7 @@ import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
 import Zipper.Tree as Tree exposing (Tree)
 
+debugging = False
 
 {-| -}
 type alias Segment msg =
@@ -178,26 +179,26 @@ view mode s =
             Default { path, isLeaf } ->
                 Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                     [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
-                    , viewOverlay (List.map Fold.viewDirection path |> String.join "")
+                    , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
                     , viewBody s.body
-                    , viewOrientation
-                    , ViewMode.view mode
+                    , viewOrientation |> notIf (not debugging)
+                    , ViewMode.view mode |> notIf (not debugging)
                     ]
 
             Collapsed { path, isLeaf } ->
                 Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                     [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
-                    , viewOverlay (List.map Fold.viewDirection path |> String.join "")
+                    , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
                     , viewBody s.body
-                    , viewOrientation
-                    , ViewMode.view mode
+                    , viewOrientation |> notIf (not debugging)
+                    , ViewMode.view mode |> notIf (not debugging)
                     ]
 
             Placeholder ->
                 Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                     [ viewCaption s.caption
                     , viewBody s.body
-                    , ViewMode.view mode
+                    , ViewMode.view mode |> notIf (not debugging)
                     ]
 
 

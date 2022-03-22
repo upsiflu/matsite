@@ -58,6 +58,9 @@
   /* relative positions from top and bottom are northHeight and southHeight respectively. */
   --hereT          : calc(var(--southHeight) + var(--hereHeight));
   --hereB          : calc(var(--northHeight) + var(--hereHeight));
+  /* Midpoint */
+  --midX           : calc(var(--hereL) + calc(var(--hereWidth) / 2));
+  --midY           : calc(var(--northY) + calc(var(--hereHeight) / 2));
 }
 
 /* ===========================================================================================
@@ -190,7 +193,7 @@
   writing-mode: vertical-rl;
 }
 
-.Accordion2 .F {
+.Accordion2>.F {
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -240,7 +243,7 @@
   left      : var(--westWidth);
   top       : var(--northHeight);
   position  : absolute;
-  background: rgba(255, 255, 255, 0.127);
+  background: rgba(255, 255, 255, 0.08);
   transition: all .5s;
 }
 
@@ -285,4 +288,57 @@
 .Accordion2 {
   list-style: none;
   padding   : 0;
+}
+
+
+
+
+
+
+
+
+
+/* PARALLAX */
+
+.overflow {
+  perspective       : 1px;
+  perspective-origin: center;
+  width             : 100%;
+  height            : 100%;
+  overflow          : scroll;
+}
+
+.Accordion2 {
+  transform-style: preserve-3d;
+  overflow       : visible;
+}
+
+.🀱 {
+  transform-style: preserve-3d;
+  overflow       : visible;
+
+}
+
+img {
+  transform-origin: center;
+  transform       : translateZ(0.08px);
+}
+
+
+
+.centerBackground {
+  transform-origin: center;
+  transform       : translateZ(-0.1px);
+  pointer-events  : none;
+}
+
+
+.parallax-child {
+  outline         : 1px dashed rgba(255, 255, 255, .1);
+  background      : brown;
+  width           : 20rem;
+  height          : 20rem;
+  /**/
+  transform-origin: center;
+  transform       : translate3d(1px, 1px, 1px)
 }
