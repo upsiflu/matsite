@@ -22,6 +22,7 @@ theme =
     , fa = rgb 255 255 255
     , fb = rgb 0 255 0
     , li = rgb 140 140 255
+    , li2 = rgb 80 80 255
     , green = rgb 80 230 120
     , raised = rgba 255 255 255 0.2
     , blue = rgb 0 0 255
@@ -48,7 +49,7 @@ typography =
             ]
         , Global.selector "div, p, a, section, article, header, footer, main"
             [ boxSizing borderBox ]
-        , Global.selector "b, strong"
+        , Global.selector "b, strong, a"
             [ fontFamilies [ "subarumedium", "sans" ] ]
         , Global.selector "i, em"
             [ fontFamilies [ "subarubook_italic", "sans" ] ]
@@ -57,6 +58,7 @@ typography =
             , fontSize (rem 1)
             ]
         , Global.selector "p" pStyle
+        , Global.selector "a" aStyle
         , Global.selector "h2" h2Style
         , Global.selector ".bleeding" bleedingStyle
         , Global.selector "img" bleedingStyle
@@ -101,6 +103,16 @@ bleedingStyle =
     , margin (px -3)
     ]
 
+aStyle =
+    [ link
+                [ textDecoration inherit
+                , color theme.li
+                ]
+                , visited
+                [ color theme.li2
+                ]
+    ]
+
 
 anchoredLabel t =
     let
@@ -127,7 +139,7 @@ anchoredLabel t =
                     , color theme.li
                     ]
                 , visited
-                    [ color theme.li
+                    [ color theme.li2
                     ]
                 --, outline3 (px 1) dashed theme.li
                 , display block
@@ -204,6 +216,7 @@ header query id t =
                     ++ "#"
                     ++ id
                 )
+            , Attributes.class "segmentLabel"
             , css
                 [ link
                     [ textDecoration inherit

@@ -4,7 +4,7 @@ module Accordion exposing
     , flip, find
     , location, focus
     , Remainder, view
-    , anarchiveX, vimeoX
+    , anarchiveX, vimeoX, root
     )
 
 {-|
@@ -15,7 +15,7 @@ module Accordion exposing
 
 # Map
 
-@docs flip, find
+@docs flip, find, root
 
 
 # Deconstruct
@@ -44,7 +44,10 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
+import Snippets.Artist as Artist
 import Snippets.Festival as Festival
+import Snippets.Lab as Lab
+import Snippets.Intro as Intro
 import String exposing (left)
 import Url exposing (Url)
 import Zipper exposing (Zipper)
@@ -68,6 +71,11 @@ singleton tree =
 flip : Accordion msg -> Accordion msg
 flip (Accordion config) =
     Accordion { config | collapsed = not config.collapsed }
+
+{-| -}
+root : Accordion msg -> Accordion msg
+root (Accordion config) =
+    Accordion { config | tree = Tree.root config.tree }
 
 
 {-| -}
@@ -120,35 +128,6 @@ mapTree fu (Accordion config) =
 
 
 {-| -}
-insertToTree : Branch (Segment msg) -> Tree (Segment msg) -> Tree (Segment msg)
-insertToTree branch tree =
-    let
-        id =
-            Branch.node branch |> .id
-
-        autoSuffix : Int -> String
-        autoSuffix int =
-            let
-                testId =
-                    id ++ "(" ++ String.fromInt int ++ ")"
-            in
-            if Tree.any (.id >> (==) testId) tree then
-                autoSuffix (int + 1)
-
-            else
-                testId
-
-        uniqueId =
-            if Tree.any (.id >> (==) id) tree then
-                autoSuffix 0
-
-            else
-                id
-    in
-    Tree.mapBranch (\_ -> branch |> Branch.mapNode (\segment -> { segment | id = uniqueId })) tree
-
-
-{-| -}
 setSegment1 : Segment msg -> Tree (Segment msg) -> Tree (Segment msg)
 setSegment1 segment tree =
     let
@@ -182,9 +161,6 @@ go direction =
     Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
 
 
-set_ : Branch (Segment msg) -> Accordion msg -> Accordion msg
-set_ =
-    insertToTree >> mapTree
 
 
 set : Orientation -> String -> Maybe (Html msg) -> Accordion msg -> Accordion msg
@@ -200,6 +176,19 @@ set orientation caption body =
            )
         |> setSegment
 
+
+set0 :  Orientation -> Maybe (Html msg) -> Accordion msg -> Accordion msg
+set0 orientation body =
+    Segment.empty
+        |> Segment.withOrientation orientation
+        |> (case body of
+                Nothing ->
+                    identity
+
+                Just b ->
+                    Segment.withBody b
+           )
+        |> setSegment
 
 setSegment : Segment msg -> Accordion msg -> Accordion msg
 setSegment =
@@ -222,6 +211,27 @@ site =
 
         anarchive =
             verticalSegment "Anarchive"
+
+        artists =
+            Artist.artists
+                |> List.map
+                    (\{name, bio, photo} ->
+                        set Horizontal (name ++ "(photo)") (Just (Html.img [class "artist", src photo] []))
+                            >> go Right
+                            >> set Horizontal name 
+                                (Just (
+                                    Html.div [class "artist richtext"] 
+                                        [ Html.h2 [] [Html.text name]
+                                        , bio
+                                        ]
+                                    ))
+                            >> mapSegment (Segment.withAdditionalAttributes [ class "forwards"])
+                            >> go Right
+                    )
+        doArtists = List.foldl (\fu0 fu1 -> fu0>>fu1) identity artists
+                
+
+
 
         series =
             String.fromInt >> (++) "Series "
@@ -261,7 +271,9 @@ site =
     in
     Tree.singleton Segment.empty
         |> singleton
-        |> set Vertical "AnArchive" Nothing
+        |> set Vertical "Intro" (Just Intro.intro)
+        |> go Right
+        |> set Vertical "AnArchive" (Just anarchiveX)
         |> go Right
         |> set Vertical "Vimeo" Nothing
         |> go Right
@@ -282,16 +294,25 @@ site =
         |> go Right
         |> go Right
         |> go Down
-        |> set Horizontal "Lab" Nothing
+        |> set Horizontal "Lab" Nothing--(Just )
+        |> mapSegment  (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
         |> appendSubtree
         |> go Right
-        |> set Horizontal "Festival" Nothing
+        |> set Horizontal "Festival" Nothing-- (Just <| )
+        |> mapSegment  (Segment.withInfo <| Html.text "Text line - festival popups, physical participation")
         |> appendSubtree
         |> go Right
         |> set Horizontal "Artist" Nothing
-        |> appendSubtree
-        |> go Left
         |> go Down
+        |> doArtists
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+
 
 
 
@@ -303,13 +324,14 @@ site =
 {-| -}
 anarchiveX : Html msg
 anarchiveX =
-    Html.iframe
+    Html.div [class "anArchive opening"]
+    [Html.iframe
         [ attribute "width" "100%"
-        , css [ position absolute, Css.height (vh 100), border (px 0) ]
+        , css [ position absolute, Css.height (pct 100), border (px 0) ]
         , src "https://www.are.na/moving-across-thresholds/library-of-worded-companions/embed"
         , title "Moving Across Thresholds - AnArchive"
         ]
-        []
+        []]
 
 
 {-| -}
@@ -465,9 +487,8 @@ view remainder (Accordion config) =
     config.tree
         |> Tree.zipDirections
         |> Tree.positionalMap
-            { leaf = \( path, segment ) -> ( viewMode { path = path, isLeaf = True }, segment )
-            , other = \( path, segment ) -> ( viewMode { path = path, isLeaf = False }, segment )
-            }
+            (  \{isRoot, isLeaf} ( path, segment ) -> ( viewMode { path = path, isLeaf = isLeaf, isRoot = isRoot }, segment ))
+            
         |> Tree.view
             (Tree.Uniform renderTree { toHtml = toHtml2 remainder })
 

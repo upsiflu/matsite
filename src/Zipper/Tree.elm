@@ -568,23 +568,25 @@ mapfold fu =
     }
 
 
+type alias Positionality =
+    { isLeaf : Bool, isRoot : Bool }
+
 {-| -}
-positionalMapfold : { leaf : a -> b, other : a -> b } -> Foldr {} a (List (Branch b)) (MixedZipper b (Branch b)) (Zipper (Branch b)) (List (MixedZipper b (Branch b))) (Branch b) (Tree b)
-positionalMapfold fus =
+positionalMapfold : ( Positionality -> a -> b ) -> Foldr {} a (List (Branch (Positionality -> b))) (MixedZipper (Positionality -> b) (Branch (Positionality -> b))) (Zipper (Branch (Positionality -> b))) (List (MixedZipper (Positionality -> b) (Branch (Positionality -> b)))) (Branch (Positionality -> b)) (Tree (Positionality -> b))
+positionalMapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> MixedZipper.create (fus.other a) l r -- a -> aisle -> aisle -> z
+    , join = \a l r -> MixedZipper.create (\inherited -> fu inherited a) l r -- a -> aisle -> aisle -> z
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch =
+            --: a -> trunk -> b
         \a trunk ->
             if trunk == [] then
-                Branch.create (fus.leaf a) trunk
-                --: a -> trunk -> b
+                Branch.create (\inherited -> fu {inherited | isLeaf = True} a) trunk
 
             else
-                Branch.create (fus.other a) trunk
+                Branch.create (\inherited -> fu inherited a) trunk
 
-    --: a -> trunk -> b
     , mergeTree = create -- : z -> trunk -> result
     , leaf = []
     , left = []
@@ -622,9 +624,10 @@ map fu =
 
 
 {-| -}
-positionalMap : { leaf : a -> b, other : a -> b } -> Tree a -> Tree b
 positionalMap fu =
     foldr (positionalMapfold fu)
+        >> mapRoot ( (\open -> \_-> open {isLeaf = False, isRoot = True}) )
+        >> map (\open -> open {isLeaf = False, isRoot = False})
 
 
 {-| -}
@@ -661,6 +664,20 @@ mapSpine : (a -> a) -> Tree a -> Tree a
 mapSpine fu =
     mapBranch (Branch.mapSpine fu)
         >> mapTrace fu
+
+{-|-}
+mapRoot : (a->a) -> Tree a -> Tree a
+mapRoot fu tree =
+    MixedNonempty.mapLast
+        (MixedZipper.map fu (Branch.map fu))
+        tree
+        |> \result -> case result of
+            Ok ok -> ok
+            Err _ -> 
+                (Branch.map fu
+                    |> Zipper.map
+                    |> MixedNonempty.mapHead) tree
+
 
 
 {-| -}

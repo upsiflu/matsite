@@ -38,7 +38,7 @@ type ViewMode
 
 
 type alias Position =
-    { path : List Direction, isLeaf : Bool }
+    { path : List Direction, isLeaf : Bool, isRoot : Bool }
 
 
 {-| The Role is a human-readable representation of the path

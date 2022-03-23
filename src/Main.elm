@@ -5,7 +5,7 @@ import Browser
 import Browser.Navigation as Nav
 import Css exposing (..)
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (css)
+import Html.Styled.Attributes as Attributes exposing (css, class, href)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
 import Url exposing (Url)
@@ -112,7 +112,8 @@ view model =
     , body =
         [ Layout.typography
         -- , Html.hr [] []
-        , Html.div [ Attributes.class "overflow"] [ Tuple.first model.prerendered ]
+        , Html.div [ Attributes.class "overflow"] 
+            [ Tuple.first model.prerendered ]
         -- , Html.hr [] []
         -- , section
         --     [ header "" "example" "Fatigue as creative proposition"

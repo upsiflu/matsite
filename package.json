@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "elm-review": "^2.7.0"
+  },
+  "dependencies": {
+    "@vimeo/player": "^2.16.4"
   }
 }

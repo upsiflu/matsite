@@ -1,14 +1,14 @@
-.Accordion2 > .vanishing.🁣 {
+.Accordion2>.vanishing.🁣 {
   max-height: 1px;
 }
 
-.Accordion2 > .vanishing.🀱 {
+.Accordion2>.vanishing.🀱 {
   max-width: 1px;
 }
 
 .vanishing {
   transition: all 1.5s !important;
-  overflow: hidden !important;
+  overflow  : hidden !important;
 }
 
 .vanishing * {
@@ -16,62 +16,53 @@
 }
 
 :root {
-  --unit: 3rem;
-  --column: calc(var(--unit) * 7);
+  --unit            : 3rem;
+  --column          : calc(var(--unit) * 7);
   --columnCountLimit: 20;
   /* We will need to specify in the Elm how many columns are virtual (only extended if columnCountLimit is not 1). Then columnCountLimit is either 1 or infinite. */
 }
 
 .Accordion2 {
-  --w: var(--unit);
-  --h: var(--column);
+  --w          : var(--unit);
+  --h          : var(--column);
   /* heights */
   --northHeight: calc(var(--w) * var(--northCount));
-  --hereHeight: calc(100vh - 4rem);
+  --hereHeight : calc(100vh - 4rem);
   --southHeight: calc(var(--w) * var(--southCount));
-  --height: max(
-    calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)),
-    100vh
-  );
-  height: var(--height);
+  --height     : max(calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)),
+      100vh);
+  height           : var(--height);
   /* y starting from the bottom edge */
-  --northY: calc(var(--height) - var(--northHeight));
-  --southY: calc(var(--height) - var(--southHeight));
+  --northY         : calc(var(--height) - var(--northHeight));
+  --southY         : calc(var(--height) - var(--southHeight));
   /* widths */
   --northSouthWidth: max(var(--hereWidth), var(--column));
-  --westWidth: calc(var(--w) * var(--westCount));
-  --nearWestWidth: calc(var(--h) * var(--nearWestCount));
-  --hereWidth: calc(var(--h) * var(--hereCount));
-  --nearEastWidth: calc(var(--h) * var(--nearEastCount));
-  --eastWidth: calc(var(--w) * var(--eastCount));
-  --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
-    var(--northSouthWidth)
-  );
-  width: var(--width);
-  position: relative;
-  margin: auto;
+  --westWidth      : calc(var(--w) * var(--westCount));
+  --nearWestWidth  : calc(var(--h) * var(--nearWestCount));
+  --hereWidth      : calc(var(--h) * var(--hereCount));
+  --nearEastWidth  : calc(var(--h) * var(--nearEastCount));
+  --eastWidth      : calc(var(--w) * var(--eastCount));
+  --width          : max(calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)),
+      var(--northSouthWidth));
+  width        : var(--width);
+  position     : relative;
+  margin       : auto;
   /* x starting from the right edge */
-  --northSouthX: calc(
-    var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2
-  );
-  --westX: calc(var(--width) - var(--westWidth));
-  --nearWestX: calc(var(--westX) - var(--nearWestWidth));
-  --eastX: calc(var(--width) - var(--eastWidth));
-  --nearEastX: calc(var(--eastX) - var(--nearEastWidth));
+  --northSouthX: calc(var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2);
+  --westX      : calc(var(--width) - var(--westWidth));
+  --nearWestX  : calc(var(--westX) - var(--nearWestWidth));
+  --eastX      : calc(var(--width) - var(--eastWidth));
+  --nearEastX  : calc(var(--eastX) - var(--nearEastWidth));
   /* relative positions from left */
-  --hereL: calc(var(--westWidth) + var(--nearWestWidth));
+  --hereL      : calc(var(--westWidth) + var(--nearWestWidth));
   /* relative positions from right */
-  --hereR: calc(var(--eastWidth) + var(--nearEastWidth));
+  --hereR      : calc(var(--eastWidth) + var(--nearEastWidth));
   /* relative positions from top and bottom are northHeight and southHeight respectively. */
-  --hereT: calc(var(--southHeight) + var(--hereHeight));
-  --hereB: calc(var(--northHeight) + var(--hereHeight));
+  --hereT      : calc(var(--southHeight) + var(--hereHeight));
+  --hereB      : calc(var(--northHeight) + var(--hereHeight));
   /* Midpoint */
-  --midX: calc(var(--hereL) + calc(var(--hereWidth) / 2));
-  --midY: calc(var(--northY) + calc(var(--hereHeight) / 2));
+  --midX       : calc(var(--hereL) + calc(var(--hereWidth) / 2));
+  --midY       : calc(var(--northY) + calc(var(--hereHeight) / 2));
 }
 
 /* ===========================================================================================
@@ -81,13 +72,8 @@
 .Accordion2.🀱:not(.hasBody) {
   --nearWestWidth: calc(var(--w) * var(--nearWestCount));
   --nearEastWidth: calc(var(--w) * var(--nearEastCount));
-  --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
-    var(--northSouthWidth)
-  );
+  --width        : max(calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)),
+      var(--northSouthWidth));
   width: var(--width);
 }
 
@@ -97,13 +83,40 @@
   writing-mode: vertical-rl;
 }
 
-.Accordion2.🀱:not(.hasBody) > .nearWest {
-  top: var(--northHeight);
+.Accordion2 .🀱:not(.hasBody):not(.F) .info {
+  position    : absolute;
+  inset-inline: 8rem;
+}
+
+.A.nearEast.🀱:not(.hasBody)>a,
+.A.nearWest.🀱:not(.hasBody)>a {
+  max-width: var(--unit);
+}
+
+.Accordion2 .info {
+  opacity: 0;
+  padding: 0.75rem 1.125rem;
+  color  : silver;
+}
+
+.Accordion2 .here .info,
+.P .info {
+  opacity: 1;
+}
+
+
+.Accordion2 .info {
+  inline-size: 21rem;
+}
+
+
+.Accordion2.🀱:not(.hasBody)>.nearWest {
+  top  : var(--northHeight);
   right: calc(var(--nearWestX) + var(--offset) * var(--w));
 }
 
-.Accordion2.🀱:not(.hasBody) > .nearEast {
-  top: var(--northHeight);
+.Accordion2.🀱:not(.hasBody)>.nearEast {
+  top : var(--northHeight);
   left: calc(var(--nearEastX) + var(--offset) * var(--w));
 }
 
@@ -112,94 +125,94 @@
 *  =================================================
 */
 .Accordion2.🁣 {
-  --nearWestWidth: 0rem;
-  --nearEastWidth: 0rem;
+  --nearWestWidth : 0rem;
+  --nearEastWidth : 0rem;
   --nearWestHeight: calc(var(--w) * var(--nearWestCount));
   --nearEastHeight: calc(var(--w) * var(--nearEastCount));
-  --nearWestY: calc(var(--northY) - var(--nearWestHeight));
-  --nearEastY: calc(var(--southY) - var(--nearEastHeight));
+  --nearWestY     : calc(var(--northY) - var(--nearWestHeight));
+  --nearEastY     : calc(var(--southY) - var(--nearEastHeight));
 }
 
-.Accordion2.🁣 > .nearWest {
+.Accordion2.🁣>.nearWest {
   height: var(--w);
-  top: auto;
+  top   : auto;
   bottom: calc(var(--nearWestY) + var(--w) * var(--offset));
-  right: calc(var(--eastWidth));
+  right : calc(var(--eastWidth));
 }
 
-.Accordion2.🁣 > .nearEast {
+.Accordion2.🁣>.nearEast {
   height: var(--w);
-  top: calc(var(--nearEastY) + var(--w) * var(--offset));
-  left: calc(var(--westWidth));
+  top   : calc(var(--nearEastY) + var(--w) * var(--offset));
+  left  : calc(var(--westWidth));
 }
 
-.Accordion2.🁣 > .here {
+.Accordion2.🁣>.here {
   height: var(--w);
-  top: calc(var(--northHeight) + var(--nearWestHeight));
+  top   : calc(var(--northHeight) + var(--nearWestHeight));
 }
 
 /* North and South */
-.Accordion2 > .north.🁣 {
-  left: var(--northSouthX);
-  width: var(--northSouthWidth);
+.Accordion2>.north.🁣 {
+  left  : var(--northSouthX);
+  width : var(--northSouthWidth);
   bottom: calc(var(--northY) + var(--offset) * var(--w));
 }
 
-.Accordion2 > .south.🁣 {
-  left: var(--northSouthX);
+.Accordion2>.south.🁣 {
+  left : var(--northSouthX);
   width: var(--northSouthWidth);
-  top: calc(var(--southY) + var(--offset) * var(--w));
+  top  : calc(var(--southY) + var(--offset) * var(--w));
 }
 
 /* West and East */
-.Accordion2 > .west.🀱 {
-  top: var(--northHeight);
+.Accordion2>.west.🀱 {
+  top  : var(--northHeight);
   right: calc(var(--westX) + var(--offset) * var(--w));
 }
 
-.Accordion2 > .east.🀱 {
-  top: var(--northHeight);
+.Accordion2>.east.🀱 {
+  top : var(--northHeight);
   left: calc(var(--eastX) + var(--offset) * var(--w));
 }
 
 /* The Center */
 
-.Accordion2 > .nearWest {
-  top: var(--northHeight);
+.Accordion2>.nearWest {
+  top  : var(--northHeight);
   right: calc(var(--nearWestX) + var(--offset) * var(--h));
 }
 
-.Accordion2 > .here {
-  top: var(--northHeight);
+.Accordion2>.here {
+  top : var(--northHeight);
   left: calc(var(--hereL) + var(--offset) * var(--h));
 }
 
-.Accordion2 > .nearEast {
-  top: var(--northHeight);
+.Accordion2>.nearEast {
+  top : var(--northHeight);
   left: calc(var(--nearEastX) + var(--offset) * var(--h));
 }
 
 /* All non-placeholder segments */
 
-.Accordion2 > .default,
-.Accordion2 > .collapsed {
-  position: absolute;
-  max-height: var(--hereHeight);
-  overflow-x: visible;
-  transition: all 0.3s;
-  display: flex;
+.Accordion2>.default,
+.Accordion2>.collapsed {
+  position      : absolute;
+  max-height    : var(--hereHeight);
+  overflow-x    : visible;
+  transition    : all 0.3s;
+  display       : flex;
   flex-direction: column;
 }
 
 /* Horizontal segments */
 
-.Accordion2 > .🁣 {
+.Accordion2>.🁣 {
   width: var(--h);
 }
 
-.Accordion2 > .hasBody {
+.Accordion2>.hasBody {
   --displayedColumns: min(var(--columnCount), var(--columnCountLimit));
-  width: calc(var(--displayedColumns) * var(--column));
+  width             : calc(var(--displayedColumns) * var(--column));
 }
 
 /* rotated text */
@@ -208,8 +221,13 @@
   writing-mode: vertical-rl;
 }
 
-.Accordion2 > .F {
+.Accordion2>.F {
   background: rgba(255, 255, 255, 0.02);
+}
+
+
+.Accordion2>.A.🁣 {
+  overflow-y: hidden;
 }
 
 .Accordion2 .P {
@@ -217,12 +235,12 @@
   /* outline       : 1px dashed blue;
   outline-offset: -1px; */
   background: rgba(255, 255, 255, 0.1);
-  overflow: visible;
-  outline: none;
+  overflow  : visible;
+  outline   : none;
 }
 
 .Accordion2 .P H1 {
-  overflow: visible;
+  overflow   : visible;
   white-space: nowrap;
 }
 
@@ -230,118 +248,217 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.Accordion2 .B > a {
-  background: hsl(0, 0%, 10%);
-  height: fit-content;
-  outline: none;
+.Accordion2 .B>a {
+  background    : hsl(0, 0%, 10%);
+  height        : fit-content;
+  outline       : none;
   mix-blend-mode: lighten;
 }
 
-.Accordion2 > .hereBackground {
-  width: var(--hereWidth);
-  height: var(--hereHeight);
-  left: var(--hereL);
-  top: var(--northHeight);
-  position: absolute;
-  outline: 0.5px dashed rgba(0, 0, 0, 0.5);
-  transition: all 0.7s;
+.Accordion2>.hereBackground {
+  width         : var(--hereWidth);
+  height        : var(--hereHeight);
+  left          : var(--hereL);
+  top           : var(--northHeight);
+  position      : absolute;
+  outline       : 0.5px dashed rgba(0, 0, 0, 0.5);
+  transition    : all 0.7s;
+  pointer-events: none;
+  ;
 }
 
-.Accordion2 > .centerBackground {
-  width: calc(var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth));
-  height: var(--hereHeight);
-  left: var(--westWidth);
-  top: var(--northHeight);
-  position: absolute;
+.Accordion2>.centerBackground {
+  width     : calc(var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth));
+  height    : var(--hereHeight);
+  left      : var(--westWidth);
+  top       : var(--northHeight);
+  position  : absolute;
   background: rgba(255, 255, 255, 0.08);
   transition: all 0.5s;
 }
 
-.Accordion2 > .westIndicator {
-  width: 0.5px;
-  height: var(--height);
-  left: calc(var(--westWidth) + var(--nearWestWidth) - 1px - 1rem);
-  top: 0px;
-  position: absolute;
-  background: rgb(33, 33, 128);
-  transition: all 0.8s;
-  z-index: 3;
+.Accordion2>.westIndicator {
+  width         : 0.5px;
+  height        : var(--height);
+  left          : calc(var(--westWidth) + var(--nearWestWidth) - 1px - 1rem);
+  top           : 0px;
+  position      : absolute;
+  background    : rgb(33, 33, 128);
+  transition    : all 0.8s;
+  z-index       : 3;
   pointer-events: none;
   mix-blend-mode: lighten;
 }
 
-.Accordion2 > .eastIndicator {
-  width: 0.5px;
-  height: var(--height);
-  right: calc(var(--eastWidth) + var(--nearEastWidth) - 1px - 1rem);
-  top: 0px;
-  position: absolute;
-  background: rgb(33, 33, 128);
-  transition: all 0.8s;
-  z-index: 3;
+.Accordion2>.eastIndicator {
+  width         : 0.5px;
+  height        : var(--height);
+  right         : calc(var(--eastWidth) + var(--nearEastWidth) - 1px - 1rem);
+  top           : 0px;
+  position      : absolute;
+  background    : rgb(33, 33, 128);
+  transition    : all 0.8s;
+  z-index       : 3;
   pointer-events: none;
   mix-blend-mode: lighten;
 }
 
-.Accordion2 > .screenBackground {
-  --screenWidth: calc(100vw - 4rem);
-  width: var(--screenWidth);
-  height: var(--hereHeight);
-  left: calc(var(--hereL) + var(--hereWidth) / 2 - var(--screenWidth) / 2);
-  top: var(--northHeight);
-  position: absolute;
-  outline: 1px dashed rgba(255, 255, 255, 0.01);
-  transition: all 0.05s;
+.Accordion2>.screenBackground {
+  --screenWidth : calc(100vw - 4rem);
+  width         : var(--screenWidth);
+  height        : var(--hereHeight);
+  left          : calc(var(--hereL) + var(--hereWidth) / 2 - var(--screenWidth) / 2);
+  top           : var(--northHeight);
+  position      : absolute;
+  outline       : 1px dashed rgba(255, 255, 255, 0.01);
+  transition    : all 0s;
+  pointer-events: none;
 }
 
 .Accordion2 {
   list-style: none;
-  padding: 0;
+  padding   : 0;
 }
 
 /* PARALLAX */
 
 .overflow {
-  perspective: 1px;
+  perspective       : 1px;
   perspective-origin: center;
-  width: 100%;
-  height: 100%;
-  overflow: scroll;
+  width             : 100vw;
+  height            : 100vh;
+  overflow          : scroll;
 }
 
 .Accordion2 {
   transform-style: preserve-3d;
-  overflow: visible;
+  overflow       : visible;
 }
 
 .🀱 {
   transform-style: preserve-3d;
-  overflow: visible;
+  overflow       : visible;
 }
 
 img {
   transform-origin: center;
-  transform: translateZ(0.08px);
+  transform       : translateZ(0.08px);
 }
 
 .centerBackground {
   transform-origin: center;
-  transform: translateZ(-0.1px);
-  pointer-events: none;
+  transform       : translateZ(-0.1px);
+  pointer-events  : none;
 }
 
 .multipleHeaders {
   overflow: hidden;
 }
-.multipleHeaders > :first-child {
+
+.multipleHeaders> :first-child {
   flex-shrink: 0;
 }
-.multipleHeaders > :not(:first-child) {
-  overflow: hidden;
+
+.multipleHeaders> :not(:first-child) {
+  overflow     : hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space  : nowrap;
 }
+
 .multipleHeaders * {
   text-overflow: ellipsis;
-  overflow: hidden;
+  overflow     : hidden;
+}
+
+.opening {
+  --accordionOffset: calc(50vW - (var(--width) / 2));
+  margin-left      : calc(0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth));
+  width            : 100vw;
+  position         : relative;
+  min-height       : 0px;
+  margin-top       : 0px;
+  overflow         : hidden;
+  opacity          : .5;
+  transition       : all .5s;
+  z-index          : -4;
+}
+
+
+.A .opening {
+  min-height: 3rem;
+}
+
+.F .opening {
+  min-height: calc(var(--hereHeight) - var(--nearWestHeight));
+  margin-top: -3rem;
+  opacity   : 1;
+}
+
+
+.F .intro {
+  min-height: 100vh;
+}
+
+.segmentLabel {
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 1), -1px -1px 0px rgba(0, 0, 0, 1), -1px 1px 0px rgba(0, 0, 0, 1), 1px -1px 0px rgba(0, 0, 0, 1);
+}
+
+.artist .weblink {
+  display      : block;
+  margin-left  : -7rem;
+  border-bottom: 0.5px solid #8c8cfc;
+  padding-left : 7rem;
+  margin-top   : 1.5rem;
+  width        : fit-content;
+}
+
+.richtext {
+  margin-left : -7rem;
+  padding-left: 7rem;
+}
+
+img.artist {
+  mix-blend-mode: overlay;
+  position      : relative;
+  left          : 0.5rem;
+}
+
+.forwards {
+  z-index: 9;
+}
+
+.F>a:hover,
+.A>a:hover {
+  background-image   : linear-gradient(135deg, #8c8cff 25%, transparent 25%), linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%), linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
+  background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+  background-size    : 3rem 3rem;
+  background-repeat  : repeat;
+}
+
+.F>a,
+.A>a {
+  background-image   : linear-gradient(135deg, transparent 25%, transparent 25%), linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%), linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
+  background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+  background-size    : 1.5rem 1.5rem;
+  background-repeat  : repeat;
+  transition         : all .2s;
+}
+
+.Ba>a:hover,
+.B>a:hover,
+.P>a:hover,
+a.weblink:hover {
+  background-image: linear-gradient(135deg, #000069 25%, transparent 25%), linear-gradient(225deg, #000069 25%, transparent 25%), linear-gradient(45deg, #000069 25%, transparent 25%), linear-gradient(315deg, #000069 25%, rgba(0, 0, 0, 0) 25%);
+}
+
+.Ba>a,
+.B>a,
+.P>a {
+  transition      : all .2s;
+  background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
+}
+
+.info {
+  pointer-events: none;
+  ;
 }

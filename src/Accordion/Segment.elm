@@ -1,7 +1,7 @@
 module Accordion.Segment exposing
     ( Segment
     , empty, singleton
-    , Orientation(..)
+    , Orientation(..), withInfo
     , withBody, withOrientation, withoutCaption, withAdditionalAttributes
     , view, structureClass, orientationToString, hasBody
     , decreaseColumnCount, increaseColumnCount, withAdditionalCaption
@@ -48,6 +48,7 @@ type alias Segment msg =
     { caption : List String
     , id : String
     , body : Maybe (Html msg)
+    , info : Maybe (Html msg)
     , orientation : Orientation
     , columnCount : Int
     , additionalAttributes : List (Html.Attribute Never)
@@ -71,6 +72,10 @@ withBody : Html msg -> Segment msg -> Segment msg
 withBody body segment =
     { segment | body = Just body }
 
+{-| -}
+withInfo : Html msg -> Segment msg -> Segment msg
+withInfo info segment =
+    { segment | info = Just info }
 
 {-| -}
 withoutCaption : Segment msg -> Segment msg
@@ -105,12 +110,8 @@ withAdditionalAttributes cc segment =
 {-| -}
 singleton : String -> Segment msg
 singleton id =
-    { caption = [ id ]
+    { empty |caption = [ id ]
     , id = String.replace " " "-" id
-    , body = Nothing
-    , orientation = Vertical
-    , columnCount = 1
-    , additionalAttributes = []
     }
 
 
@@ -123,6 +124,7 @@ empty =
     , orientation = Vertical
     , columnCount = 1
     , additionalAttributes = []
+    , info = Nothing
     }
 
 
@@ -172,27 +174,36 @@ view mode s =
                 identity
 
         viewBody =
-            Maybe.withDefault (Html.text "")
+            Maybe.withDefault (Html.div [ css [maxHeight (px 0), maxWidth (px 0)]] [Html.text ""] )
 
         additionalAttributes =
             s.additionalAttributes
                 |> List.map (Attributes.map never)
+
+        viewInfo = 
+            case s.info of
+                Nothing -> Html.text ""
+                Just info ->
+                    Html.div [ class "info" ] [info]
     in
     Tuple.pair s.id <|
         case mode of
-            Default { path, isLeaf } ->
+            Default { path, isLeaf, isRoot } ->
                 Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
+                    [ viewCaption s.caption |> notIf ( s.body /= Nothing && isLeaf && not isRoot )
                     , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
                     , viewBody s.body
+        
+                    , viewInfo
                     , viewOrientation |> notIf (not debugging)
                     , ViewMode.view mode |> notIf (not debugging)
                     ]
 
-            Collapsed { path, isLeaf } ->
+            Collapsed { path, isLeaf, isRoot } ->
                 Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf)
+                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot )
                     , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
+                    , viewInfo
                     , viewBody s.body
                     , viewOrientation |> notIf (not debugging)
                     , ViewMode.view mode |> notIf (not debugging)
@@ -202,6 +213,7 @@ view mode s =
                 Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
                     [ viewCaption s.caption
                     , viewBody s.body
+                    , viewInfo
                     , ViewMode.view mode |> notIf (not debugging)
                     ]
 
