@@ -4,7 +4,7 @@ module Accordion.Segment exposing
     , Orientation(..)
     , withBody, withOrientation, withoutCaption, withAdditionalAttributes
     , view, structureClass, orientationToString, hasBody
-    , decreaseColumnCount, increaseColumnCount
+    , decreaseColumnCount, increaseColumnCount, withAdditionalCaption
     )
 
 {-| contain the immutable site content
@@ -38,11 +38,14 @@ import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
 import Zipper.Tree as Tree exposing (Tree)
 
-debugging = False
+
+debugging =
+    False
+
 
 {-| -}
 type alias Segment msg =
-    { caption : Maybe String
+    { caption : List String
     , id : String
     , body : Maybe (Html msg)
     , orientation : Orientation
@@ -72,7 +75,13 @@ withBody body segment =
 {-| -}
 withoutCaption : Segment msg -> Segment msg
 withoutCaption segment =
-    { segment | caption = Nothing }
+    { segment | caption = [] }
+
+
+{-| -}
+withAdditionalCaption : String -> Segment msg -> Segment msg
+withAdditionalCaption string segment =
+    { segment | caption = string :: segment.caption }
 
 
 {-| -}
@@ -96,7 +105,7 @@ withAdditionalAttributes cc segment =
 {-| -}
 singleton : String -> Segment msg
 singleton id =
-    { caption = Just id
+    { caption = [ id ]
     , id = String.replace " " "-" id
     , body = Nothing
     , orientation = Vertical
@@ -108,7 +117,7 @@ singleton id =
 {-| -}
 empty : Segment msg
 empty =
-    { caption = Nothing
+    { caption = []
     , id = "_"
     , body = Nothing
     , orientation = Vertical
@@ -125,18 +134,6 @@ empty =
 view : ViewMode -> Segment msg -> ( String, Html msg )
 view mode s =
     let
-        defaultLayout =
-            if
-                s.orientation
-                    == Horizontal
-                    && s.body
-                    == Nothing
-            then
-                [ id segmentId, css [ overflowY scroll, Css.maxWidth (rem 4), position relative, Css.property "writing-mode" "vertical-rl" ], ViewMode.toClass mode ]
-
-            else
-                [ id segmentId, css [ overflowY scroll, Css.width (rem 21), position relative ], ViewMode.toClass mode ]
-
         viewOrientation =
             Html.div [ css [ position absolute, left zero, top zero ] ]
                 [ Html.text (orientationToString s.orientation) ]
@@ -155,10 +152,17 @@ view mode s =
             else
                 s.id
 
-        viewCaption =
-            Maybe.withDefault ""
-                --"𐫱"
-                >> header "" segmentId
+        viewCaption cc =
+            case cc of
+                [] ->
+                    viewCaption [ "⋮" ]
+
+                [ one ] ->
+                    header "" segmentId one
+
+                _ ->
+                    List.map (header "" segmentId) cc
+                        |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
 
         notIf bool =
             if bool then
@@ -214,7 +218,7 @@ orientationToString orientation =
 
 {-| -}
 structureClass s =
-    classList [ ( "noCaption", s.caption == Nothing ), ( "hasBody", hasBody s ) ]
+    classList [ ( "noCaption", s.caption == [] ), ( "hasBody", hasBody s ) ]
 
 
 {-| -}

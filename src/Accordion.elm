@@ -149,152 +149,155 @@ insertToTree branch tree =
 
 
 {-| -}
+setSegment1 : Segment msg -> Tree (Segment msg) -> Tree (Segment msg)
+setSegment1 segment tree =
+    let
+        id =
+            segment.id
+
+        autoSuffix : Int -> String
+        autoSuffix int =
+            let
+                testId =
+                    id ++ "(" ++ String.fromInt int ++ ")"
+            in
+            if Tree.any (.id >> (==) testId) tree then
+                autoSuffix (int + 1)
+
+            else
+                testId
+
+        uniqueId =
+            if Tree.any (.id >> (==) id) tree then
+                autoSuffix 0
+
+            else
+                id
+    in
+    Tree.mapFocus (\_ -> { segment | id = uniqueId }) tree
+
+
+go : Direction -> Accordion msg -> Accordion msg
+go direction =
+    Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
+
+
+set_ : Branch (Segment msg) -> Accordion msg -> Accordion msg
+set_ =
+    insertToTree >> mapTree
+
+
+set : Orientation -> String -> Maybe (Html msg) -> Accordion msg -> Accordion msg
+set orientation caption body =
+    Segment.singleton caption
+        |> Segment.withOrientation orientation
+        |> (case body of
+                Nothing ->
+                    identity
+
+                Just b ->
+                    Segment.withBody b
+           )
+        |> setSegment
+
+
+setSegment : Segment msg -> Accordion msg -> Accordion msg
+setSegment =
+    setSegment1 >> mapTree
+
+
+mapSegment : (Segment msg -> Segment msg) -> Accordion msg -> Accordion msg
+mapSegment =
+    Tree.mapFocus >> mapTree
+
+
+{-| -}
 site : Accordion msg
 site =
     let
-        go direction =
-            Tree.go (Walk direction (Insert placeholder))
-
-        set : Branch (Segment msg) -> Tree (Segment msg) -> Tree (Segment msg)
-        set =
-            insertToTree
-
         verticalSegment x =
             Segment.singleton x
                 |> Segment.withOrientation Vertical
                 |> Branch.singleton
 
-        horizontalSegment x =
-            Segment.singleton x
-                |> Segment.withOrientation Horizontal
-                |> Branch.singleton
-
-        setBody =
-            Segment.withBody >> Branch.mapNode
-
-        noCaption =
-            Segment.withoutCaption |> Branch.mapNode
-
-        emptySegment =
-            Segment.empty |> Branch.singleton
-
         anarchive =
             verticalSegment "Anarchive"
 
-        placeholder =
-            emptySegment
-
-        vimeo =
-            verticalSegment "Vimeo"
-
-        lab =
-            horizontalSegment "Lab"
-
-        festival =
-            horizontalSegment "Festival"
-
-        artist =
-            horizontalSegment "Artist"
-
-        info =
-            horizontalSegment "Info"
-
-        collage =
-            horizontalSegment "Collage"
-                |> setBody Festival.collage
-                |> noCaption
-
-        description =
-            horizontalSegment "Description"
-                |> setBody Festival.description
-                |> noCaption
-
-        video =
-            Segment.singleton ""
-                |> Segment.withOrientation Horizontal
-                |> Segment.increaseColumnCount
-                |> Segment.withBody Festival.video
-                |> Branch.singleton
-                |> noCaption
-
-        credits =
-            horizontalSegment "Credits"
-
-        newsletter =
-            verticalSegment "Subscribe"
-
-        about =
-            verticalSegment "About"
-
         series =
-            String.fromInt >> (++) "Series " >> horizontalSegment
+            String.fromInt >> (++) "Series "
 
-        date =
-            verticalSegment
-
-        setDate =
-            date >> set
+        set2 : Orientation -> String -> String -> Accordion msg -> Accordion msg
+        set2 orientation cap1 cap2 =
+            Segment.singleton cap1
+                |> Segment.withOrientation orientation
+                |> Segment.withAdditionalCaption cap2
+                |> setSegment
 
         appendSubtree =
             go Down
-                >> setDate "Future Festival - August 22"
+                >> set2 Vertical "Future Festival" "August 22"
                 >> go Right
-                >> setDate "Future Festival - June 5-19"
+                >> set2 Vertical "Future Festival" "June 5-19"
                 >> go Right
-                >> setDate "Foregrounding the background - March 23 + 24"
+                >> set2 Vertical "Foregrounding the background" "March 23 + 24"
                 >> go Right
-                >> setDate "Previous Festival - November 2, 2021"
+                >> set2 Vertical "Previous Festival" "November 2, 2021"
                 >> go Left
                 >> go Down
-                >> set info
+                >> set Horizontal "Info" Nothing
                 >> go Right
-                >> set collage
+                >> set Horizontal "Collage" (Just Festival.collage)
                 >> go Right
-                >> set description
+                >> set Horizontal "Description" (Just Festival.description)
                 >> go Right
-                >> set video
+                >> set Horizontal "Video" (Just Festival.video)
+                >> mapSegment Segment.increaseColumnCount
                 >> go Right
-                >> set credits
+                >> set Horizontal "Credits" Nothing
                 >> go Left
                 >> go Left
                 >> go Up
                 >> go Up
     in
-    Tree.fromBranch anarchive
-        |> go Right
-        |> set vimeo
-        |> go Right
-        |> go Right
-        |> set newsletter
-        |> go Right
-        |> set about
-        |> go Left
-        |> go Left
-        |> go Down
-        |> set (series 6)
-        |> go Left
-        |> set (series 5)
-        |> go Left
-        |> set (series 4)
-        |> go Left
-        |> set (series 3)
-        |> go Right
-        |> go Right
-        |> go Down
-        |> set lab
-        |> appendSubtree
-        |> go Right
-        |> set festival
-        |> appendSubtree
-        |> go Right
-        |> set artist
-        |> appendSubtree
-        |> go Left
-        |> go Down
-        --|> go Down
-        --|> go Up
-        --|> go Right
+    Tree.singleton Segment.empty
         |> singleton
+        |> set Vertical "AnArchive" Nothing
+        |> go Right
+        |> set Vertical "Vimeo" Nothing
+        |> go Right
+        |> go Right
+        |> set Vertical "Newsletter" Nothing
+        |> go Right
+        |> set Vertical "About" Nothing
+        |> go Left
+        |> go Left
+        |> go Down
+        |> set Horizontal (series 6) Nothing
+        |> go Left
+        |> set Horizontal (series 5) Nothing
+        |> go Left
+        |> set Horizontal (series 4) Nothing
+        |> go Left
+        |> set Horizontal (series 3) Nothing
+        |> go Right
+        |> go Right
+        |> go Down
+        |> set Horizontal "Lab" Nothing
+        |> appendSubtree
+        |> go Right
+        |> set Horizontal "Festival" Nothing
+        |> appendSubtree
+        |> go Right
+        |> set Horizontal "Artist" Nothing
+        |> appendSubtree
+        |> go Left
+        |> go Down
+
+
+
+--|> go Down
+--|> go Up
+--|> go Right
 
 
 {-| -}
