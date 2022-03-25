@@ -13,6 +13,6 @@
         "Accordion",
         "Accordion.Segment",
         "Accordion.Segment.ViewMode",
-        "Accordion.Renderable"
+        "Accordion.Attributable"
     ]
 }

@@ -1,14 +1,17 @@
 module Accordion.Attributable exposing
-    ( create
+    ( Att
+    , create
+    , Renderer, AcceptsAttributes
+    , withAttributes
     , view, viewWith
-    , Att, withAttributes
     )
 
-{-| A builder that allows for adding classes later
+{-| Builder that allows for adding attributes _after_ supplying a renderer
 
-@docs Cls
+@docs Att
 @docs create
-@docs withClasses
+@docs Renderer, AcceptsAttributes
+@docs withAttributes
 @docs view, viewWith
 
 -}
@@ -25,9 +28,19 @@ type alias Att a =
     List (Html.Attribute Never) -> a
 
 
+{-| -}
+type alias Renderer a output =
+    AcceptsAttributes a -> output
+
+
+{-| -}
+type alias AcceptsAttributes a =
+    { a | additionalAttributes : List (Html.Attribute Never) }
+
+
 {-| Supply a renderer
 -}
-create : ({ a | additionalAttributes : List (Html.Attribute Never) } -> output) -> { a | additionalAttributes : List (Html.Attribute Never) } -> Att output
+create : Renderer a output -> AcceptsAttributes a -> Att output
 create howToRender a =
     \additionalAttributes -> howToRender { a | additionalAttributes = a.additionalAttributes ++ additionalAttributes }
 

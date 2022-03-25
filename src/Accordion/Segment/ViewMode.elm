@@ -8,6 +8,34 @@ module Accordion.Segment.ViewMode exposing
 
 ![Accordion Structure](../asset/22-03-17-Accordion.svg)
 
+
+## To Do
+
+  - [ ] Push the `Role` type into `Tree` and name it `Position`
+
+  - [ ] Add a `Width` type
+
+        type Width
+            = Columns Int
+            | Screen
+
+  - [ ] Add a `Region` type
+
+        type Region
+            = North
+            | South
+            | West
+            | East
+            | NearWest
+            | NearEast
+            | Here
+
+  - [ ] Remove `Placeholder` and `Collapsed`; instead, use
+
+        { position = Tree.Position, region = Region }
+
+---
+
 @docs ViewMode, Role
 
 

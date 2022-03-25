@@ -1,21 +1,35 @@
 module Accordion exposing
     ( Accordion
     , site
-    , flip, find
+    , flip
+    , find, root
     , location, focus
     , Remainder, view
-    , anarchiveX, vimeoX, root
+    , anarchiveX, vimeoX
     )
 
 {-|
+
+
+## To Do
+
+  - [ ] Each `view` produces all Segments, in order of the alphabet
+  - [ ] `flip` simply goes up one level
+
+---
 
 @docs Accordion
 @docs site
 
 
-# Map
+# Modify
 
-@docs flip, find, root
+@docs flip
+
+
+# Navigate
+
+@docs find, root
 
 
 # Deconstruct
@@ -46,8 +60,8 @@ import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
-import Snippets.Lab as Lab
 import Snippets.Intro as Intro
+import Snippets.Lab as Lab
 import String exposing (left)
 import Url exposing (Url)
 import Zipper exposing (Zipper)
@@ -71,6 +85,7 @@ singleton tree =
 flip : Accordion msg -> Accordion msg
 flip (Accordion config) =
     Accordion { config | collapsed = not config.collapsed }
+
 
 {-| -}
 root : Accordion msg -> Accordion msg
@@ -127,9 +142,27 @@ mapTree fu (Accordion config) =
     Accordion { config | tree = fu config.tree }
 
 
-{-| -}
-setSegment1 : Segment msg -> Tree (Segment msg) -> Tree (Segment msg)
-setSegment1 segment tree =
+go : Direction -> Accordion msg -> Accordion msg
+go direction =
+    Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
+
+
+set : Orientation -> String -> Maybe (Html msg) -> Accordion msg -> Accordion msg
+set orientation caption body =
+    Segment.singleton caption
+        |> Segment.withOrientation orientation
+        |> (case body of
+                Nothing ->
+                    identity
+
+                Just b ->
+                    Segment.withBody b
+           )
+        |> setSegment
+
+
+setSegment : Segment msg -> Accordion msg -> Accordion msg
+setSegment segment ((Accordion { tree }) as accordion) =
     let
         id =
             segment.id
@@ -153,46 +186,7 @@ setSegment1 segment tree =
             else
                 id
     in
-    Tree.mapFocus (\_ -> { segment | id = uniqueId }) tree
-
-
-go : Direction -> Accordion msg -> Accordion msg
-go direction =
-    Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
-
-
-
-
-set : Orientation -> String -> Maybe (Html msg) -> Accordion msg -> Accordion msg
-set orientation caption body =
-    Segment.singleton caption
-        |> Segment.withOrientation orientation
-        |> (case body of
-                Nothing ->
-                    identity
-
-                Just b ->
-                    Segment.withBody b
-           )
-        |> setSegment
-
-
-set0 :  Orientation -> Maybe (Html msg) -> Accordion msg -> Accordion msg
-set0 orientation body =
-    Segment.empty
-        |> Segment.withOrientation orientation
-        |> (case body of
-                Nothing ->
-                    identity
-
-                Just b ->
-                    Segment.withBody b
-           )
-        |> setSegment
-
-setSegment : Segment msg -> Accordion msg -> Accordion msg
-setSegment =
-    setSegment1 >> mapTree
+    mapTree (Tree.mapFocus (\_ -> { segment | id = uniqueId })) accordion
 
 
 mapSegment : (Segment msg -> Segment msg) -> Accordion msg -> Accordion msg
@@ -215,23 +209,24 @@ site =
         artists =
             Artist.artists
                 |> List.map
-                    (\{name, bio, photo} ->
-                        set Horizontal (name ++ "(photo)") (Just (Html.img [class "artist", src photo] []))
+                    (\{ name, bio, photo } ->
+                        set Horizontal (name ++ "(photo)") (Just (Html.img [ class "artist", src photo ] []))
                             >> go Right
-                            >> set Horizontal name 
-                                (Just (
-                                    Html.div [class "artist richtext"] 
-                                        [ Html.h2 [] [Html.text name]
+                            >> set Horizontal
+                                name
+                                (Just
+                                    (Html.div [ class "artist richtext" ]
+                                        [ Html.h2 [] [ Html.text name ]
                                         , bio
                                         ]
-                                    ))
-                            >> mapSegment (Segment.withAdditionalAttributes [ class "forwards"])
+                                    )
+                                )
+                            >> mapSegment (Segment.withAdditionalAttributes [ class "forwards" ])
                             >> go Right
                     )
-        doArtists = List.foldl (\fu0 fu1 -> fu0>>fu1) identity artists
-                
 
-
+        doArtists =
+            List.foldl (\fu0 fu1 -> fu0 >> fu1) identity artists
 
         series =
             String.fromInt >> (++) "Series "
@@ -245,14 +240,9 @@ site =
 
         appendSubtree =
             go Down
-                >> set2 Vertical "Future Festival" "August 22"
+                >> set2 Vertical "Perform[d]ance" "November 25-27"
                 >> go Right
-                >> set2 Vertical "Future Festival" "June 5-19"
-                >> go Right
-                >> set2 Vertical "Foregrounding the background" "March 23 + 24"
-                >> go Right
-                >> set2 Vertical "Previous Festival" "November 2, 2021"
-                >> go Left
+                >> set2 Vertical "Radialsystem" "April 23 + 24"
                 >> go Down
                 >> set Horizontal "Info" Nothing
                 >> go Right
@@ -268,20 +258,58 @@ site =
                 >> go Left
                 >> go Up
                 >> go Up
+
+        subtreeForLabs =
+            go Down
+                >> set2 Horizontal "Series 1" "2020"
+                >> go Right
+                >> set2 Horizontal "Series 2" "2021"
+                >> go Right
+                >> set2 Horizontal "Series 3" "2021"
+                >> go Right
+                >> set2 Horizontal "Series 4" "2022"
+                >> go Right
+                >> set2 Horizontal "Series 5" "2022"
+                >> go Right
+                >> set2 Horizontal "Series 6" "2022"
+                >> go Left
+                >> go Left
+                >> go Up
     in
     Tree.singleton Segment.empty
         |> singleton
-        |> set Vertical "Intro" (Just Intro.intro)
+        |> set Vertical "Home" (Just Intro.intro)
         |> go Right
-        |> set Vertical "AnArchive" (Just anarchiveX)
+        |> set Vertical "Labs" Nothing
+        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
+        |> subtreeForLabs
         |> go Right
-        |> set Vertical "Vimeo" Nothing
+        |> set Vertical "Festivals" Nothing
+        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
+        |> appendSubtree
         |> go Right
+        |> set Vertical "Artists" Nothing
+        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
+        |> go Down
+        |> doArtists
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Left
+        |> go Up
         |> go Right
-        |> set Vertical "Newsletter" Nothing
+        |> set Vertical "Traces" Nothing
+        |> go Right
+        |> set Vertical "Videos" Nothing
+        |> go Right
+        |> set Vertical "Library" (Just anarchiveX)
         |> go Right
         |> set Vertical "About" Nothing
-        |> go Left
+        |> go Right
+        |> set Vertical "Newsletter" Nothing
         |> go Left
         |> go Down
         |> set Horizontal (series 6) Nothing
@@ -294,12 +322,10 @@ site =
         |> go Right
         |> go Right
         |> go Down
-        |> set Horizontal "Lab" Nothing--(Just )
-        |> mapSegment  (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
-        |> appendSubtree
         |> go Right
-        |> set Horizontal "Festival" Nothing-- (Just <| )
-        |> mapSegment  (Segment.withInfo <| Html.text "Text line - festival popups, physical participation")
+        |> set Horizontal "Festival" Nothing
+        -- (Just <| )
+        |> mapSegment (Segment.withInfo <| Html.text "Text line - festival popups, physical participation")
         |> appendSubtree
         |> go Right
         |> set Horizontal "Artist" Nothing
@@ -312,7 +338,12 @@ site =
         |> go Left
         |> go Left
         |> go Left
-
+        |> go Up
+        |> go Up
+        |> go Up
+        |> go Left
+        |> go Left
+        |> go Left
 
 
 
@@ -324,14 +355,15 @@ site =
 {-| -}
 anarchiveX : Html msg
 anarchiveX =
-    Html.div [class "anArchive opening"]
-    [Html.iframe
-        [ attribute "width" "100%"
-        , css [ position absolute, Css.height (pct 100), border (px 0) ]
-        , src "https://www.are.na/moving-across-thresholds/library-of-worded-companions/embed"
-        , title "Moving Across Thresholds - AnArchive"
+    Html.div [ class "anArchive opening" ]
+        [ Html.iframe
+            [ attribute "width" "100%"
+            , css [ position absolute, Css.height (pct 100), border (px 0) ]
+            , src "https://www.are.na/moving-across-thresholds/library-of-worded-companions/embed"
+            , title "Moving Across Thresholds - AnArchive"
+            ]
+            []
         ]
-        []]
 
 
 {-| -}
@@ -453,6 +485,7 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
                 , ( "_screenBackground", Html.li [ class "screenBackground2 parallax-child" ] [ Html.text "\u{00A0}" ] )
                 , ( "_westIndicator", Html.li [ class "westIndicator" ] [ Html.text "\u{00A0}" ] )
                 , ( "_eastIndicator", Html.li [ class "eastIndicator" ] [ Html.text "\u{00A0}" ] )
+                , ( "_upLink", Html.a [ href "", class "upLink" ] [ Html.text "\u{00A0}" ] )
                 ]
                 >> Keyed.ul
                     [ class "Accordion2"
@@ -469,6 +502,7 @@ toHtml2 remainder { up, left, x, here, y, right, down } =
             )
 
 
+{-| -}
 type alias Remainder msg =
     List (R msg)
 
@@ -487,8 +521,7 @@ view remainder (Accordion config) =
     config.tree
         |> Tree.zipDirections
         |> Tree.positionalMap
-            (  \{isRoot, isLeaf} ( path, segment ) -> ( viewMode { path = path, isLeaf = isLeaf, isRoot = isRoot }, segment ))
-            
+            (\{ isRoot, isLeaf } ( path, segment ) -> ( viewMode { path = path, isLeaf = isLeaf, isRoot = isRoot }, segment ))
         |> Tree.view
             (Tree.Uniform renderTree { toHtml = toHtml2 remainder })
 

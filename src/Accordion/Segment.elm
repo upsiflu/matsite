@@ -1,16 +1,19 @@
 module Accordion.Segment exposing
     ( Segment
     , empty, singleton
-    , Orientation(..), withInfo
-    , withBody, withOrientation, withoutCaption, withAdditionalAttributes
+    , Orientation(..)
+    , withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
+    , decreaseColumnCount, increaseColumnCount
     , view, structureClass, orientationToString, hasBody
-    , decreaseColumnCount, increaseColumnCount, withAdditionalCaption
     )
 
 {-| contain the immutable site content
 
 _To render Segments differently based on their position in the tree, use
 [`Segment.Viewmode`](Accordion.Segment.ViewMode)_
+
+  - `ViewMode` adds classes based on the position in the tree AND on the screen
+  - `Segment` adds classes based on the intended config, independent from the position
 
 @docs Segment
 @docs empty, singleton
@@ -19,7 +22,8 @@ _To render Segments differently based on their position in the tree, use
 
 # Map
 
-@docs withBody, withOrientation, withoutCaption, withAdditionalAttributes
+@docs withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
+@docs decreaseColumnCount, increaseColumnCount
 
 
 # View
@@ -72,10 +76,12 @@ withBody : Html msg -> Segment msg -> Segment msg
 withBody body segment =
     { segment | body = Just body }
 
+
 {-| -}
 withInfo : Html msg -> Segment msg -> Segment msg
 withInfo info segment =
     { segment | info = Just info }
+
 
 {-| -}
 withoutCaption : Segment msg -> Segment msg
@@ -110,8 +116,9 @@ withAdditionalAttributes cc segment =
 {-| -}
 singleton : String -> Segment msg
 singleton id =
-    { empty |caption = [ id ]
-    , id = String.replace " " "-" id
+    { empty
+        | caption = [ id ]
+        , id = String.replace " " "-" id
     }
 
 
@@ -174,26 +181,27 @@ view mode s =
                 identity
 
         viewBody =
-            Maybe.withDefault (Html.div [ css [maxHeight (px 0), maxWidth (px 0)]] [Html.text ""] )
+            Maybe.withDefault (Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] [ Html.text "" ])
 
         additionalAttributes =
             s.additionalAttributes
                 |> List.map (Attributes.map never)
 
-        viewInfo = 
+        viewInfo =
             case s.info of
-                Nothing -> Html.text ""
+                Nothing ->
+                    Html.text ""
+
                 Just info ->
-                    Html.div [ class "info" ] [info]
+                    Html.div [ class "info" ] [ info ]
     in
     Tuple.pair s.id <|
         case mode of
             Default { path, isLeaf, isRoot } ->
                 Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf ( s.body /= Nothing && isLeaf && not isRoot )
+                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
                     , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
                     , viewBody s.body
-        
                     , viewInfo
                     , viewOrientation |> notIf (not debugging)
                     , ViewMode.view mode |> notIf (not debugging)
@@ -201,7 +209,7 @@ view mode s =
 
             Collapsed { path, isLeaf, isRoot } ->
                 Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot )
+                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
                     , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
                     , viewInfo
                     , viewBody s.body
@@ -219,6 +227,7 @@ view mode s =
 
 
 {-| -}
+orientationToString : Orientation -> String
 orientationToString orientation =
     case orientation of
         Horizontal ->
@@ -229,6 +238,7 @@ orientationToString orientation =
 
 
 {-| -}
+structureClass : Segment msg -> Html.Attribute msg
 structureClass s =
     classList [ ( "noCaption", s.caption == [] ), ( "hasBody", hasBody s ) ]
 

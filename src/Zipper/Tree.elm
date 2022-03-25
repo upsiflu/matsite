@@ -34,6 +34,14 @@ module Zipper.Tree exposing
   - When walking left or right, you will wrap silently because we assume that the branches are set in a circle.
   - Check out [`go`](#go) for alternative navigation methods!
 
+
+## To Do
+
+  - [ ] Change the `go`/`EdgeOperation` interface to use `Result`
+  - [ ] Move the `Role` interface from Segment.ViewMode to here
+
+---
+
 @docs Tree
 @docs singleton, create
 
@@ -571,22 +579,22 @@ mapfold fu =
 type alias Positionality =
     { isLeaf : Bool, isRoot : Bool }
 
+
 {-| -}
-positionalMapfold : ( Positionality -> a -> b ) -> Foldr {} a (List (Branch (Positionality -> b))) (MixedZipper (Positionality -> b) (Branch (Positionality -> b))) (Zipper (Branch (Positionality -> b))) (List (MixedZipper (Positionality -> b) (Branch (Positionality -> b)))) (Branch (Positionality -> b)) (Tree (Positionality -> b))
+positionalMapfold : (Positionality -> a -> b) -> Foldr {} a (List (Branch (Positionality -> b))) (MixedZipper (Positionality -> b) (Branch (Positionality -> b))) (Zipper (Branch (Positionality -> b))) (List (MixedZipper (Positionality -> b) (Branch (Positionality -> b)))) (Branch (Positionality -> b)) (Tree (Positionality -> b))
 positionalMapfold fu =
     { consAisle = (::) --: b -> aisle -> aisle
     , join = \a l r -> MixedZipper.create (\inherited -> fu inherited a) l r -- a -> aisle -> aisle -> z
     , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
     , consTrunk = (::) --: z -> trunk -> trunk
     , mergeBranch =
-            --: a -> trunk -> b
+        --: a -> trunk -> b
         \a trunk ->
             if trunk == [] then
-                Branch.create (\inherited -> fu {inherited | isLeaf = True} a) trunk
+                Branch.create (\inherited -> fu { inherited | isLeaf = True } a) trunk
 
             else
                 Branch.create (\inherited -> fu inherited a) trunk
-
     , mergeTree = create -- : z -> trunk -> result
     , leaf = []
     , left = []
@@ -624,10 +632,11 @@ map fu =
 
 
 {-| -}
+positionalMap : (Positionality -> a -> b) -> Tree a -> Tree b
 positionalMap fu =
     foldr (positionalMapfold fu)
-        >> mapRoot ( (\open -> \_-> open {isLeaf = False, isRoot = True}) )
-        >> map (\open -> open {isLeaf = False, isRoot = False})
+        >> mapRoot (\open -> \_ -> open { isLeaf = False, isRoot = True })
+        >> map (\open -> open { isLeaf = False, isRoot = False })
 
 
 {-| -}
@@ -665,19 +674,25 @@ mapSpine fu =
     mapBranch (Branch.mapSpine fu)
         >> mapTrace fu
 
-{-|-}
-mapRoot : (a->a) -> Tree a -> Tree a
+
+{-| -}
+mapRoot : (a -> a) -> Tree a -> Tree a
 mapRoot fu tree =
     MixedNonempty.mapLast
         (MixedZipper.map fu (Branch.map fu))
         tree
-        |> \result -> case result of
-            Ok ok -> ok
-            Err _ -> 
-                (Branch.map fu
-                    |> Zipper.map
-                    |> MixedNonempty.mapHead) tree
+        |> (\result ->
+                case result of
+                    Ok ok ->
+                        ok
 
+                    Err _ ->
+                        (Branch.map fu
+                            |> Zipper.map
+                            |> MixedNonempty.mapHead
+                        )
+                            tree
+           )
 
 
 {-| -}
