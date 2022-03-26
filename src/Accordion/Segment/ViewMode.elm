@@ -32,7 +32,7 @@ module Accordion.Segment.ViewMode exposing
 
   - [ ] Remove `Placeholder` and `Collapsed`; instead, use
 
-        { position = Tree.Position, region = Region }
+        { position = Tree.Position, region = Region, offset = List Width }
 
 ---
 

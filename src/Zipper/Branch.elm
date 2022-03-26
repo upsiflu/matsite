@@ -17,6 +17,7 @@ module Zipper.Branch exposing
     , DirBranch
     , defoldWithDirections, zipDirections
     , flatFold
+    , PosBranch, mapFocusedLeaf, mapLeaves, zipPositions
     )
 
 {-|
@@ -65,7 +66,7 @@ module Zipper.Branch exposing
 
 -}
 
-import Fold exposing (Direction(..))
+import Fold exposing (Direction(..), Position, Role(..))
 import Nonempty exposing (Nonempty)
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Result.Extra as Result
@@ -145,6 +146,29 @@ mapOffspring fu (Branch br) =
     MixedNonempty.mapTail
         (MixedZipper.map fu (map fu))
         br
+        |> Branch
+
+
+{-| maps the nodes without offspring
+-}
+mapLeaves : (a -> a) -> Branch a -> Branch a
+mapLeaves fu (Branch br) =
+    MixedNonempty.mapTail
+        (MixedZipper.mapPeriphery (mapLeaves fu))
+        br
+        |> Branch
+        |> mapFocusedLeaf fu
+
+
+{-| maps the focused leaf only
+-}
+mapFocusedLeaf : (a -> a) -> Branch a -> Branch a
+mapFocusedLeaf fu (Branch br) =
+    MixedNonempty.mapLast2
+        (MixedZipper.mapFocus fu)
+        br
+        |> Result.extract
+            (MixedNonempty.mapHead fu)
         |> Branch
 
 
@@ -293,9 +317,17 @@ growLevel lv (Branch b) =
         -- (([], 0), [(Down, 1), (Down, 2)])
 
 -}
-zipDirections : Branch a -> Branch ( List Direction, a )
+zipDirections : Branch a -> DirBranch a
 zipDirections =
     fold defoldWithDirections
+
+
+{-| -}
+zipPositions : Branch a -> PosBranch a
+zipPositions =
+    zipDirections
+        >> map (Tuple.mapFirst (Fold.directionsToRole >> (\r -> { role = r, isRoot = False, isLeaf = False })))
+        >> mapLeaves (Tuple.mapFirst (\pos -> { pos | isLeaf = True }))
 
 
 {-| -}
@@ -365,6 +397,11 @@ flatFold =
 {-| -}
 type alias DirBranch a =
     Branch ( List Direction, a )
+
+
+{-| -}
+type alias PosBranch a =
+    Branch ( Position, a )
 
 
 type alias Map x =
