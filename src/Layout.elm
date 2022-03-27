@@ -7,7 +7,11 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 
+---- Variables ----
 
+
+toProperty (key, value) =
+    Css.property ("--" ++ key) (String.fromInt value)
 
 ---- Theming ----
 

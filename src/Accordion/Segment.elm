@@ -32,7 +32,7 @@ _To render Segments differently based on their position in the tree, use
 
 -}
 
-import Accordion.Segment.ViewMode as ViewMode exposing (Role(..), ViewMode(..))
+import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode, Width(..))
 import Css exposing (..)
 import Fold exposing (Direction(..))
 import Html.Styled as Html exposing (Html)
@@ -54,7 +54,7 @@ type alias Segment msg =
     , body : Maybe (Html msg)
     , info : Maybe (Html msg)
     , orientation : Orientation
-    , columnCount : Int
+    , width : Width
     , additionalAttributes : List (Html.Attribute Never)
     }
 
@@ -98,13 +98,29 @@ withAdditionalCaption string segment =
 {-| -}
 increaseColumnCount : Segment msg -> Segment msg
 increaseColumnCount segment =
-    { segment | columnCount = segment.columnCount + 1 }
+    { segment
+        | width =
+            case segment.width of
+                Columns n ->
+                    Columns (n + 1)
+
+                Screen ->
+                    Columns 1
+    }
 
 
 {-| -}
 decreaseColumnCount : Segment msg -> Segment msg
 decreaseColumnCount segment =
-    { segment | columnCount = segment.columnCount - 1 }
+    { segment
+        | width =
+            case segment.width of
+                Columns n ->
+                    Columns (n - 1)
+
+                Screen ->
+                    Columns 1
+    }
 
 
 {-| -}
@@ -129,7 +145,7 @@ empty =
     , id = "_"
     , body = Nothing
     , orientation = Vertical
-    , columnCount = 1
+    , width = Columns 1
     , additionalAttributes = []
     , info = Nothing
     }
@@ -155,11 +171,7 @@ view mode s =
                     [ css [ position absolute, right zero, top zero, color (rgb 255 255 0), backgroundColor (rgba 255 255 0 0.1), Css.property "writing-mode" "horizontal-tb" ] ]
 
         segmentId =
-            if mode == Placeholder then
-                ""
-
-            else
-                s.id
+            s.id
 
         viewCaption cc =
             case cc of
@@ -194,36 +206,18 @@ view mode s =
 
                 Just info ->
                     Html.div [ class "info" ] [ info ]
+
+        { path, isLeaf, isRoot } =
+            mode.position
     in
     Tuple.pair s.id <|
-        case mode of
-            Default { path, isLeaf, isRoot } ->
-                Html.li (ViewMode.toClass mode :: class "default" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
-                    , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
-                    , viewBody s.body
-                    , viewInfo
-                    , viewOrientation |> notIf (not debugging)
-                    , ViewMode.view mode |> notIf (not debugging)
-                    ]
-
-            Collapsed { path, isLeaf, isRoot } ->
-                Html.li (ViewMode.toClass mode :: class "collapsed" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
-                    , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
-                    , viewInfo
-                    , viewBody s.body
-                    , viewOrientation |> notIf (not debugging)
-                    , ViewMode.view mode |> notIf (not debugging)
-                    ]
-
-            Placeholder ->
-                Html.li (ViewMode.toClass mode :: class "placeholder" :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
-                    [ viewCaption s.caption
-                    , viewBody s.body
-                    , viewInfo
-                    , ViewMode.view mode |> notIf (not debugging)
-                    ]
+        Html.li (ViewMode.toClass mode :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+            [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
+            , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
+            , viewBody s.body
+            , viewInfo
+            , viewOrientation |> notIf (not debugging)
+            ]
 
 
 {-| -}

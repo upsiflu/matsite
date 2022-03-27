@@ -1,0 +1,195 @@
+.info {
+  pointer-events: none;
+}
+.multipleHeaders {
+  overflow: hidden;
+}
+
+.multipleHeaders > :first-child {
+  flex-shrink: 0;
+}
+
+.multipleHeaders > :not(:first-child) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multipleHeaders * {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.opening {
+  --accordionOffset: calc(50vw - (var(--width) / 2));
+  margin-left: calc(
+    0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth)
+  );
+  width: 100vw;
+  position: relative;
+  min-height: 0px;
+  margin-top: 3rem;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: all 0.5s;
+  z-index: -4;
+}
+
+.A .opening {
+  min-height: 3rem;
+}
+
+.F .opening {
+  min-height: calc(var(--hereHeight) - var(--nearWestHeight));
+  margin-top: -3rem;
+  opacity: 1;
+}
+
+.F .intro {
+  min-height: 100vh;
+}
+
+.segmentLabel {
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 1), -1px -1px 0px rgba(0, 0, 0, 1),
+    -1px 1px 0px rgba(0, 0, 0, 1), 1px -1px 0px rgba(0, 0, 0, 1);
+}
+
+.artist .weblink {
+  display: block;
+  margin-left: -7rem;
+  border-bottom: 0.5px solid #8c8cfc;
+  padding-left: 7rem;
+  margin-top: 1.5rem;
+  width: fit-content;
+}
+
+.richtext {
+  margin-left: -7rem;
+  padding-left: 7rem;
+}
+
+img.artist {
+  mix-blend-mode: overlay;
+  position: relative;
+  left: 0.5rem;
+}
+
+.fg {
+  z-index: 9;
+}
+
+.F > a:hover,
+.A > a:hover {
+  background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%),
+    linear-gradient(225deg, #8c8cff 25%, transparent 25%),
+    linear-gradient(45deg, #8c8cff 25%, transparent 25%),
+    linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
+  background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+  background-size: 3rem 3rem;
+  background-repeat: repeat;
+}
+
+.F > a,
+.A > a {
+  background-image: linear-gradient(135deg, transparent 25%, transparent 25%),
+    linear-gradient(225deg, transparent 25%, transparent 25%),
+    linear-gradient(45deg, transparent 25%, transparent 25%),
+    linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
+  background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+  background-size: 1.5rem 1.5rem;
+  background-repeat: repeat;
+  transition: all 0.2s;
+}
+
+.Ba > a:hover,
+.B > a:hover,
+.P > a:hover,
+a.weblink:hover {
+  background-image: linear-gradient(135deg, #000 25%, transparent 25%),
+    linear-gradient(225deg, #000 25%, transparent 25%),
+    linear-gradient(45deg, #000 25%, transparent 25%),
+    linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
+}
+
+.Ba > a,
+.B > a,
+.P > a {
+  transition: all 0.2s;
+  background-image: linear-gradient(
+      135deg,
+      rgba(0, 0, 255, 0) 25%,
+      transparent 25%
+    ),
+    linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
+}
+img {
+  transform-origin: center;
+  transform: translateZ(0.08px);
+}
+.B > a {
+  background: hsl(0, 0%, 10%);
+  height: fit-content;
+  outline: none;
+  mix-blend-mode: lighten;
+}
+.P H1 {
+  overflow: visible;
+  white-space: nowrap;
+}
+.P {
+  /* background: rgba(0, 0, 255, .8) */
+  /* outline       : 1px dashed blue;
+    outline-offset: -1px; */
+  background: rgba(255, 255, 255, 0.1);
+  overflow: visible;
+  outline: none;
+}
+.A.🁣 {
+  overflow-y: hidden;
+}
+
+.F {
+  background: rgba(255, 255, 255, 0.02);
+}
+.info {
+  inline-size: 21rem;
+}
+.here .info,
+.P .info {
+  opacity: 1;
+}
+.info {
+  opacity: 0;
+  padding: 0.75rem;
+  padding-inline: 0.75rem;
+  padding-block: 1.125rem;
+  color: silver;
+  transition: opacity 0.5s;
+}
+
+/* LAYOUT */
+.🀱,
+.🁣 {
+  position: absolute;
+}
+.vanishing {
+  transition: all 1.5s !important;
+  overflow: hidden !important;
+}
+.vanishing.🀱 {
+  max-width: 1px;
+}
+.vanishing.🁣 {
+  max-height: 1px;
+}
+.🀱:not(.hasBody):not(.F) .info {
+  position: absolute;
+  top: 6rem;
+  right: 0;
+}
+.A.nearEast.🀱:not(.hasBody) > a,
+.A.nearWest.🀱:not(.hasBody) > a {
+  max-width: var(--unit);
+}

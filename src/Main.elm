@@ -5,7 +5,7 @@ import Browser
 import Browser.Navigation as Nav
 import Css exposing (..)
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (css, class, href)
+import Html.Styled.Attributes as Attributes exposing (class, css, href)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
 import Url exposing (Url)
@@ -21,7 +21,6 @@ type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
-    , prerendered : (Html Msg, Accordion.Remainder Msg)
     }
 
 
@@ -38,7 +37,6 @@ main =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
-                        , prerendered = Accordion.view  [] initialAccordion
                         }
 
                     initialUrl =
@@ -71,15 +69,10 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
-    let
-        prerender m =
-            { m | prerendered = Accordion.view (Tuple.second m.prerendered) m.accordion  }
-    in
-
     case msg of
         LinkClicked (Browser.Internal url) ->
             ( if url == model.url then
-                { model | accordion = Accordion.flip model.accordion } |> prerender
+                { model | accordion = Accordion.flip model.accordion }
 
               else
                 model
@@ -93,7 +86,7 @@ update msg model =
             let
                 newModel =
                     if url /= model.url then
-                        { model | accordion = Accordion.find url model.accordion, url = url } |> prerender
+                        { model | accordion = Accordion.find url model.accordion, url = url }
 
                     else
                         model
@@ -101,7 +94,7 @@ update msg model =
             ( newModel
             , Cmd.batch
                 [ Accordion.focus newModel.accordion |> pleaseCenter
-                , Accordion.location newModel.accordion |>  pleaseConfirm
+                , Accordion.location newModel.accordion |> pleaseConfirm
                 ]
             )
 
@@ -111,9 +104,11 @@ view model =
     { title = "Moving across Thresholds"
     , body =
         [ Layout.typography
+
         -- , Html.hr [] []
-        , Html.div [ Attributes.class "overflow"] 
-            [ Tuple.first model.prerendered ]
+        , Html.div [ Attributes.class "overflow" ]
+            [ Accordion.view model.accordion ]
+
         -- , Html.hr [] []
         -- , section
         --     [ header "" "example" "Fatigue as creative proposition"

@@ -326,7 +326,7 @@ zipDirections =
 zipPositions : Branch a -> PosBranch a
 zipPositions =
     zipDirections
-        >> map (Tuple.mapFirst (Fold.directionsToRole >> (\r -> { role = r, isRoot = False, isLeaf = False })))
+        >> map (Tuple.mapFirst (\dirs -> Fold.directionsToRole dirs |> (\r -> { role = r, isRoot = False, isLeaf = False, path = dirs })))
         >> mapLeaves (Tuple.mapFirst (\pos -> { pos | isLeaf = True }))
 
 

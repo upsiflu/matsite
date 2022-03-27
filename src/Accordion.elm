@@ -4,7 +4,7 @@ module Accordion exposing
     , flip
     , find, root
     , location, focus
-    , Remainder, view
+    , view
     , anarchiveX, vimeoX
     )
 
@@ -51,13 +51,14 @@ Get textual representations fo use in Url and animation
 
 import Accordion.Attributable as Cls exposing (Att)
 import Accordion.Segment as Segment exposing (Orientation(..), Segment)
-import Accordion.Segment.ViewMode as ViewSegment exposing (Role(..), ViewMode(..))
+import Accordion.Segment.ViewMode as ViewSegment exposing (Offset, Region(..), ViewMode, Width(..))
 import Css exposing (..)
-import Fold exposing (Direction(..), Foldr)
+import Fold exposing (Direction(..), Foldr, Position, Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
+import Layout
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
 import Snippets.Intro as Intro
@@ -221,7 +222,7 @@ site =
                                         ]
                                     )
                                 )
-                            >> mapSegment (Segment.withAdditionalAttributes [ class "forwards" ])
+                            >> mapSegment (Segment.withAdditionalAttributes [ class "fg" ])
                             >> go Right
                     )
 
@@ -346,12 +347,6 @@ site =
         |> go Left
 
 
-
---|> go Down
---|> go Up
---|> go Right
-
-
 {-| -}
 anarchiveX : Html msg
 anarchiveX =
@@ -388,188 +383,113 @@ vimeoX =
 ---- View ----
 
 
+type Renderable msg
+    = Item ( String, Html msg )
+    | Var ( String, Int )
+    | Class String
+
+
 {-| -}
-toHtml2 : List (R msg) -> C msg -> ( Html msg, Remainder msg )
-toHtml2 remainder { up, left, x, here, y, right, down } =
+view : Accordion msg -> Html msg
+view (Accordion config) =
     let
-        addOffsets : { area : String, regardColumnCount : Bool } -> List (R msg) -> ( List (R msg), Int )
-        addOffsets config =
+        classes : List (Html.Attribute msg)
+        classes =
+            List.map class
+                [ Segment.orientationToString (.orientation (Tree.focus config.tree)) ]
+
+        createRegions : C msg -> List ( Region, List (A msg) )
+        createRegions { up, left, x, here, nest, y, right, down } =
+            [ ( North, up )
+            , ( West, left )
+            , ( NearWest, x )
+            , ( Center, [ here ] )
+            , ( Peek, nest )
+            , ( NearEast, y )
+            , ( East, right )
+            , ( South, down )
+            ]
+
+        renderRegion : ( Region, List (A msg) ) -> List (Renderable msg)
+        renderRegion ( region, list ) =
             List.foldl
-                (\( s, r ) ( list, i ) ->
-                    let
-                        actualColumns =
-                            if config.regardColumnCount then
-                                s.columnCount
-
-                            else
-                                1
-
-                        j =
-                            i + actualColumns
-                    in
-                    ( ( s
-                      , Cls.withAttributes
-                            [ class config.area
-                            , css
-                                [ Css.property "--columnCount" (String.fromInt actualColumns)
-                                , Css.property "--offset" (String.fromInt i)
-                                ]
-                            ]
-                            r
-                      )
-                        :: list
-                    , j
+                (\( position, segment ) ( offset, newList ) ->
+                    ( ViewSegment.addWidth segment.width offset
+                    , Segment.view { position = position, region = region, offset = offset } segment :: newList
                     )
                 )
-                ( [], 0 )
+                ( ViewSegment.zeroOffset, [] )
+                list
+                |> (\( totalOffset, renderedSegments ) ->
+                        ViewSegment.offsetToCssVariables totalOffset
+                            |> List.map (Tuple.mapFirst ((++) (ViewSegment.regionToString region ++ "-")) >> Var)
+                            |> (++) (List.map Item renderedSegments)
+                   )
 
-        ---
-        ( north, northCount ) =
-            addOffsets { area = "north", regardColumnCount = False } up
-                |> Tuple.mapFirst List.reverse
+        renderAccordion : List (Renderable msg) -> Html msg
+        renderAccordion =
+            List.foldl
+                (\renderable ->
+                    case renderable of
+                        Item i ->
+                            Tuple.mapFirst ((::) i)
 
-        ( west, westCount ) =
-            addOffsets { area = "west", regardColumnCount = False } left
-                |> Tuple.mapFirst List.reverse
+                        Var v ->
+                            Tuple.mapSecond ((::) (css [ Layout.toProperty v ]))
 
-        ( nearWest, nearWestCount ) =
-            addOffsets { area = "nearWest", regardColumnCount = True } x
-                |> Tuple.mapFirst List.reverse
-
-        ( center, hereCount ) =
-            addOffsets { area = "here", regardColumnCount = True } [ here ]
-
-        ( nearEast, nearEastCount ) =
-            addOffsets { area = "nearEast", regardColumnCount = True } y
-
-        ( east, eastCount ) =
-            addOffsets { area = "east", regardColumnCount = False } right
-
-        ( south, southCount ) =
-            addOffsets { area = "south", regardColumnCount = False } down
-
-        sendToCss key value =
-            css [ Css.property ("--" ++ key) (String.fromInt value) ]
-
-        orientation =
-            Tuple.first >> .orientation
-
-        visibleRs =
-            [ north, west, nearWest, center, nearEast, east, south ]
-                |> List.map (List.map (Tuple.mapSecond (Cls.withAttributes [ class ("(" ++ Segment.orientationToString (orientation here) ++ ")") ])))
-                |> List.concat
-
-        visibleIds =
-            List.map (Tuple.first >> .id) visibleRs |> Debug.log "VISIBLE"
-
-        invisibleRs =
-            remainder
-                |> List.filter (Tuple.first >> .id >> (\invisibleId -> List.member invisibleId visibleIds) >> not)
-                |> List.map (Tuple.mapSecond (Cls.withAttributes [ class "vanishing" ]))
-
-        invisibleIds =
-            invisibleRs
-                |> List.map (Tuple.first >> .id)
-                |> Debug.log "INVISIBLE"
+                        Class c ->
+                            Tuple.mapSecond ((::) (class c))
+                )
+                ( [], [] )
+                >> (\( items, vars ) ->
+                        Keyed.ul
+                            (class "Accordion" :: vars ++ classes)
+                            (List.sortBy Tuple.first items)
+                   )
     in
-    visibleRs
-        |> (++) invisibleRs
-        |> List.sortBy (Tuple.first >> .id)
-        |> (\sortedR -> ( sortedR, sortedR ))
-        |> Tuple.mapFirst (List.map (Tuple.second >> Cls.view))
-        |> Tuple.mapFirst
-            ((++)
-                [ ( "_centerBackground", Html.li [ class "centerBackground" ] [ Html.text "\u{00A0}" ] )
-                , ( "_hereBackground", Html.li [ class "hereBackground" ] [ Html.text "\u{00A0}" ] )
-                , ( "_screenBackground", Html.li [ class "screenBackground" ] [ Html.text "\u{00A0}" ] )
-                , ( "_screenBackground", Html.li [ class "screenBackground2 parallax-child" ] [ Html.text "\u{00A0}" ] )
-                , ( "_westIndicator", Html.li [ class "westIndicator" ] [ Html.text "\u{00A0}" ] )
-                , ( "_eastIndicator", Html.li [ class "eastIndicator" ] [ Html.text "\u{00A0}" ] )
-                , ( "_upLink", Html.a [ href "", class "upLink" ] [ Html.text "\u{00A0}" ] )
-                ]
-                >> Keyed.ul
-                    [ class "Accordion2"
-                    , sendToCss "northCount" northCount
-                    , sendToCss "westCount" westCount
-                    , sendToCss "nearWestCount" nearWestCount
-                    , sendToCss "hereCount" hereCount
-                    , sendToCss "nearEastCount" nearEastCount
-                    , sendToCss "eastCount" eastCount
-                    , sendToCss "southCount" southCount
-                    , class (Segment.orientationToString (orientation here))
-                    , classList [ ( "hasBody", List.any (Tuple.first >> Segment.hasBody) (nearWest ++ center ++ nearEast) ) ]
-                    ]
+    config.tree
+        |> Tree.mapByPosition Tuple.pair
+        |> Tree.view
+            (Tree.Uniform renderTree
+                { toHtml =
+                    createRegions
+                        >> List.concatMap renderRegion
+                        >> renderAccordion
+                }
             )
 
 
-{-| -}
-type alias Remainder msg =
-    List (R msg)
-
-
-{-| -}
-view : Remainder msg -> Accordion msg -> ( Html msg, Remainder msg )
-view remainder (Accordion config) =
-    let
-        viewMode =
-            if config.collapsed then
-                Collapsed
-
-            else
-                Default
-    in
-    config.tree
-        |> Tree.zipDirections
-        |> Tree.positionalMap
-            (\{ isRoot, isLeaf } ( path, segment ) -> ( viewMode { path = path, isLeaf = isLeaf, isRoot = isRoot }, segment ))
-        |> Tree.view
-            (Tree.Uniform renderTree { toHtml = toHtml2 remainder })
-
-
 type alias A msg =
-    ( ViewSegment.ViewMode, Segment msg )
-
-
-type alias Keyed msg =
-    ( String, Html msg )
-
-
-type alias R msg =
-    ( Segment msg, Att (Keyed msg) )
-
-
-renderSegment : ViewSegment.ViewMode -> Segment msg -> R msg
-renderSegment mode segment =
-    ( segment, Cls.create (Segment.view mode) segment )
+    ( Position, Segment msg )
 
 
 type alias B msg =
-    { orientation : Orientation, role : ViewSegment.Role, here : R msg, nest : List (R msg), left : List (R msg), right : List (R msg), down : List (R msg) }
+    { orientation : Orientation, role : Role, here : A msg, nest : List (A msg), left : List (A msg), right : List (A msg), down : List (A msg) }
 
 
 type alias C msg =
-    { up : List (R msg), left : List (R msg), x : List (R msg), here : R msg, nest : List (R msg), y : List (R msg), right : List (R msg), down : List (R msg) }
+    { up : List (A msg), left : List (A msg), x : List (A msg), here : A msg, nest : List (A msg), y : List (A msg), right : List (A msg), down : List (A msg) }
 
 
 {-| -}
 renderBranch : Branch.Fold {} (A msg) (B msg)
 renderBranch =
     { init =
-        \( mode, segment ) ->
-            { orientation = segment.orientation, role = ViewSegment.role mode, here = renderSegment mode segment, nest = [], left = [], right = [], down = [] }
+        \(( position, segment ) as here) ->
+            { orientation = segment.orientation, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
     , grow =
         let
             nest inner b =
                 ( inner, { b | nest = b.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
         in
         { downwards =
-            \( mode, segment ) b ->
+            \(( _, segment ) as a) b ->
                 case segment.orientation of
                     Horizontal ->
-                        { b | right = b.right ++ [ renderSegment mode segment ] }
+                        { b | right = b.right ++ [ a ] }
 
                     Vertical ->
-                        { b | down = b.down ++ [ renderSegment mode segment ] }
+                        { b | down = b.down ++ [ a ] }
         , leftwards =
             \inner ->
                 nest inner
@@ -618,13 +538,13 @@ renderTree =
     , branch = renderBranch
     , grow =
         { upwards =
-            \( mode, segment ) c ->
+            \(( _, segment ) as a) c ->
                 case segment.orientation of
                     Horizontal ->
-                        { c | left = c.left ++ [ renderSegment mode segment ] }
+                        { c | left = c.left ++ [ a ] }
 
                     Vertical ->
-                        { c | up = c.up ++ [ renderSegment mode segment ] }
+                        { c | up = c.up ++ [ a ] }
         , leftwards =
             \inner ->
                 nest inner

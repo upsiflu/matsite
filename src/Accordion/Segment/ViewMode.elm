@@ -1,7 +1,8 @@
 module Accordion.Segment.ViewMode exposing
-    ( ViewMode(..), Role(..)
-    , role, path
-    , view, toClass
+    ( ViewMode
+    , path
+    , toClass
+    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, zeroOffset
     )
 
 {-| reflects a Segment's position within the Tree
@@ -11,15 +12,15 @@ module Accordion.Segment.ViewMode exposing
 
 ## To Do
 
-  - [ ] Push the `Role` type into `Tree` and name it `Position`
+  - [x] Push the `Role` type into `Tree` and name it `Position`
 
-  - [ ] Add a `Width` type
+  - [x] Add a `Width` type
 
         type Width
             = Columns Int
             | Screen
 
-  - [ ] Add a `Region` type
+  - [x] Add a `Region` type
 
         type Region
             = North
@@ -30,7 +31,7 @@ module Accordion.Segment.ViewMode exposing
             | NearEast
             | Here
 
-  - [ ] Remove `Placeholder` and `Collapsed`; instead, use
+  - [x] Remove `Placeholder` and `Collapsed`; instead, use
 
         { position = Tree.Position, region = Region, offset = List Width }
 
@@ -50,77 +51,41 @@ module Accordion.Segment.ViewMode exposing
 
 -}
 
-import Bool.Extra as Bool
 import Css exposing (..)
-import Fold exposing (Direction(..))
-import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (..)
+import Fold exposing (Direction(..), Position, Role(..))
+import Html.Styled as Html
+import Html.Styled.Attributes exposing (class, css)
+import Layout
 import List.Extra as List
 
 
 {-| -}
-type ViewMode
-    = Default Position
-    | Collapsed Position
-    | Placeholder
-
-
-type alias Position =
-    { path : List Direction, isLeaf : Bool, isRoot : Bool }
-
-
-{-| The Role is a human-readable representation of the path
--}
-type Role
-    = Parent
-    | Focus
-    | Aisle
-    | Breadcrumb
-    | BreadcrumbAisle
-    | Periphery
-    | None
+type alias ViewMode =
+    { position : Position, region : Region, offset : Offset }
 
 
 {-| -}
-role : ViewMode -> Role
-role mode =
-    case path mode of
-        Nothing ->
-            None
-
-        Just [] ->
-            Focus
-
-        Just [ Up ] ->
-            Parent
-
-        Just (Up :: s) ->
-            if List.member Down s then
-                Periphery
-
-            else if List.all ((==) Up) s then
-                Breadcrumb
-
-            else
-                BreadcrumbAisle
-
-        Just s ->
-            if List.member Down s then
-                Periphery
-
-            else
-                Aisle
+type Region
+    = North
+    | South
+    | West
+    | East
+    | NearWest
+    | NearEast
+    | Center
+    | Peek
 
 
 {-| -}
-path : ViewMode -> Maybe (List Direction)
-path mode =
-    case mode of
-        Default p ->
-            Just p.path
+type Width
+    = Columns Int
+    | Screen
 
-        _ ->
-            Nothing
+
+{-| -}
+path : ViewMode -> List Direction
+path =
+    .position >> .path
 
 
 
@@ -128,42 +93,111 @@ path mode =
 
 
 {-| -}
-signature : ViewMode -> String
-signature mode =
-    case role mode of
-        Parent ->
-            "P"
+regionToString : Region -> String
+regionToString region =
+    case region of
+        North ->
+            "north"
 
-        Focus ->
-            "F"
+        South ->
+            "south"
 
-        Aisle ->
-            "A"
+        West ->
+            "west"
 
-        Breadcrumb ->
-            "B"
+        East ->
+            "east"
 
-        BreadcrumbAisle ->
-            "Ba"
+        NearWest ->
+            "nearWest"
 
-        Periphery ->
-            "p"
+        NearEast ->
+            "nearEast"
 
-        None ->
-            "[-]"
+        Center ->
+            "center"
+
+        Peek ->
+            "peek"
 
 
-{-| Use for debugging purposes
--}
-view : ViewMode -> Html msg
-view =
-    signature
-        >> Html.text
-        >> List.singleton
-        >> Html.div [ css [ displayFlex ], css [ position absolute, left zero, bottom zero, fontSize (px 12), color (rgb 255 40 0), backgroundColor (rgba 250 0 0 0.1) ] ]
+viewWidth : Width -> String
+viewWidth width =
+    case width of
+        Columns c ->
+            String.fromInt c ++ "-column"
+
+        Screen ->
+            "screen"
+
+
+type alias Offset =
+    { screens : Int, columns : Int, units : Int }
+
+
+zeroOffset : Offset
+zeroOffset =
+    { screens = 0, columns = 0, units = 0 }
+
+
+{-| -}
+cumulativeOffset : List ViewMode -> Offset
+cumulativeOffset =
+    let
+        addOffset : Offset -> Offset -> Offset
+        addOffset { screens, columns, units } acc =
+            { screens = screens + acc.screens, columns = columns + acc.columns, units = units + acc.units }
+    in
+    zeroOffset
+        |> List.foldl (.offset >> addOffset)
+
+
+{-| -}
+addWidth : Width -> Offset -> Offset
+addWidth w acc =
+    case w of
+        Columns c ->
+            { acc | columns = acc.columns + c, units = acc.units + 1 }
+
+        Screen ->
+            { acc | screens = acc.screens + 1, units = acc.units + 1 }
+
+
+toString : ViewMode -> String
+toString mode =
+    let
+        pos =
+            Fold.viewPosition mode.position
+
+        reg =
+            regionToString mode.region
+
+        off =
+            mode.offset
+                |> (\o ->
+                        "🏛️" ++ String.fromInt o.columns ++ " 💻" ++ String.fromInt o.screens ++ " 1️⃣" ++ String.fromInt o.units
+                   )
+    in
+    [ pos, reg, off ]
+        |> String.join " "
 
 
 {-| -}
 toClass : ViewMode -> Html.Attribute msg
 toClass =
-    signature >> Attributes.class
+    toString >> class
+
+
+{-| -}
+toCssVariables : ViewMode -> Html.Attribute msg
+toCssVariables =
+    .offset >> offsetToCssVariables >> List.map Layout.toProperty >> css
+
+
+{-| -}
+offsetToCssVariables : Offset -> List ( String, Int )
+offsetToCssVariables { screens, columns, units } =
+    [ ( "screens", screens )
+    , ( "columns", columns )
+    , ( "units", units )
+    ]

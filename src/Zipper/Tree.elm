@@ -9,7 +9,6 @@ module Zipper.Tree exposing
     , root, leaf
     , go, Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
-    , positionalMap
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
@@ -27,6 +26,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
+    , mapByPosition, mapFocusedLeaf, mapLeaves
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -38,7 +38,7 @@ module Zipper.Tree exposing
 ## To Do
 
   - [ ] Change the `go`/`EdgeOperation` interface to use `Result`
-  - [ ] Move the `Role` interface from Segment.ViewMode to here
+  - [x] Move the `Role` interface from Segment.ViewMode to here, change it into `Position`
 
 ---
 
@@ -116,12 +116,11 @@ module Zipper.Tree exposing
 
 import Css exposing (..)
 import Dict exposing (Dict)
-import Fold exposing (Direction(..), Foldr)
+import Fold exposing (Direction(..), Foldr, Position, Role(..))
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (..)
 import List.Extra as List
-import Nonempty exposing (Nonempty)
+import Nonempty
 import Nonempty.Mixed as MixedNonempty exposing (MixedNonempty)
 import Result.Extra as Result
 import Zipper exposing (Zipper)
@@ -632,28 +631,10 @@ map fu =
 
 
 {-| -}
-positionalMap : (Positionality -> a -> b) -> Tree a -> Tree b
-positionalMap fu =
-    foldr (positionalMapfold fu)
-        >> mapRoot (\open -> \_ -> open { isLeaf = False, isRoot = True })
-        >> map (\open -> open { isLeaf = False, isRoot = False })
-
-
-{-| -}
-mapDistinct : (a -> b) -> (a -> b) -> Tree a -> Tree b
-mapDistinct focusFu peripheryFu =
-    let
-        fu m =
-            case m of
-                Focused a ->
-                    focusFu a
-
-                Blurred a ->
-                    peripheryFu a
-    in
-    map Blurred
-        >> mapFocus switch
-        >> map fu
+mapByPosition : (Position -> a -> b) -> Tree a -> Tree b
+mapByPosition fu =
+    zipPositions
+        >> map (\( pos, a ) -> fu pos a)
 
 
 {-| -}
@@ -693,6 +674,21 @@ mapRoot fu tree =
                         )
                             tree
            )
+
+
+{-| -}
+mapLeaves : (a -> a) -> Tree a -> Tree a
+mapLeaves fu =
+    MixedNonempty.map
+        (Zipper.map (Branch.mapLeaves fu))
+        (MixedZipper.mapPeriphery (Branch.mapLeaves fu))
+
+
+{-| maps only the leaf under the focus
+-}
+mapFocusedLeaf : (a -> a) -> Tree a -> Tree a
+mapFocusedLeaf =
+    Branch.mapFocusedLeaf >> mapBranch
 
 
 {-| -}
@@ -1009,6 +1005,17 @@ defold =
         , upwards = growRootUp
         }
     }
+
+
+type alias PosTree a =
+    Tree ( Position, a )
+
+
+zipPositions : Tree a -> PosTree a
+zipPositions =
+    zipDirections
+        >> map (Tuple.mapFirst (\dirs -> Fold.directionsToRole dirs |> (\r -> { role = r, isRoot = False, isLeaf = False, path = dirs })))
+        >> mapLeaves (Tuple.mapFirst (\pos -> { pos | isLeaf = True }))
 
 
 {-| -}

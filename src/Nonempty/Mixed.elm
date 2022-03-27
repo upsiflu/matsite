@@ -10,6 +10,7 @@ module Nonempty.Mixed exposing
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
+    , mapLast2
     )
 
 {-|
@@ -130,6 +131,17 @@ mapLast fu ( h, aa ) =
     case List.reverse aa of
         [] ->
             Err (OutOfBounds ( h, aa ))
+
+        t :: sil ->
+            Ok ( h, List.reverse (fu t :: sil) )
+
+
+{-| -}
+mapLast2 : (a -> a) -> MixedNonempty h a -> Result (MixedNonempty h a) (MixedNonempty h a)
+mapLast2 fu ( h, aa ) =
+    case List.reverse aa of
+        [] ->
+            Err ( h, [] )
 
         t :: sil ->
             Ok ( h, List.reverse (fu t :: sil) )
