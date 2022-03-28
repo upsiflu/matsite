@@ -173,15 +173,16 @@ img {
 .🀱,
 .🁣 {
   position: absolute;
+  transition: max-width 1s, max-height 1s;
 }
-.vanishing {
+.cache {
   transition: all 1.5s !important;
   overflow: hidden !important;
 }
-.vanishing.🀱 {
+.cache.🀱 {
   max-width: 1px;
 }
-.vanishing.🁣 {
+.cache.🁣 {
   max-height: 1px;
 }
 .🀱:not(.hasBody):not(.F) .info {

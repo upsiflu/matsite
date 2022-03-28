@@ -1,32 +1,39 @@
 :root {
   --unit: 3rem;
   --column: calc(var(--unit) * 7);
-  --columnCountLimit: 20;
-  /* We will need to specify in the Elm how many columns are virtual (only extended if columnCountLimit is not 1). Then columnCountLimit is either 1 or infinite. */
 }
 
 .Accordion {
   --w: var(--unit);
   --h: var(--column);
+
   /* heights */
-  --northHeight: calc(var(--w) * var(--northCount));
+  --northHeight: calc(var(--w) * var(--north-units));
   --hereHeight: calc(100vh - 4rem);
-  --southHeight: calc(var(--w) * var(--southCount));
+  --southHeight: calc(var(--w) * var(--south-units));
   --height: max(
     calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)),
     100vh
   );
   height: var(--height);
-  /* y starting from the bottom edge */
+
+  /* y starting from the opposite edge */
   --northY: calc(var(--height) - var(--northHeight));
   --southY: calc(var(--height) - var(--southHeight));
+
   /* widths */
   --northSouthWidth: max(var(--hereWidth), var(--column));
-  --westWidth: calc(var(--w) * var(--westCount));
-  --nearWestWidth: calc(var(--h) * var(--nearWestCount));
-  --hereWidth: calc(var(--h) * var(--hereCount));
-  --nearEastWidth: calc(var(--h) * var(--nearEastCount));
-  --eastWidth: calc(var(--w) * var(--eastCount));
+  --westWidth: calc(var(--w) * var(--west-columns));
+  --nearWestWidth: calc(
+    var(--h) * var(--nearWest-columns) + var(--nearWest-screens) * 100vw
+  );
+  --hereWidth: calc(
+    var(--h) * var(--center-columns) + var(--center-screens) * 100vw
+  );
+  --nearEastWidth: calc(
+    var(--h) * var(--nearEast-columns) + var(--nearEast-screens) * 100vw
+  );
+  --eastWidth: calc(var(--w) * var(--east-columns));
   --width: max(
     calc(
       var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
@@ -60,13 +67,66 @@
   padding: 0;
 }
 
+/* =======================================================================================
+*  Default Layout: Absolutely position the segments per region, via offsset, on the screen
+*  =======================================================================================
+*/
+
+.nearWest {
+  height: var(--w);
+  top: auto;
+  bottom: calc(var(--nearWestY) + var(--w) * var(--offset));
+  right: calc(var(--eastWidth));
+}
+
+/* North and South */
+.north.🁣 {
+  left: var(--northSouthX);
+  width: var(--northSouthWidth);
+  bottom: calc(var(--northY) + var(--offset) * var(--w));
+}
+
+.south.🁣 {
+  left: var(--northSouthX);
+  width: var(--northSouthWidth);
+  top: calc(var(--southY) + var(--offset) * var(--w));
+}
+
+/* West and East */
+.west.🀱 {
+  top: var(--northHeight);
+  right: calc(var(--westX) + var(--offset) * var(--w));
+}
+
+.east.🀱 {
+  top: var(--northHeight);
+  left: calc(var(--eastX) + var(--offset) * var(--w));
+}
+
+/* The Center */
+
+.nearWest {
+  top: var(--northHeight);
+  right: calc(var(--nearWestX) + var(--offset) * var(--h));
+}
+
+.here {
+  top: var(--northHeight);
+  left: calc(var(--hereL) + var(--offset) * var(--h));
+}
+
+.nearEast {
+  top: var(--northHeight);
+  left: calc(var(--nearEastX) + var(--offset) * var(--h));
+}
+
 /* ===========================================================================================
 *  change layout when focus is horizontally subdivided and no segment in the center has a body
 *  ===========================================================================================
 */
-.Accordion.🀱:not(.hasBody) {
-  --nearWestWidth: calc(var(--w) * var(--nearWestCount));
-  --nearEastWidth: calc(var(--w) * var(--nearEastCount));
+.Accordion.a-🀱:not(.a-hasBody) {
+  --nearWestWidth: calc(var(--w) * var(--nearWest-columns));
+  --nearEastWidth: calc(var(--w) * var(--nearEast-columns));
   --width: max(
     calc(
       var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
@@ -78,16 +138,16 @@
 }
 
 /* rotated text */
-.Accordion.🀱:not(.hasBody) .nearEast.🀱,
-.Accordion.🀱:not(.hasBody) .nearWest.🀱 {
+.🪗🀱:not(.🪗hasBody) .nearEast.🀱,
+.🪗🀱:not(.🪗hasBody) .nearWest.🀱 {
   writing-mode: vertical-rl;
 }
-.Accordion2.🀱:not(.hasBody) > .nearWest {
+.🪗🀱:not(.🪗hasBody) > .nearWest {
   top: var(--northHeight);
   right: calc(var(--nearWestX) + var(--offset) * var(--w));
 }
 
-.Accordion2.🀱:not(.hasBody) > .nearEast {
+.🪗🀱:not(.🪗hasBody) > .nearEast {
   top: var(--northHeight);
   left: calc(var(--nearEastX) + var(--offset) * var(--w));
 }
@@ -96,70 +156,28 @@
 *  change layout when focus is vertically subdivided 
 *  =================================================
 */
-.Accordion.🁣 {
+.🪗🁣 {
   --nearWestWidth: 0rem;
   --nearEastWidth: 0rem;
-  --nearWestHeight: calc(var(--w) * var(--nearWestCount));
-  --nearEastHeight: calc(var(--w) * var(--nearEastCount));
+  --nearWestHeight: calc(var(--w) * var(--nearWest-columns));
+  --nearEastHeight: calc(var(--w) * var(--nearEast-columns));
   --nearWestY: calc(var(--northY) - var(--nearWestHeight));
   --nearEastY: calc(var(--southY) - var(--nearEastHeight));
 }
 
-.nearWest {
+.🪗🁣 > .nearWest {
   height: var(--w);
-  top: auto;
   bottom: calc(var(--nearWestY) + var(--w) * var(--offset));
-  right: calc(var(--eastWidth));
+  left: calc(var(--westWidth));
 }
 
-.Accordion.🁣 > .nearEast {
+.🪗🁣 > .nearEast {
   height: var(--w);
   top: calc(var(--nearEastY) + var(--w) * var(--offset));
   left: calc(var(--westWidth));
 }
 
-.Accordion.🁣 > .here {
+.🪗🁣 > .here {
   height: var(--w);
   top: calc(var(--northHeight) + var(--nearWestHeight));
-}
-
-/* North and South */
-.Accordion > .north.🁣 {
-  left: var(--northSouthX);
-  width: var(--northSouthWidth);
-  bottom: calc(var(--northY) + var(--offset) * var(--w));
-}
-
-.Accordion > .south.🁣 {
-  left: var(--northSouthX);
-  width: var(--northSouthWidth);
-  top: calc(var(--southY) + var(--offset) * var(--w));
-}
-
-/* West and East */
-.Accordion > .west.🀱 {
-  top: var(--northHeight);
-  right: calc(var(--westX) + var(--offset) * var(--w));
-}
-
-.Accordion > .east.🀱 {
-  top: var(--northHeight);
-  left: calc(var(--eastX) + var(--offset) * var(--w));
-}
-
-/* The Center */
-
-.Accordion > .nearWest {
-  top: var(--northHeight);
-  right: calc(var(--nearWestX) + var(--offset) * var(--h));
-}
-
-.Accordion > .here {
-  top: var(--northHeight);
-  left: calc(var(--hereL) + var(--offset) * var(--h));
-}
-
-.Accordion > .nearEast {
-  top: var(--northHeight);
-  left: calc(var(--nearEastX) + var(--offset) * var(--h));
 }

@@ -74,6 +74,7 @@ type Region
     | NearEast
     | Center
     | Peek
+    | Cache
 
 
 {-| -}
@@ -119,6 +120,9 @@ regionToString region =
 
         Peek ->
             "peek"
+
+        Cache ->
+            "cache"
 
 
 viewWidth : Width -> String
@@ -175,7 +179,7 @@ toString mode =
         off =
             mode.offset
                 |> (\o ->
-                        "🏛️" ++ String.fromInt o.columns ++ " 💻" ++ String.fromInt o.screens ++ " 1️⃣" ++ String.fromInt o.units
+                        "🏛️" ++ String.fromInt o.columns ++ " 💻" ++ String.fromInt o.screens ++ " 🟡" ++ String.fromInt o.units
                    )
     in
     [ pos, reg, off ]

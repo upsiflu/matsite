@@ -6,6 +6,7 @@ module Accordion exposing
     , location, focus
     , view
     , anarchiveX, vimeoX
+    , renderBranch
     )
 
 {-|
@@ -59,6 +60,7 @@ import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Layout
+import List.Extra as List
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
 import Snippets.Intro as Intro
@@ -199,14 +201,6 @@ mapSegment =
 site : Accordion msg
 site =
     let
-        verticalSegment x =
-            Segment.singleton x
-                |> Segment.withOrientation Vertical
-                |> Branch.singleton
-
-        anarchive =
-            verticalSegment "Anarchive"
-
         artists =
             Artist.artists
                 |> List.map
@@ -227,10 +221,7 @@ site =
                     )
 
         doArtists =
-            List.foldl (\fu0 fu1 -> fu0 >> fu1) identity artists
-
-        series =
-            String.fromInt >> (++) "Series "
+            List.foldl (>>) identity artists
 
         set2 : Orientation -> String -> String -> Accordion msg -> Accordion msg
         set2 orientation cap1 cap2 =
@@ -312,36 +303,7 @@ site =
         |> go Right
         |> set Vertical "Newsletter" Nothing
         |> go Left
-        |> go Down
-        |> set Horizontal (series 6) Nothing
         |> go Left
-        |> set Horizontal (series 5) Nothing
-        |> go Left
-        |> set Horizontal (series 4) Nothing
-        |> go Left
-        |> set Horizontal (series 3) Nothing
-        |> go Right
-        |> go Right
-        |> go Down
-        |> go Right
-        |> set Horizontal "Festival" Nothing
-        -- (Just <| )
-        |> mapSegment (Segment.withInfo <| Html.text "Text line - festival popups, physical participation")
-        |> appendSubtree
-        |> go Right
-        |> set Horizontal "Artist" Nothing
-        |> go Down
-        |> doArtists
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Up
-        |> go Up
-        |> go Up
         |> go Left
         |> go Left
         |> go Left
@@ -393,18 +355,27 @@ type Renderable msg
 view : Accordion msg -> Html msg
 view (Accordion config) =
     let
-        classes : List (Html.Attribute msg)
+        classes : Html.Attribute msg
         classes =
-            List.map class
-                [ Segment.orientationToString (.orientation (Tree.focus config.tree)) ]
+            classList
+                [ ( "\u{1FA97}" ++ Segment.orientationToString (.orientation (Tree.focus config.tree)), True )
+                , ( "\u{1FA97}hasBody", List.any (.body >> (/=) Nothing) (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                ]
 
         createRegions : C msg -> List ( Region, List (A msg) )
         createRegions { up, left, x, here, nest, y, right, down } =
+            let
+                ( peek, cache ) =
+                    List.uncons nest
+                        |> Maybe.map (Tuple.mapFirst List.singleton)
+                        |> Maybe.withDefault ( [], [] )
+            in
             [ ( North, up )
             , ( West, left )
             , ( NearWest, x )
             , ( Center, [ here ] )
-            , ( Peek, nest )
+            , ( Peek, peek )
+            , ( Cache, cache )
             , ( NearEast, y )
             , ( East, right )
             , ( South, down )
@@ -443,7 +414,7 @@ view (Accordion config) =
                 ( [], [] )
                 >> (\( items, vars ) ->
                         Keyed.ul
-                            (class "Accordion" :: vars ++ classes)
+                            (class "Accordion" :: classes :: vars)
                             (List.sortBy Tuple.first items)
                    )
     in
@@ -471,7 +442,9 @@ type alias C msg =
     { up : List (A msg), left : List (A msg), x : List (A msg), here : A msg, nest : List (A msg), y : List (A msg), right : List (A msg), down : List (A msg) }
 
 
-{-| -}
+{-| assigns sub-nodes to `left`, `right` and `down` while nesting sub-trees, thus `nest` contains all collapsed DOM nodes
+in no particular order
+-}
 renderBranch : Branch.Fold {} (A msg) (B msg)
 renderBranch =
     { init =
@@ -479,17 +452,13 @@ renderBranch =
             { orientation = segment.orientation, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
     , grow =
         let
+            {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
             nest inner b =
                 ( inner, { b | nest = b.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
         in
         { downwards =
-            \(( _, segment ) as a) b ->
-                case segment.orientation of
-                    Horizontal ->
-                        { b | right = b.right ++ [ a ] }
-
-                    Vertical ->
-                        { b | down = b.down ++ [ a ] }
+            \a b ->
+                { b | down = b.down ++ [ a ] }
         , leftwards =
             \inner ->
                 nest inner

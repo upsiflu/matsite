@@ -157,8 +157,11 @@ viewPosition pos =
               else
                 ""
             )
+
+        pth =
+            List.map viewDirection pos.path |> String.join ""
     in
-    role ++ " " ++ leaf ++ " " ++ root
+    String.join " " [ role, leaf, root, pth ]
 
 
 {-| -}
