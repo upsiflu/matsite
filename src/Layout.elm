@@ -66,7 +66,6 @@ typography =
         , Global.selector "h2" h2Style
         , Global.selector ".bleeding" bleedingStyle
         , Global.selector "img" bleedingStyle
-        , Global.selector ".richtext" [overflowY scroll]
         ]
 
 
@@ -103,8 +102,7 @@ pStyle =
     ]
 
 bleedingStyle =
-    [ maxWidth (calc (pct 100) plus (px 6))
-    , margin (px -3)
+    [ maxWidth (pct 100)
     ]
 
 aStyle =

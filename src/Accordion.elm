@@ -271,6 +271,7 @@ site =
     Tree.singleton Segment.empty
         |> singleton
         |> set Vertical "Home" (Just Intro.intro)
+        |> mapSegment (Segment.withBackground True)
         |> go Right
         |> set Vertical "Labs" Nothing
         |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
@@ -312,7 +313,7 @@ site =
 {-| -}
 anarchiveX : Html msg
 anarchiveX =
-    Html.div [ class "anArchive opening" ]
+    Html.div [ class "anArchive" ]
         [ Html.iframe
             [ attribute "width" "100%"
             , css [ position absolute, Css.height (pct 100), border (px 0) ]
@@ -359,7 +360,10 @@ view (Accordion config) =
         classes =
             classList
                 [ ( "\u{1FA97}" ++ Segment.orientationToString (.orientation (Tree.focus config.tree)), True )
-                , ( "\u{1FA97}hasBody", List.any (.body >> (/=) Nothing) (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                , ( "aisleHasBody", List.any (.body >> (/=) Nothing) (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                , ( "focusHasBody", (.body >> (/=) Nothing) (Tree.focus config.tree) )
+                , ( "focusIsRoot", Tree.isRoot config.tree )
+                , ( "focusIsBackground", .isBackground (Tree.focus config.tree) )
                 ]
 
         createRegions : C msg -> List ( Region, List (A msg) )
@@ -370,9 +374,9 @@ view (Accordion config) =
                         |> Maybe.map (Tuple.mapFirst List.singleton)
                         |> Maybe.withDefault ( [], [] )
             in
-            [ ( North, up )
-            , ( West, left )
-            , ( NearWest, x )
+            [ ( North, List.reverse up )
+            , ( West, List.reverse left )
+            , ( NearWest, List.reverse x )
             , ( Center, [ here ] )
             , ( Peek, peek )
             , ( Cache, cache )
@@ -385,7 +389,7 @@ view (Accordion config) =
         renderRegion ( region, list ) =
             List.foldl
                 (\( position, segment ) ( offset, newList ) ->
-                    ( ViewSegment.addWidth segment.width offset
+                    ( ViewSegment.addWidth (segment.body /= Nothing) segment.width offset
                     , Segment.view { position = position, region = region, offset = offset } segment :: newList
                     )
                 )
@@ -476,7 +480,7 @@ renderBranch =
                     >> (\( { orientation, here }, b ) ->
                             case orientation of
                                 Horizontal ->
-                                    { b | right = here :: b.left }
+                                    { b | right = here :: b.right }
 
                                 Vertical ->
                                     { b | down = b.down ++ [ here ] }
@@ -488,6 +492,8 @@ renderBranch =
 renderTree : Tree.Fold {} (A msg) (B msg) (C msg)
 renderTree =
     let
+        {- copy the inner branches of the branch into the tree -}
+        nest : B msg -> C msg -> ( B msg, C msg )
         nest inner c =
             ( inner, { c | nest = c.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
     in

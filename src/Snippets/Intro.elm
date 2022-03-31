@@ -5,7 +5,7 @@ import Html.Styled.Attributes exposing (..)
 
 
 intro =
-    div [attribute "class" "intro opening"]
+    div [attribute "class" "intro"]
         [div [ attribute "style" "padding:56.25% 0 0 0;position:relative;" ]
             [ iframe [ id "intro-player"
                     , attribute "allow" "autoplay; fullscreen; picture-in-picture"

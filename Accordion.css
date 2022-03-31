@@ -1,183 +1,418 @@
+.body {
+  overflow: auto;
+  max-height: calc(var(--bleed) * 2 + 100%);
+  margin: calc(0rem - var(--bleed));
+}
+
+.focusIsBackground > .F > .body {
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  margin: auto;
+  margin-left: calc(0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth));
+  --accordionOffset: calc(50vw - (var(--width) / 2));
+  width: 100vw;
+  min-height: 0px;
+  opacity: 0.9;
+  transition: all 0.5s;
+  z-index: -4;
+}
+.focusIsBackground > .F {
+  height: 100vw;
+}
+
 :root {
+  /* Size of a click target: 7-10mm */
   --unit: 3rem;
+
+  /* Width of a column: 55-70mm (rems shrink to fit 7 units into any screenwidth) */
   --column: calc(var(--unit) * 7);
+
+  /* Width of a screen-wide segment */
+  --screen: 100vw;
+
+  /* Height of the `here` part of the screen */
+  --fitHeight: calc(100vh - 8rem);
+
+  /* How much the segments can bleed behind each other*/
+  --bleed: (calc(var(--unit) / 3));
 }
 
 .Accordion {
-  --w: var(--unit);
-  --h: var(--column);
-
-  /* heights */
-  --northHeight: calc(var(--w) * var(--north-units));
-  --hereHeight: calc(100vh - 4rem);
-  --southHeight: calc(var(--w) * var(--south-units));
-  --height: max(
-    calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)),
-    100vh
-  );
-  height: var(--height);
-
-  /* y starting from the opposite edge */
-  --northY: calc(var(--height) - var(--northHeight));
-  --southY: calc(var(--height) - var(--southHeight));
-
+  background: #114477;
+  transition: all 0.7s;
   /* widths */
-  --northSouthWidth: max(var(--hereWidth), var(--column));
-  --westWidth: calc(var(--w) * var(--west-columns));
-  --nearWestWidth: calc(
-    var(--h) * var(--nearWest-columns) + var(--nearWest-screens) * 100vw
-  );
-  --hereWidth: calc(
-    var(--h) * var(--center-columns) + var(--center-screens) * 100vw
-  );
-  --nearEastWidth: calc(
-    var(--h) * var(--nearEast-columns) + var(--nearEast-screens) * 100vw
-  );
-  --eastWidth: calc(var(--w) * var(--east-columns));
-  --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
-    var(--northSouthWidth)
-  );
+  --westWidth: calc(var(--u) * var(--west-columns));
+  --hereWidth: calc(var(--c) * var(--center-columns) + var(--center-screens) * 100vw);
+  --eastWidth: calc(var(--u) * var(--east-columns));
+  --northSouthWidth: var(--column);
   width: var(--width);
-  position: relative;
-  margin: auto;
-  /* x starting from the right edge */
-  --northSouthX: calc(
-    var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2
-  );
+
+  /* X starting from the right edge */
+  --northSouthX: calc(var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2);
   --westX: calc(var(--width) - var(--westWidth));
   --nearWestX: calc(var(--westX) - var(--nearWestWidth));
   --eastX: calc(var(--width) - var(--eastWidth));
   --nearEastX: calc(var(--eastX) - var(--nearEastWidth));
+
   /* relative positions from left */
   --hereL: calc(var(--westWidth) + var(--nearWestWidth));
+
   /* relative positions from right */
   --hereR: calc(var(--eastWidth) + var(--nearEastWidth));
+
   /* relative positions from top and bottom are northHeight and southHeight respectively. */
   --hereT: calc(var(--southHeight) + var(--hereHeight));
   --hereB: calc(var(--northHeight) + var(--hereHeight));
+
   /* Midpoint */
   --midX: calc(var(--hereL) + calc(var(--hereWidth) / 2));
   --midY: calc(var(--northY) + calc(var(--hereHeight) / 2));
+
   /* Mitigate list style */
   list-style: none;
   padding: 0;
+
+  /* Allow absolute positioning */
+  position: relative;
+
+  /* Centering */
+  margin: auto;
+  top: 2rem;
 }
 
 /* =======================================================================================
-*  Default Layout: Absolutely position the segments per region, via offsset, on the screen
+*                                        INVARIANTS
 *  =======================================================================================
 */
 
-.nearWest {
-  height: var(--w);
-  top: auto;
-  bottom: calc(var(--nearWestY) + var(--w) * var(--offset));
-  right: calc(var(--eastWidth));
-}
+.Accordion {
+  --u: var(--unit);
+  --c: var(--column);
+  --s: var(--screen);
 
-/* North and South */
-.north.🁣 {
-  left: var(--northSouthX);
-  width: var(--northSouthWidth);
-  bottom: calc(var(--northY) + var(--offset) * var(--w));
-}
+  /* heights */
+  --hereHeight: var(--fitHeight);
+  --northHeight: calc(var(--u) * var(--north-units));
+  --southHeight: calc(var(--u) * var(--south-units));
+  --height: calc(var(--hereHeight) + var(--northHeight) + var(--southHeight));
 
-.south.🁣 {
-  left: var(--northSouthX);
-  width: var(--northSouthWidth);
-  top: calc(var(--southY) + var(--offset) * var(--w));
-}
+  /* Y starting from the opposite edge */
+  --northY: calc(var(--height) - var(--northHeight));
+  --southY: calc(var(--height) - var(--southHeight));
 
-/* West and East */
-.west.🀱 {
-  top: var(--northHeight);
-  right: calc(var(--westX) + var(--offset) * var(--w));
-}
+  /* Accordion properties */
+  height: var(--height);
 
-.east.🀱 {
-  top: var(--northHeight);
-  left: calc(var(--eastX) + var(--offset) * var(--w));
-}
-
-/* The Center */
-
-.nearWest {
-  top: var(--northHeight);
-  right: calc(var(--nearWestX) + var(--offset) * var(--h));
-}
-
-.here {
-  top: var(--northHeight);
-  left: calc(var(--hereL) + var(--offset) * var(--h));
-}
-
-.nearEast {
-  top: var(--northHeight);
-  left: calc(var(--nearEastX) + var(--offset) * var(--h));
-}
-
-/* ===========================================================================================
-*  change layout when focus is horizontally subdivided and no segment in the center has a body
-*  ===========================================================================================
-*/
-.Accordion.a-🀱:not(.a-hasBody) {
-  --nearWestWidth: calc(var(--w) * var(--nearWest-columns));
-  --nearEastWidth: calc(var(--w) * var(--nearEast-columns));
-  --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
-    var(--northSouthWidth)
+  /* -----------------------------------------------------------
+  *        Functionally invariant, but depends on layout
+  *  -----------------------------------------------------------
+  */
+  --width: calc(
+    (var(--westWidth) + var(--nearWestWidth)) + var(--hereWidth) + (var(--nearEastWidth) + var(--eastWidth))
   );
+  --westX: calc(var(--width) - var(--westWidth));
+  --eastX: calc(var(--width) - var(--eastWidth));
+  --nearWestX: calc(var(--westX) - var(--nearWestWidth));
+  --nearEastX: calc(var(--eastX) - var(--nearEastWidth));
   width: var(--width);
 }
 
-/* rotated text */
-.🪗🀱:not(.🪗hasBody) .nearEast.🀱,
-.🪗🀱:not(.🪗hasBody) .nearWest.🀱 {
-  writing-mode: vertical-rl;
-}
-.🪗🀱:not(.🪗hasBody) > .nearWest {
-  top: var(--northHeight);
-  right: calc(var(--nearWestX) + var(--offset) * var(--w));
-}
-
-.🪗🀱:not(.🪗hasBody) > .nearEast {
-  top: var(--northHeight);
-  left: calc(var(--nearEastX) + var(--offset) * var(--w));
-}
-
-/* =================================================
-*  change layout when focus is vertically subdivided 
-*  =================================================
+/* North and South 
 */
-.🪗🁣 {
-  --nearWestWidth: 0rem;
-  --nearEastWidth: 0rem;
-  --nearWestHeight: calc(var(--w) * var(--nearWest-columns));
-  --nearEastHeight: calc(var(--w) * var(--nearEast-columns));
+.north,
+.south {
+  width: var(--northSouthWidth);
+  height: var(--unit);
+  left: var(--northSouthX);
+}
+
+.north {
+  bottom: calc(var(--northY) + var(--units) * var(--u));
+}
+
+.south {
+  top: calc(var(--southY) + var(--units) * var(--u));
+}
+
+/* West and East 
+*/
+.west,
+.east {
+  width: var(--unit);
+  height: var(--hereHeight);
+  top: var(--northHeight);
+}
+.west {
+  right: calc(var(--westX) + var(--units) * var(--u));
+}
+
+.east {
+  left: calc(var(--eastX) + var(--units) * var(--u));
+}
+
+/* =======================================================================================
+*                                    LAYOUT WITH NO BODY
+*  =======================================================================================
+*/
+
+/*                                       HORIZONTAL:
+*
+*                                           < N >
+*                                   W X     F <C>     Y E
+*                                           < S >
+*/
+
+.🪗🀱:not(.aisleHasBody) {
+  --nearWestWidth: calc(var(--u) * var(--nearWest-units));
+  --nearWestWidth: calc(var(--u) * var(--nearEast-units));
+  --centerWidth: var(--unit);
+  --peekWidth: calc(var(--hereWidth) - var(--centerWidth));
+
+  --nearWestX: calc(var(--width) - var(--westWidth) - var(--nearWestWidth));
+  --nearEastX: calc(var(--width) - var(--eastWidth) - var(--nearEastWidth));
+
+  --centerX: var(--northSouthX);
+  --peekX: calc(var(--centerY) + var(--unit));
+
+  --hereWidth: var(--column);
+
+  --northSouthX: calc(var(--westWidth) + var(--nearWestWidth));
+}
+.🪗🀱:not(.aisleHasBody) > .center {
+  top: var(--centerY);
+  left: var(--northSouthX);
+  height: var(--hereHeight);
+  width: var(--centerWidth);
+}
+
+.🪗🀱:not(.aisleHasBody) > .peek {
+  top: var(--centerY);
+  left: var(--peekX);
+  height: var(--hereHeight);
+  width: var(--peekWidth);
+}
+
+.🪗🀱:not(.aisleHasBody) > .nearWest {
+  bottom: var(--southY);
+  right: calc(var(--nearWestX) + var(--units) * var(--u));
+  width: var(--unit);
+  height: var(--hereHeight);
+}
+
+.🪗🀱:not(.aisleHasBody) > .nearEast {
+  top: var(--northY);
+  left: calc(var(--nearEastX) + var(--units) * var(--u));
+  width: var(--unit);
+  height: var(--hereHeight);
+}
+
+/*                                        VERTICAL:
+*
+*                                           < N >
+*                                           < X >
+*                                           < F >
+*                                     W     < C >     E
+*                                           < Y >
+*                                           < S >
+*/
+
+.🪗🁣:not(.focusHasBody) {
+  --nearWestHeight: calc(var(--u) * var(--nearWest-units));
+  --nearEastHeight: calc(var(--u) * var(--nearEast-units));
+  --centerHeight: var(--unit);
+  --peekHeight: calc(var(--hereHeight) - var(--nearWestHeight) - var(--nearEastHeight) - var(--unit));
+
   --nearWestY: calc(var(--northY) - var(--nearWestHeight));
   --nearEastY: calc(var(--southY) - var(--nearEastHeight));
+  --centerY: calc(var(--northHeight) + var(--nearWestHeight));
+  --peekY: calc(var(--centerY) + var(--unit));
+
+  --nearWestWidth: 0rem;
+  --nearEastWidth: 0rem;
+  --hereWidth: var(--column);
+
+  --northSouthX: var(--westWidth);
 }
 
-.🪗🁣 > .nearWest {
-  height: var(--w);
-  bottom: calc(var(--nearWestY) + var(--w) * var(--offset));
-  left: calc(var(--westWidth));
+.🪗🁣:not(.focusHasBody) > .center {
+  top: var(--centerY);
+  left: var(--westWidth);
+  height: var(--centerHeight);
+  width: var(--hereWidth);
 }
 
-.🪗🁣 > .nearEast {
-  height: var(--w);
-  top: calc(var(--nearEastY) + var(--w) * var(--offset));
-  left: calc(var(--westWidth));
+.🪗🁣:not(.focusHasBody) > .peek {
+  top: var(--peekY);
+  left: var(--westWidth);
+  height: var(--peekHeight);
+  width: var(--hereWidth);
 }
 
-.🪗🁣 > .here {
-  height: var(--w);
-  top: calc(var(--northHeight) + var(--nearWestHeight));
+.🪗🁣:not(.focusHasBody) > .nearWest {
+  right: var(--eastWidth);
+  bottom: calc(var(--nearWestY) + var(--units) * var(--u));
+  width: var(--hereWidth);
+  height: var(--unit);
+}
+
+.🪗🁣:not(.focusHasBody) > .nearEast {
+  left: var(--westWidth);
+  top: calc(var(--nearEastY) + var(--units) * var(--u));
+  width: var(--hereWidth);
+  height: var(--unit);
+}
+
+/* =======================================================================================
+*                                      LAYOUT WITH BODY
+*  =======================================================================================
+*/
+
+/*                                       HORIZONTAL:
+*
+*                                             N
+*                                   W X       F       Y E
+*                                             S  
+*/
+
+.🪗🀱.focusHasBody {
+  --nearWestWidth: calc(var(--c) * var(--nearWest-columns));
+  --nearEastWidth: calc(var(--c) * var(--nearEast-columns));
+  --centerWidth: calc(var(--center-columns) * var(--c) + var(--center-screens) * var(--s));
+  --peekWidth: 0;
+
+  --nearWestX: calc(var(--width) - var(--westWidth) - var(--nearWestWidth));
+  --nearEastX: calc(var(--width) - var(--eastWidth) - var(--nearEastWidth));
+
+  --centerX: calc(var(--westWidth) + var(--nearWestWidth));
+  --peekX: calc(var(--centerX) + var(--centerWidth));
+
+  --hereWidth: var(--centerWidth);
+  --centerHeight: var(--hereHeight);
+
+  /* center above the `here` (keep 1 column) */
+  --northSouthX: calc(var(--centerX) + var(--centerWidth) / 2 - var(--column) / 2);
+}
+.🪗🀱.focusHasBody > .center {
+  top: var(--northHeight);
+  left: var(--centerX);
+  height: var(--centerHeight);
+  width: var(--centerWidth);
+}
+
+.🪗🀱.focusHasBody > .peek {
+  top: var(--northHeight);
+  left: var(--peekX);
+  height: var(--centerHeight);
+  width: var(--peekWidth);
+}
+
+.🪗🀱.focusHasBody > .nearWest {
+  bottom: var(--southHeight);
+  right: calc(var(--nearWestX) + var(--columns) * var(--c));
+  width: calc(var(--ownColumns) * var(--c));
+  height: var(--hereHeight);
+}
+
+.🪗🀱.focusHasBody > .nearEast {
+  top: var(--northHeight);
+  left: calc(var(--nearEastX) + var(--columns) * var(--c));
+  width: calc(var(--ownColumns) * var(--c));
+  height: var(--hereHeight);
+}
+
+/*                                        VERTICAL:
+*
+*                                           < N >
+*                                           < X >
+*                                     W     < F >     E
+*                                           < Y >
+*                                           < S >
+*/
+
+.🪗🁣.focusHasBody {
+  --nearWestHeight: calc(var(--u) * var(--nearWest-units));
+  --nearEastHeight: calc(var(--u) * var(--nearEast-units));
+  --centerHeight: var(--unit);
+  --peekHeight: 0rem;
+
+  --nearWestY: calc(var(--northY) - var(--nearWestHeight));
+  --nearEastY: calc(var(--southY) - var(--nearEastHeight));
+  --centerY: calc(var(--northHeight) + var(--nearWestHeight));
+  --peekY: calc(var(--centerY) + var(--unit));
+
+  --nearWestWidth: 0rem;
+  --nearEastWidth: 0rem;
+  --hereWidth: var(--column);
+
+  --northSouthX: var(--westWidth);
+}
+.🪗🁣.focusIsRoot {
+  --height: calc(100vw - 8rem);
+}
+
+.🪗🁣.focusHasBody > .center {
+  top: var(--centerY);
+  left: var(--westWidth);
+  height: var(--centerHeight);
+  width: var(--hereWidth);
+}
+
+.🪗🁣.focusHasBody > .peek {
+  top: var(--peekY);
+  left: var(--westWidth);
+  height: var(--peekHeight);
+  width: var(--hereWidth);
+  overflow: hidden;
+}
+
+.🪗🁣.focusHasBody > .nearWest {
+  right: var(--eastWidth);
+  bottom: calc(var(--nearWestY) + var(--units) * var(--u));
+  width: var(--hereWidth);
+  height: var(--unit);
+}
+
+.🪗🁣.focusHasBody > .nearEast {
+  left: var(--westWidth);
+  top: calc(var(--nearEastY) + var(--units) * var(--u));
+  width: var(--hereWidth);
+  height: var(--unit);
+}
+
+/* ========================================================================================
+*  ========================================================================================
+*  ========================================================================================
+*  ========================================================================================
+*/
+
+/* PARALLAX */
+
+.overflow {
+  perspective: 1px;
+  perspective-origin: center;
+  width: 100vw;
+  height: 100vh;
+  overflow: scroll;
+}
+
+.Accordion {
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+.🀱 {
+  transform-style: preserve-3d;
+}
+
+img {
+  transform-origin: center;
+  transform: translateZ(0.08px);
+}
+
+.centerBackground {
+  transform-origin: center;
+  transform: translateZ(-0.1px);
+  pointer-events: none;
 }

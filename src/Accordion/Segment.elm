@@ -5,6 +5,7 @@ module Accordion.Segment exposing
     , withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
     , decreaseColumnCount, increaseColumnCount
     , view, structureClass, orientationToString, hasBody
+    , withBackground
     )
 
 {-| contain the immutable site content
@@ -40,7 +41,6 @@ import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
-import Zipper.Tree as Tree exposing (Tree)
 
 
 debugging =
@@ -51,6 +51,7 @@ debugging =
 type alias Segment msg =
     { caption : List String
     , id : String
+    , isBackground : Bool
     , body : Maybe (Html msg)
     , info : Maybe (Html msg)
     , orientation : Orientation
@@ -69,6 +70,11 @@ type Orientation
 withOrientation : Orientation -> Segment msg -> Segment msg
 withOrientation orientation segment =
     { segment | orientation = orientation }
+
+{-| -}
+withBackground : Bool -> Segment msg -> Segment msg
+withBackground isBackground segment =
+    { segment | isBackground = isBackground }
 
 
 {-| -}
@@ -143,6 +149,7 @@ empty : Segment msg
 empty =
     { caption = []
     , id = "_"
+    , isBackground = False
     , body = Nothing
     , orientation = Vertical
     , width = Columns 1
@@ -194,6 +201,8 @@ view mode s =
 
         viewBody =
             Maybe.withDefault (Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] [ Html.text "" ])
+                >> List.singleton
+                >> Html.div [ class "body" ]
 
         additionalAttributes =
             s.additionalAttributes
@@ -209,9 +218,22 @@ view mode s =
 
         { path, isLeaf, isRoot } =
             mode.position
+
+        headerCount =
+            Maybe.map (\_-> 0) s.body
+                |> Maybe.withDefault 1
+
+        ownWidthAsVars =
+            (\( col, scr ) -> List.map Layout.toProperty [ ( "ownColumns", col ), ( "ownScreens", scr ), ( "ownHeaders", headerCount ) ]) <|
+                case s.width of
+                    Columns c ->
+                        ( c, 0 )
+
+                    Screen ->
+                        ( 0, 1 )
     in
     Tuple.pair s.id <|
-        Html.li (ViewMode.toClass mode :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: additionalAttributes)
+        Html.li (ViewMode.toClass mode :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: ViewMode.toCssVariables mode :: css ownWidthAsVars :: additionalAttributes)
             [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
             , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
             , viewBody s.body

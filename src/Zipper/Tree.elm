@@ -26,7 +26,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , mapByPosition, mapFocusedLeaf, mapLeaves
+    , mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -692,6 +692,15 @@ mapFocusedLeaf =
 
 
 {-| -}
+mapRoots : (a -> a) -> Tree a -> Tree a
+mapRoots fu =
+    MixedNonempty.mapLast2
+        (MixedZipper.map fu (Branch.mapNode fu))
+        >> Result.extract
+            (MixedNonempty.mapHead (Zipper.map (Branch.mapNode fu)))
+
+
+{-| -}
 mapBranch : (Branch a -> Branch a) -> Tree a -> Tree a
 mapBranch =
     Zipper.mapFocus >> MixedNonempty.mapHead
@@ -1016,6 +1025,7 @@ zipPositions =
     zipDirections
         >> map (Tuple.mapFirst (\dirs -> Fold.directionsToRole dirs |> (\r -> { role = r, isRoot = False, isLeaf = False, path = dirs })))
         >> mapLeaves (Tuple.mapFirst (\pos -> { pos | isLeaf = True }))
+        >> mapRoots (Tuple.mapFirst (\pos -> { pos | isRoot = True }))
 
 
 {-| -}

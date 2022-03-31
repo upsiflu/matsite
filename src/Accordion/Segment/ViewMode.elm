@@ -2,7 +2,7 @@ module Accordion.Segment.ViewMode exposing
     ( ViewMode
     , path
     , toClass
-    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, zeroOffset
+    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, zeroOffset, viewWidth
     )
 
 {-| reflects a Segment's position within the Tree
@@ -136,12 +136,12 @@ viewWidth width =
 
 
 type alias Offset =
-    { screens : Int, columns : Int, units : Int }
+    { screens : Int, columns : Int, units : Int, headers : Int }
 
 
 zeroOffset : Offset
 zeroOffset =
-    { screens = 0, columns = 0, units = 0 }
+    { screens = 0, columns = 0, units = 0, headers = 0 }
 
 
 {-| -}
@@ -149,22 +149,26 @@ cumulativeOffset : List ViewMode -> Offset
 cumulativeOffset =
     let
         addOffset : Offset -> Offset -> Offset
-        addOffset { screens, columns, units } acc =
-            { screens = screens + acc.screens, columns = columns + acc.columns, units = units + acc.units }
+        addOffset { screens, columns, units, headers } acc =
+            { screens = screens + acc.screens, columns = columns + acc.columns, units = units + acc.units, headers = headers+acc.headers }
     in
     zeroOffset
         |> List.foldl (.offset >> addOffset)
 
 
 {-| -}
-addWidth : Width -> Offset -> Offset
-addWidth w acc =
-    case w of
-        Columns c ->
+addWidth : Bool -> Width -> Offset -> Offset
+addWidth hasBody w acc =
+    case (hasBody, w) of
+        (True, Columns c) ->
             { acc | columns = acc.columns + c, units = acc.units + 1 }
 
-        Screen ->
+        (True, Screen) ->
             { acc | screens = acc.screens + 1, units = acc.units + 1 }
+
+        (False, _) ->
+            { acc | headers = acc.headers + 1, units = acc.units + 1 }
+
 
 
 toString : ViewMode -> String
@@ -200,8 +204,9 @@ toCssVariables =
 
 {-| -}
 offsetToCssVariables : Offset -> List ( String, Int )
-offsetToCssVariables { screens, columns, units } =
+offsetToCssVariables { screens, columns, units, headers } =
     [ ( "screens", screens )
     , ( "columns", columns )
     , ( "units", units )
+    , ( "headers", headers )
     ]
