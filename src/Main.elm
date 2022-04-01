@@ -71,12 +71,20 @@ update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         LinkClicked (Browser.Internal url) ->
-            ( if url == model.url then
-                { model | accordion = Accordion.flip model.accordion }
+            let
+                ( newUrl, newAccordion ) =
+                    if url == model.url then
+                        Accordion.exit model.accordion |> (\acc -> ( "#" ++ Accordion.location acc, acc ))
+
+                    else
+                        ( Url.toString url, model.accordion )
+            in
+            ( { model | accordion = newAccordion }
+            , if Accordion.isRoot model.accordion && newUrl == "" then
+                Debug.log "is already root" Cmd.none
 
               else
-                model
-            , Nav.pushUrl model.key (Url.toString url)
+                Nav.pushUrl model.key <| Debug.log "Need to change Url!" newUrl
             )
 
         LinkClicked (Browser.External href) ->

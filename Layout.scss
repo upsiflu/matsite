@@ -1,0 +1,219 @@
+/* ================================================================================
+*                                      INVARIANT 
+*/
+
+:root {
+  /* Size of a click target: 7-10mm */
+  --unit: 3rem;
+
+  /* Width of a column: 55-70mm (rems shrink to fit 7 units into any screenwidth) */
+  --column: calc(var(--unit) * 7);
+
+  /* Width of a screen-wide segment */
+  --screen: 100vw;
+
+  /* Height of the `here` part of the screen */
+  --fit-height: calc(100vh - 9rem);
+
+  /* How much the segments can bleed behind each other */
+  --bleed: (calc(var(--unit) / 3));
+}
+
+.Accordion {
+  width: var(--width);
+  height: var(--height);
+
+  --height: calc(
+    var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) +
+      var(--south-height)
+  );
+
+  /* Width and height of East, West, North and South are layout-independent */
+  .north,
+  .south {
+    width: var(--column);
+    height: var(--unit);
+    left: calc(var(--west-width) + var(--nearWest-width));
+  }
+  .west,
+  .east {
+    width: var(--unit);
+    height: var(--here-height);
+    top: var(--hereY);
+  }
+
+  /* The extreme regions are tucked to the edges of the accordion */
+  .north {
+    top: calc(var(--units) * var(--unit));
+  }
+  .south {
+    top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
+  }
+  .west {
+    left: calc(var(--units) * var(--unit));
+  }
+  .east {
+    left: calc(var(--width) - var(--west-width) + var(--units) * var(--unit));
+  }
+
+  /* Cumulative measures */
+  --west-width: calc(var(--west-units) * var(--unit));
+  --east-width: calc(var(--east-units) * var(--unit));
+  --north-height: calc(var(--north-units) * var(--unit));
+  --south-height: calc(var(--south-units) * var(--unit));
+
+  /* Fallback defaults */
+  --here-width: var(--column);
+  --here-height: var(--fit-height);
+
+  /* Error indicator defaults */
+  --origin-left: 2rem;
+  --origin-top: 2rem;
+}
+
+/* ================================================================================
+*                               Depending on ORIENTATION 
+*/
+
+.🪗🀱 {
+  /* Only north and south stick out */
+  --height: calc(var(--north-height) + var(--fit-height) + var(--south-height));
+
+  /* In horizontal layouts, the whole fitHeight is dedicated to the center segment */
+  .center {
+    height: var(--fit-height);
+    left: calc(var(--west-width) + var(--nearWest-width));
+    top: var(--north-height);
+  }
+
+  /* nearWest and nearEast are horizontally displayed, but their position depends on whether there is a body */
+  /* nearWest and nearEast are default height when horizontally displayed */
+  .nearWest {
+    --origin-left: var(--west-width);
+  }
+  .nearEast {
+    --origin-left: calc(var(--width) - var(--east-width) - var(--nearEast-width));
+  }
+
+  /* Their widths may vary */
+  .nearWest,
+  .nearEast {
+    left: calc(
+      var(--origin-left) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) *
+        var(--screen)
+    );
+    width: calc(
+      var(--ownHeaders) * var(--unit) + var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen)
+    );
+    top: var(--north-height);
+  }
+
+  --nearWest-width: calc(
+    var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) *
+      var(--screen)
+  );
+  --nearEast-width: calc(
+    var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) *
+      var(--screen)
+  );
+  --center-width: var(--unit);
+}
+
+.🪗🁣 {
+  /* In vertical layouts, nearWest is atop of here, and nearEast is below it */
+  --height: calc(var(--north-height) + var(--fit-height) + var(--south-height));
+  --nearWest-width: 0rem;
+  --nearEast-width: 0rem;
+  --nearWest-height: calc(var(--nearWest-units) * var(--unit));
+  --nearEast-height: calc(var(--nearEast-units) * var(--unit));
+  --center-width: var(--here-width);
+
+  /* They are collapsed */
+  .nearWest,
+  .nearEast {
+    height: var(--unit);
+    left: var(--west-width);
+  }
+  .nearWest {
+    top: calc(var(--north-height) + var(--units) * var(--unit));
+  }
+  .nearEast {
+    top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
+  }
+}
+
+/* ================================================================================
+*              Depending on whether the focused segment has a body or not 
+*/
+
+.Accordion.focusHasBody {
+  /* The widths of focus (center) and aisles (nearWest, nearEast) are measured by body width */
+  --here-width: calc(var(--center-columns) * var(--column) + var(--center-screens) * var(--screen));
+  --center-height: var(--fit-height);
+  --center-width: var(--here-width);
+}
+
+.Accordion:not(.focusHasBody) {
+  /* The widths of focus (center) is one column, 
+    and the aisles (nearWest, nearEast) are one unit each */
+  --here-width: var(--column);
+  --center-height: var(--unit);
+  .peek {
+    width: 100vw;
+    height: var(--peek-height);
+    top: calc(var(--north-height) + var(--nearWest-height) + var(--center-height));
+    left: calc(var(--width) / 2 - 50vw);
+    overflow: hidden;
+  }
+}
+
+/* ================================================================================
+*                                 Depending on EXTENT 
+*/
+
+.Accordion.focusIsBackground {
+  /* South, North, West, East, nearWest and nearEast are within the screen */
+  --width: 100vw;
+  --height: 100vw;
+
+  /* Aisles are collapsed to their headers */
+  --nearWest-width: calc(var(--nearWest-units) * var(--unit));
+  --nearEast-width: calc(var(--nearEast-units) * var(--unit));
+
+  .nearWest,
+  .nearEast {
+    left: calc(var(--origin-left) + var(--units) * var(--unit));
+    width: var(--unit);
+  }
+}
+
+.Accordion:not(.focusIsBackground) {
+  /* South and North are outside the screen */
+  /* West, East, nearWest and nearEast are outside the center */
+  --width: calc(
+    var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width)
+  );
+  --peek-height: max(
+    calc(3 / 4 * var(--column)),
+    calc(
+      100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) -
+        var(--south-height)
+    )
+  );
+}
+
+/* ================================================================================
+*                              Nodes other than Segments 
+*/
+
+.screenBackground {
+  width: 100vw;
+  height: 100vh;
+  outline: 0.5px dashed rgba(44, 255, 99, 0.5);
+  outline-offset: -1.5rem;
+  pointer-events: none;
+  position: absolute;
+  left: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) / 2 - 50vw);
+  top: calc(var(--north-height) + var(--nearWest-height) + var(--here-height) / 2 - 50vh);
+  pointer-events: none;
+}

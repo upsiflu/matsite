@@ -1,12 +1,12 @@
 module Accordion exposing
     ( Accordion
     , site
-    , flip
+    , exit
     , find, root
     , location, focus
     , view
     , anarchiveX, vimeoX
-    , renderBranch
+    , isRoot, renderBranch
     )
 
 {-|
@@ -25,7 +25,7 @@ module Accordion exposing
 
 # Modify
 
-@docs flip
+@docs exit
 
 
 # Navigate
@@ -85,9 +85,21 @@ singleton tree =
 
 
 {-| -}
-flip : Accordion msg -> Accordion msg
-flip (Accordion config) =
-    Accordion { config | collapsed = not config.collapsed }
+exit : Accordion msg -> Accordion msg
+exit =
+    mapTree
+        (\tree ->
+            if Tree.isRoot tree then
+                tree
+
+            else
+                Tree.up tree
+        )
+
+
+isRoot : Accordion msg -> Bool
+isRoot (Accordion config) =
+    Tree.isRoot config.tree
 
 
 {-| -}
@@ -401,6 +413,10 @@ view (Accordion config) =
                             |> (++) (List.map Item renderedSegments)
                    )
 
+        overlays : List ( String, Html msg )
+        overlays =
+            [ ( "screenBackground", Html.div [ class "screenBackground" ] [] ) ]
+
         renderAccordion : List (Renderable msg) -> Html msg
         renderAccordion =
             List.foldl
@@ -419,7 +435,7 @@ view (Accordion config) =
                 >> (\( items, vars ) ->
                         Keyed.ul
                             (class "Accordion" :: classes :: vars)
-                            (List.sortBy Tuple.first items)
+                            (List.sortBy Tuple.first items ++ overlays)
                    )
     in
     config.tree

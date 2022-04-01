@@ -43,9 +43,6 @@
   background: #114477;
   transition: all 0.7s;
   /* widths */
-  --westWidth: calc(var(--u) * var(--west-columns));
-  --hereWidth: calc(var(--c) * var(--center-columns) + var(--center-screens) * 100vw);
-  --eastWidth: calc(var(--u) * var(--east-columns));
   --northSouthWidth: var(--column);
   width: var(--width);
 
@@ -180,32 +177,12 @@
 
   --northSouthX: calc(var(--westWidth) + var(--nearWestWidth));
 }
-.🪗🀱:not(.aisleHasBody) > .center {
-  top: var(--centerY);
-  left: var(--northSouthX);
-  height: var(--hereHeight);
-  width: var(--centerWidth);
-}
 
 .🪗🀱:not(.aisleHasBody) > .peek {
   top: var(--centerY);
   left: var(--peekX);
   height: var(--hereHeight);
   width: var(--peekWidth);
-}
-
-.🪗🀱:not(.aisleHasBody) > .nearWest {
-  bottom: var(--southY);
-  right: calc(var(--nearWestX) + var(--units) * var(--u));
-  width: var(--unit);
-  height: var(--hereHeight);
-}
-
-.🪗🀱:not(.aisleHasBody) > .nearEast {
-  top: var(--northY);
-  left: calc(var(--nearEastX) + var(--units) * var(--u));
-  width: var(--unit);
-  height: var(--hereHeight);
 }
 
 /*                                        VERTICAL:
@@ -236,32 +213,11 @@
   --northSouthX: var(--westWidth);
 }
 
-.🪗🁣:not(.focusHasBody) > .center {
-  top: var(--centerY);
-  left: var(--westWidth);
-  height: var(--centerHeight);
-  width: var(--hereWidth);
-}
-
 .🪗🁣:not(.focusHasBody) > .peek {
   top: var(--peekY);
   left: var(--westWidth);
   height: var(--peekHeight);
   width: var(--hereWidth);
-}
-
-.🪗🁣:not(.focusHasBody) > .nearWest {
-  right: var(--eastWidth);
-  bottom: calc(var(--nearWestY) + var(--units) * var(--u));
-  width: var(--hereWidth);
-  height: var(--unit);
-}
-
-.🪗🁣:not(.focusHasBody) > .nearEast {
-  left: var(--westWidth);
-  top: calc(var(--nearEastY) + var(--units) * var(--u));
-  width: var(--hereWidth);
-  height: var(--unit);
 }
 
 /* =======================================================================================
@@ -294,32 +250,12 @@
   /* center above the `here` (keep 1 column) */
   --northSouthX: calc(var(--centerX) + var(--centerWidth) / 2 - var(--column) / 2);
 }
-.🪗🀱.focusHasBody > .center {
-  top: var(--northHeight);
-  left: var(--centerX);
-  height: var(--centerHeight);
-  width: var(--centerWidth);
-}
 
 .🪗🀱.focusHasBody > .peek {
   top: var(--northHeight);
   left: var(--peekX);
   height: var(--centerHeight);
   width: var(--peekWidth);
-}
-
-.🪗🀱.focusHasBody > .nearWest {
-  bottom: var(--southHeight);
-  right: calc(var(--nearWestX) + var(--columns) * var(--c));
-  width: calc(var(--ownColumns) * var(--c));
-  height: var(--hereHeight);
-}
-
-.🪗🀱.focusHasBody > .nearEast {
-  top: var(--northHeight);
-  left: calc(var(--nearEastX) + var(--columns) * var(--c));
-  width: calc(var(--ownColumns) * var(--c));
-  height: var(--hereHeight);
 }
 
 /*                                        VERTICAL:
@@ -365,20 +301,6 @@
   height: var(--peekHeight);
   width: var(--hereWidth);
   overflow: hidden;
-}
-
-.🪗🁣.focusHasBody > .nearWest {
-  right: var(--eastWidth);
-  bottom: calc(var(--nearWestY) + var(--units) * var(--u));
-  width: var(--hereWidth);
-  height: var(--unit);
-}
-
-.🪗🁣.focusHasBody > .nearEast {
-  left: var(--westWidth);
-  top: calc(var(--nearEastY) + var(--units) * var(--u));
-  width: var(--hereWidth);
-  height: var(--unit);
 }
 
 /* ========================================================================================

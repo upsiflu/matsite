@@ -164,7 +164,7 @@ img {
 .🀱,
 .🁣 {
   position: absolute;
-  transition: opacity 0.2s, height 0.5, left 0.2s, top 0.7s;
+  transition: opacity 0.2s, height 0.5s, left 0.2s, top 0.7s;
 }
 .cache {
   visibility: hidden;
