@@ -2,7 +2,7 @@ module Accordion.Segment.ViewMode exposing
     ( ViewMode
     , path
     , toClass
-    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, zeroOffset, viewWidth
+    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
     )
 
 {-| reflects a Segment's position within the Tree
@@ -136,12 +136,12 @@ viewWidth width =
 
 
 type alias Offset =
-    { screens : Int, columns : Int, units : Int, headers : Int }
+    { screens : Int, columns : Int, units : Int, headers : Int, infoLines : Int }
 
 
 zeroOffset : Offset
 zeroOffset =
-    { screens = 0, columns = 0, units = 0, headers = 0 }
+    { screens = 0, columns = 0, units = 0, headers = 0, infoLines = 0 }
 
 
 {-| -}
@@ -149,26 +149,38 @@ cumulativeOffset : List ViewMode -> Offset
 cumulativeOffset =
     let
         addOffset : Offset -> Offset -> Offset
-        addOffset { screens, columns, units, headers } acc =
-            { screens = screens + acc.screens, columns = columns + acc.columns, units = units + acc.units, headers = headers+acc.headers }
+        addOffset { screens, columns, units, headers, infoLines } acc =
+            { screens = screens + acc.screens, columns = columns + acc.columns, units = units + acc.units, headers = headers + acc.headers, infoLines = infoLines + acc.infoLines }
     in
     zeroOffset
         |> List.foldl (.offset >> addOffset)
 
 
 {-| -}
-addWidth : Bool -> Width -> Offset -> Offset
-addWidth hasBody w acc =
-    case (hasBody, w) of
-        (True, Columns c) ->
-            { acc | columns = acc.columns + c, units = acc.units + 1 }
+addWidth : Bool -> { x | body : Maybe a, width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
+addWidth addInfoUnits segment acc =
+    let
+        infoLines =
+            if addInfoUnits then
+                case segment.info of
+                    Just ( count, _ ) ->
+                        count
 
-        (True, Screen) ->
-            { acc | screens = acc.screens + 1, units = acc.units + 1 }
+                    Nothing ->
+                        0
 
-        (False, _) ->
-            { acc | headers = acc.headers + 1, units = acc.units + 1 }
+            else
+                0
+    in
+    case ( segment.body /= Nothing, segment.width ) of
+        ( True, Columns c ) ->
+            { acc | columns = acc.columns + c, units = acc.units + 1 + infoLines, infoLines = acc.infoLines + infoLines }
 
+        ( True, Screen ) ->
+            { acc | screens = acc.screens + 1, units = acc.units + 1 + infoLines, infoLines = acc.infoLines + infoLines }
+
+        ( False, _ ) ->
+            { acc | headers = acc.headers + 1, units = acc.units + 1 + infoLines, infoLines = acc.infoLines + infoLines }
 
 
 toString : ViewMode -> String
@@ -204,9 +216,10 @@ toCssVariables =
 
 {-| -}
 offsetToCssVariables : Offset -> List ( String, Int )
-offsetToCssVariables { screens, columns, units, headers } =
+offsetToCssVariables { screens, columns, units, headers, infoLines } =
     [ ( "screens", screens )
     , ( "columns", columns )
     , ( "units", units )
     , ( "headers", headers )
+    , ( "infoLines", infoLines )
     ]

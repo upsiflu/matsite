@@ -5,7 +5,7 @@ module Accordion.Segment exposing
     , withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
     , decreaseColumnCount, increaseColumnCount
     , view, structureClass, orientationToString, hasBody
-    , withBackground
+    , decreaseInfoLines, increaseInfoLines, withBackground
     )
 
 {-| contain the immutable site content
@@ -53,7 +53,7 @@ type alias Segment msg =
     , id : String
     , isBackground : Bool
     , body : Maybe (Html msg)
-    , info : Maybe (Html msg)
+    , info : Maybe ( Int, Html msg )
     , orientation : Orientation
     , width : Width
     , additionalAttributes : List (Html.Attribute Never)
@@ -71,6 +71,7 @@ withOrientation : Orientation -> Segment msg -> Segment msg
 withOrientation orientation segment =
     { segment | orientation = orientation }
 
+
 {-| -}
 withBackground : Bool -> Segment msg -> Segment msg
 withBackground isBackground segment =
@@ -86,7 +87,12 @@ withBody body segment =
 {-| -}
 withInfo : Html msg -> Segment msg -> Segment msg
 withInfo info segment =
-    { segment | info = Just info }
+    case segment.info of
+        Nothing ->
+            { segment | info = Just ( 1, info ) }
+
+        Just ( infoLines, _ ) ->
+            { segment | info = Just ( infoLines, info ) }
 
 
 {-| -}
@@ -126,6 +132,26 @@ decreaseColumnCount segment =
 
                 Screen ->
                     Columns 1
+    }
+
+
+{-| -}
+increaseInfoLines : Segment msg -> Segment msg
+increaseInfoLines segment =
+    { segment
+        | info =
+            segment.info
+                |> Maybe.map (Tuple.mapFirst ((+) 1))
+    }
+
+
+{-| -}
+decreaseInfoLines : Segment msg -> Segment msg
+decreaseInfoLines segment =
+    { segment
+        | info =
+            segment.info
+                |> Maybe.map (Tuple.mapFirst ((+) -1))
     }
 
 
@@ -213,14 +239,14 @@ view mode s =
                 Nothing ->
                     Html.text ""
 
-                Just info ->
-                    Html.div [ class "info" ] [ info ]
+                Just ( _, inf ) ->
+                    Html.div [ class "info" ] [ inf ]
 
         { path, isLeaf, isRoot } =
             mode.position
 
         headerCount =
-            Maybe.map (\_-> 0) s.body
+            Maybe.map (\_ -> 0) s.body
                 |> Maybe.withDefault 1
 
         ownWidthAsVars =

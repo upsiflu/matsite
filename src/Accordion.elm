@@ -401,7 +401,7 @@ view (Accordion config) =
         renderRegion ( region, list ) =
             List.foldl
                 (\( position, segment ) ( offset, newList ) ->
-                    ( ViewSegment.addWidth (segment.body /= Nothing) segment.width offset
+                    ( ViewSegment.addWidth (position.path == [ Up ]) segment offset
                     , Segment.view { position = position, region = region, offset = offset } segment :: newList
                     )
                 )

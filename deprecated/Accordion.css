@@ -284,9 +284,6 @@
 
   --northSouthX: var(--westWidth);
 }
-.🪗🁣.focusIsRoot {
-  --height: calc(100vw - 8rem);
-}
 
 .🪗🁣.focusHasBody > .center {
   top: var(--centerY);

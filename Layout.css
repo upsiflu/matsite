@@ -1,7 +1,4 @@
 @charset "UTF-8";
-/* ================================================================================
-*                                      INVARIANT 
-*/
 :root {
   /* Size of a click target: 7-10mm */
   --unit: 3rem;
@@ -10,175 +7,151 @@
   /* Width of a screen-wide segment */
   --screen: 100vw;
   /* Height of the `here` part of the screen */
-  --fit-height: calc(100vh - 9rem);
+  --fit-height: calc(100vh - 6rem - var(--padding) * 2);
   /* How much the segments can bleed behind each other */
-  --bleed: (calc(var(--unit) / 3));
+  --bleed: calc(var(--unit) / 3);
+  /* spacing around top and bottom of the accordion */
+  --padding: 2rem;
 }
 
 .Accordion {
-  width: var(--width);
-  height: var(--height);
-  --height: calc(
-    var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) +
-      var(--south-height)
-  );
-  /* Width and height of East, West, North and South are layout-independent */
-  /* The extreme regions are tucked to the edges of the accordion */
   /* Cumulative measures */
   --west-width: calc(var(--west-units) * var(--unit));
   --east-width: calc(var(--east-units) * var(--unit));
   --north-height: calc(var(--north-units) * var(--unit));
   --south-height: calc(var(--south-units) * var(--unit));
-  /* Fallback defaults */
-  --here-width: var(--column);
-  --here-height: var(--fit-height);
-  /* Error indicator defaults */
-  --origin-left: 2rem;
-  --origin-top: 2rem;
+  /* Cross stroke-widths */
+  /* Total extents */
+  width: var(--width);
+  height: var(--height);
+  /* The extreme regions are tucked to the edges of the accordion */
 }
-.Accordion .north,
-.Accordion .south {
-  width: var(--column);
-  height: var(--unit);
-  left: calc(var(--west-width) + var(--nearWest-width));
-}
-.Accordion .west,
-.Accordion .east {
-  width: var(--unit);
-  height: var(--here-height);
-  top: var(--hereY);
-}
-.Accordion .north {
-  top: calc(var(--units) * var(--unit));
-}
-.Accordion .south {
-  top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
-}
-.Accordion .west {
-  left: calc(var(--units) * var(--unit));
-}
-.Accordion .east {
-  left: calc(var(--width) - var(--west-width) + var(--units) * var(--unit));
-}
-
-/* ================================================================================
-*                               Depending on ORIENTATION 
-*/
-.🪗🀱 {
-  /* Only north and south stick out */
-  --height: calc(var(--north-height) + var(--fit-height) + var(--south-height));
-  /* In horizontal layouts, the whole fitHeight is dedicated to the center segment */
-  /* nearWest and nearEast are horizontally displayed, but their position depends on whether there is a body */
-  /* nearWest and nearEast are default height when horizontally displayed */
-  /* Their widths may vary */
-  --nearWest-width: calc(
-    var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) *
-      var(--screen)
-  );
-  --nearEast-width: calc(
-    var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) *
-      var(--screen)
-  );
-  --center-width: var(--unit);
-}
-.🪗🀱 .center {
-  height: var(--fit-height);
-  left: calc(var(--west-width) + var(--nearWest-width));
-  top: var(--north-height);
-}
-.🪗🀱 .nearWest {
-  --origin-left: var(--west-width);
-}
-.🪗🀱 .nearEast {
-  --origin-left: calc(var(--width) - var(--east-width) - var(--nearEast-width));
-}
-.🪗🀱 .nearWest,
-.🪗🀱 .nearEast {
-  left: calc(var(--origin-left) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
-  width: calc(var(--ownHeaders) * var(--unit) + var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
-  top: var(--north-height);
-}
-
-.🪗🁣 {
-  /* In vertical layouts, nearWest is atop of here, and nearEast is below it */
-  --height: calc(var(--north-height) + var(--fit-height) + var(--south-height));
-  --nearWest-width: 0rem;
-  --nearEast-width: 0rem;
-  --nearWest-height: calc(var(--nearWest-units) * var(--unit));
-  --nearEast-height: calc(var(--nearEast-units) * var(--unit));
-  --center-width: var(--here-width);
-  /* They are collapsed */
-}
-.🪗🁣 .nearWest,
-.🪗🁣 .nearEast {
-  height: var(--unit);
-  left: var(--west-width);
-}
-.🪗🁣 .nearWest {
-  top: calc(var(--north-height) + var(--units) * var(--unit));
-}
-.🪗🁣 .nearEast {
-  top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
-}
-
-/* ================================================================================
-*              Depending on whether the focused segment has a body or not 
-*/
 .Accordion.focusHasBody {
-  /* The widths of focus (center) and aisles (nearWest, nearEast) are measured by body width */
   --here-width: calc(var(--center-columns) * var(--column) + var(--center-screens) * var(--screen));
-  --center-height: var(--fit-height);
-  --center-width: var(--here-width);
 }
-
 .Accordion:not(.focusHasBody) {
-  /* The widths of focus (center) is one column, 
-    and the aisles (nearWest, nearEast) are one unit each */
   --here-width: var(--column);
-  --center-height: var(--unit);
 }
-.Accordion:not(.focusHasBody) .peek {
-  width: 100vw;
-  height: var(--peek-height);
-  top: calc(var(--north-height) + var(--nearWest-height) + var(--center-height));
-  left: calc(var(--width) / 2 - 50vw);
-  overflow: hidden;
-}
-
-/* ================================================================================
-*                                 Depending on EXTENT 
-*/
 .Accordion.focusIsBackground {
-  /* South, North, West, East, nearWest and nearEast are within the screen */
+  --here-height: var(--column);
+  --x: calc(50vw - var(--column) / 2);
+  --y: calc(50vh - var(--column) / 2);
   --width: 100vw;
-  --height: 100vw;
+  --height: calc(100vh - var(--padding) * 2);
   /* Aisles are collapsed to their headers */
   --nearWest-width: calc(var(--nearWest-units) * var(--unit));
   --nearEast-width: calc(var(--nearEast-units) * var(--unit));
 }
-.Accordion.focusIsBackground .nearWest,
-.Accordion.focusIsBackground .nearEast {
-  left: calc(var(--origin-left) + var(--units) * var(--unit));
+.Accordion:not(.focusIsBackground) {
+  --here-height: var(--fit-height);
+}
+.Accordion:not(.focusIsBackground).🪗🁣 {
+  --x: calc(var(--west-width) + var(--here-width) / 2 - var(--column) / 2);
+  --y: calc(var(--north-height) + var(--nearWest-height));
+  --width: calc(var(--west-width) + var(--here-width) + var(--east-width));
+  --height: calc(var(--north-height) + var(--nearWest-height) + var(--here-height) + var(--nearEast-height) + var(--south-height));
+  /* Aisles stack headers */
+  --nearWest-height: calc(var(--nearWest-units) * var(--unit));
+  --nearEast-height: calc(var(--nearEast-units) * var(--unit));
+  /* Compress height in main menu-like situation */
+}
+.Accordion:not(.focusIsBackground).🪗🁣:not(.focusHasBody) {
+  --here-height: calc(100vh - var(--padding) * 2 - var(--north-height) - var(--nearEast-height) - var(--nearWest-height) - var(--south-height));
+}
+.Accordion:not(.focusIsBackground).🪗🀱 {
+  --x: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) / 2 - var(--column) / 2);
+  --y: calc(var(--north-height));
+  --width: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) + var(--nearEast-width) + var(--east-width));
+  --height: calc(var(--north-height) + var(--here-height) + var(--south-height));
+  /* Aisles expad */
+  --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
+  --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
+}
+.Accordion > .north {
+  left: var(--x);
+  top: calc(var(--units) * var(--unit));
+  width: var(--column);
+  height: var(--unit);
+}
+.Accordion > .south {
+  left: var(--x);
+  top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
+  width: var(--column);
+  height: var(--unit);
+}
+.Accordion > .west {
+  left: calc(var(--units) * var(--unit));
+  top: var(--y);
+  width: var(--unit);
+  height: var(--here-height);
+}
+.Accordion > .east {
+  left: calc(var(--width) - var(--west-width) + var(--units) * var(--unit));
+  top: var(--y);
+  width: var(--unit);
+  height: var(--here-height);
+}
+.Accordion.🪗🁣 > .nearWest {
+  left: var(--west-width);
+  top: calc(var(--north-height) + var(--units) * var(--unit));
+}
+.Accordion.🪗🀱 > .nearWest {
+  left: calc(var(--west-width) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+  top: var(--y);
+}
+.Accordion.🪗🁣 > .nearEast {
+  left: var(--west-width);
+  top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
+}
+.Accordion.🪗🀱 > .nearEast {
+  left: calc(var(--width) - var(--east-width) - var(--nearEast-width) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+  top: var(--y);
+}
+.Accordion > .center {
+  left: var(--west-width);
+}
+.Accordion.focusHasBody > .center {
+  top: var(--y);
+  height: var(--here-height);
+  width: var(--here-width);
+}
+.Accordion.focusHasBody.🪗🀱 > .center {
+  left: calc(var(--west-width) + var(--nearWest-width));
+}
+.Accordion:not(.focusHasBody) > .center.🁣 {
+  top: calc(var(--north-height) + var(--nearEast-height));
+  height: var(--unit);
+  width: var(--column);
+}
+.Accordion:not(.focusHasBody) > .center.🀱 {
+  top: calc(var(--north-height) + var(--nearEast-height));
+  height: var(--here-height);
   width: var(--unit);
 }
-
-.Accordion:not(.focusIsBackground) {
-  /* South and North are outside the screen */
-  /* West, East, nearWest and nearEast are outside the center */
-  --width: calc(
-    var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width)
-  );
-  --peek-height: max(
-    calc(3 / 4 * var(--column)),
-    calc(
-      100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) -
-        var(--south-height)
-    )
-  );
+.Accordion > .peek {
+  overflow: hidden;
+}
+.Accordion.focusHasBody > .peek {
+  left: calc(var(--x) + var(--column) / 2);
+  top: calc(var(--y) + var(--here-height) / 2);
+  width: 0px;
+  height: 0px;
+}
+.Accordion.🪗🁣:not(.focusHasBody) > .peek {
+  left: var(--west-width);
+  top: calc(var(--y) + var(--nearWest-height) + var(--column));
+  width: var(--here-width);
+  height: calc(var(--here-height) - var(--nearWest-height) - var(--nearEast-height) - var(--unit));
+}
+.Accordion.🪗🀱:not(.focusHasBody) > .peek {
+  left: calc(var(--west-width) + var(--nearWest-width) + var(--unit));
+  top: var(--y);
+  width: calc(var(--here-width) - var(--nearWest-width) - var(--nearEast-width) - var(--unit));
+  height: var(--here-height);
 }
 
 /* ================================================================================
-*                              Nodes other than Segments 
+*                                  Decorative Lines 
 */
 .screenBackground {
   width: 100vw;
@@ -187,7 +160,24 @@
   outline-offset: -1.5rem;
   pointer-events: none;
   position: absolute;
-  left: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) / 2 - 50vw);
-  top: calc(var(--north-height) + var(--nearWest-height) + var(--here-height) / 2 - 50vh);
+  left: calc(var(--west-width) + var(--nearWest-width, 0rem) + var(--here-width) / 2 - 50vw);
+  top: calc(var(--north-height) + var(--nearWest-height, 0rem) + var(--here-height) / 2 - 50vh);
   pointer-events: none;
+}
+
+.Accordion {
+  /* Mitigate list style */
+  list-style: none;
+  padding: 0;
+  /* Allow absolute positioning */
+  position: relative;
+  /* Centering */
+  margin: auto;
+  top: var(--padding);
+}
+
+/* Segment Layout */
+.body {
+  max-height: var(--fit-height);
+  overflow: auto;
 }/*# sourceMappingURL=Layout.css.map */

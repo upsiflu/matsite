@@ -7,11 +7,15 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 
+
+
 ---- Variables ----
 
 
-toProperty (key, value) =
+toProperty ( key, value ) =
     Css.property ("--" ++ key) (String.fromInt value)
+
+
 
 ---- Theming ----
 
@@ -101,18 +105,20 @@ pStyle =
     , padding2 zero rhythm.padding
     ]
 
+
 bleedingStyle =
     [ maxWidth (pct 100)
     ]
 
+
 aStyle =
     [ link
-                [ textDecoration inherit
-                , color theme.li
-                ]
-                , visited
-                [ color theme.li2
-                ]
+        [ textDecoration inherit
+        , color theme.li
+        ]
+    , visited
+        [ color theme.li2
+        ]
     ]
 
 
@@ -143,6 +149,7 @@ anchoredLabel t =
                 , visited
                     [ color theme.li2
                     ]
+
                 --, outline3 (px 1) dashed theme.li
                 , display block
                 , padding2 rhythm.verticalPadding rhythm.padding
@@ -227,10 +234,10 @@ header query id t =
                 , visited
                     [ color theme.li
                     ]
+
                 --, outline3 (px 1) dashed theme.li
                 , display block
                 , padding2 rhythm.verticalPadding rhythm.padding
-                , maxWidth rhythm.columnWidth
                 ]
             ]
 
