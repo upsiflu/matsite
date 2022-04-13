@@ -31,6 +31,7 @@
 }
 .Accordion:not(.focusHasBody) {
   --here-width: var(--column);
+  --center-height: calc(var(--unit) * var(--center-infoLines) + var(--unit));
 }
 .Accordion.focusIsBackground {
   --here-height: var(--column);
@@ -119,13 +120,13 @@
   left: calc(var(--west-width) + var(--nearWest-width));
 }
 .Accordion:not(.focusHasBody) > .center.🁣 {
-  top: calc(var(--north-height) + var(--nearEast-height));
+  top: calc(var(--north-height) + var(--nearWest-height));
   height: var(--unit);
   width: var(--column);
 }
 .Accordion:not(.focusHasBody) > .center.🀱 {
-  top: calc(var(--north-height) + var(--nearEast-height));
-  height: var(--here-height);
+  top: calc(var(--north-height) + var(--nearWest-height));
+  height: var(--center-height);
   width: var(--unit);
 }
 .Accordion > .peek {
@@ -139,9 +140,10 @@
 }
 .Accordion.🪗🁣:not(.focusHasBody) > .peek {
   left: var(--west-width);
-  top: calc(var(--y) + var(--nearWest-height) + var(--column));
+  top: calc(var(--y) + var(--center-height));
   width: var(--here-width);
-  height: calc(var(--here-height) - var(--nearWest-height) - var(--nearEast-height) - var(--unit));
+  height: calc(var(--here-height) - var(--center-height));
+  background: grey;
 }
 .Accordion.🪗🀱:not(.focusHasBody) > .peek {
   left: calc(var(--west-width) + var(--nearWest-width) + var(--unit));
@@ -163,6 +165,7 @@
   left: calc(var(--west-width) + var(--nearWest-width, 0rem) + var(--here-width) / 2 - 50vw);
   top: calc(var(--north-height) + var(--nearWest-height, 0rem) + var(--here-height) / 2 - 50vh);
   pointer-events: none;
+  background: #222;
 }
 
 .Accordion {

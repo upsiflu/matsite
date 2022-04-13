@@ -249,8 +249,12 @@ view mode s =
             Maybe.map (\_ -> 0) s.body
                 |> Maybe.withDefault 1
 
+        infoLineCount =
+            Maybe.map Tuple.first s.info
+                |> Maybe.withDefault 0
+
         ownWidthAsVars =
-            (\( col, scr ) -> List.map Layout.toProperty [ ( "ownColumns", col ), ( "ownScreens", scr ), ( "ownHeaders", headerCount ) ]) <|
+            (\( col, scr ) -> List.map Layout.toProperty [ ( "ownColumns", col ), ( "ownScreens", scr ), ( "ownHeaders", headerCount ), ( "ownInfoLines", infoLineCount ) ]) <|
                 case s.width of
                     Columns c ->
                         ( c, 0 )

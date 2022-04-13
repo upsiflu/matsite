@@ -139,9 +139,10 @@ img {
 .info {
   inline-size: 21rem;
 }
-.here .info,
+.F .info,
 .P .info {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .info {
@@ -151,6 +152,15 @@ img {
   padding-block: 1.125rem;
   color: silver;
   transition: opacity 0.5s;
+}
+
+.info .toc li {
+  display: inline-block;
+  margin-right: 1rem;
+}
+.info .toc {
+  margin-top: -1.125rem;
+  display: block;
 }
 
 /*
@@ -165,7 +175,8 @@ img {
 .🁣 {
   position: absolute;
   transition: opacity 0.2s, height 0.5s, left 0.2s, top 0.7s;
-  outline:1px solid yellow; outline-offset:-1.5px;
+  outline: 1px solid yellow;
+  outline-offset: -1.5px;
 }
 .cache {
   visibility: hidden;

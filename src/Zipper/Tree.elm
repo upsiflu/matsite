@@ -26,7 +26,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
+    , flatten, mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.

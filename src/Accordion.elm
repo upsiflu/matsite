@@ -60,6 +60,7 @@ import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Layout
+import Levenshtein
 import List.Extra as List
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
@@ -204,6 +205,14 @@ setSegment segment ((Accordion { tree }) as accordion) =
     mapTree (Tree.mapFocus (\_ -> { segment | id = uniqueId })) accordion
 
 
+createLink : Accordion msg -> String -> Html.Attribute msg
+createLink (Accordion { tree }) string =
+    Tree.flatten tree
+        |> List.minimumBy (.id >> Levenshtein.distance string)
+        |> Maybe.map (\segment -> href ("#" ++ segment.id))
+        |> Maybe.withDefault (href "#")
+
+
 mapSegment : (Segment msg -> Segment msg) -> Accordion msg -> Accordion msg
 mapSegment =
     Tree.mapFocus >> mapTree
@@ -213,27 +222,29 @@ mapSegment =
 site : Accordion msg
 site =
     let
+        artists : List (Accordion msg -> Accordion msg)
         artists =
             Artist.artists
                 |> List.map
-                    (\{ name, bio, photo } ->
-                        set Horizontal (name ++ "(photo)") (Just (Html.img [ class "artist", src photo ] []))
+                    (\({ name, photo, wide } as artist) ->
+                        set Horizontal (name ++ "(photo)") (Just (Artist.viewPhoto artist))
+                            >> (if wide then
+                                    mapSegment Segment.increaseColumnCount
+
+                                else
+                                    identity
+                               )
                             >> go Right
                             >> set Horizontal
                                 name
-                                (Just
-                                    (Html.div [ class "artist richtext" ]
-                                        [ Html.h2 [] [ Html.text name ]
-                                        , bio
-                                        ]
-                                    )
-                                )
+                                (Just (Artist.view artist))
                             >> mapSegment (Segment.withAdditionalAttributes [ class "fg" ])
                             >> go Right
                     )
 
+        doArtists : Accordion msg -> Accordion msg
         doArtists =
-            List.foldl (>>) identity artists
+            List.foldl (<<) identity artists
 
         set2 : Orientation -> String -> String -> Accordion msg -> Accordion msg
         set2 orientation cap1 cap2 =
@@ -286,15 +297,14 @@ site =
         |> mapSegment (Segment.withBackground True)
         |> go Right
         |> set Vertical "Labs" Nothing
-        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
+        |> mapSegment (Segment.withInfo <| Html.text "Biweekly on THursdays; 90mins")
         |> subtreeForLabs
         |> go Right
         |> set Vertical "Festivals" Nothing
-        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
+        |> mapSegment (Segment.withInfo <| Html.text "Text line - Festivals!")
         |> appendSubtree
         |> go Right
         |> set Vertical "Artists" Nothing
-        |> mapSegment (Segment.withInfo <| Html.text "Text line - biweekly 90mins")
         |> go Down
         |> doArtists
         |> go Left
@@ -302,9 +312,8 @@ site =
         |> go Left
         |> go Left
         |> go Left
-        |> go Left
-        |> go Left
         |> go Up
+        |> (\accordionWithArtists -> mapSegment (Segment.withInfo <| Artist.toc (createLink accordionWithArtists)) accordionWithArtists)
         |> go Right
         |> set Vertical "Traces" Nothing
         |> go Right
@@ -401,8 +410,12 @@ view (Accordion config) =
         renderRegion ( region, list ) =
             List.foldl
                 (\( position, segment ) ( offset, newList ) ->
-                    ( ViewSegment.addWidth (position.path == [ Up ]) segment offset
-                    , Segment.view { position = position, region = region, offset = offset } segment :: newList
+                    let
+                        mode =
+                            { position = position, region = region, offset = offset }
+                    in
+                    ( ViewSegment.addWidth mode segment offset
+                    , Segment.view mode segment :: newList
                     )
                 )
                 ( ViewSegment.zeroOffset, [] )
@@ -435,7 +448,7 @@ view (Accordion config) =
                 >> (\( items, vars ) ->
                         Keyed.ul
                             (class "Accordion" :: classes :: vars)
-                            (List.sortBy Tuple.first items ++ overlays)
+                            (List.sortBy Tuple.first overlays ++ items)
                    )
     in
     config.tree

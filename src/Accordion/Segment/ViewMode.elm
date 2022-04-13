@@ -157,11 +157,15 @@ cumulativeOffset =
 
 
 {-| -}
-addWidth : Bool -> { x | body : Maybe a, width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
-addWidth addInfoUnits segment acc =
+addWidth : ViewMode -> { x | body : Maybe a, width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
+addWidth mode segment acc =
     let
+        respectInfoLines : Bool
+        respectInfoLines =
+            path mode == [ Up ] || mode.region == Center || mode.region == Peek
+
         infoLines =
-            if addInfoUnits then
+            if respectInfoLines then
                 case segment.info of
                     Just ( count, _ ) ->
                         count

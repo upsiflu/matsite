@@ -29,10 +29,7 @@
   --northHeight: calc(var(--w) * var(--northCount));
   --hereHeight: calc(100vh - 4rem);
   --southHeight: calc(var(--w) * var(--southCount));
-  --height: max(
-    calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)),
-    100vh
-  );
+  --height: max(calc(var(--northHeight) + var(--hereHeight) + var(--southHeight)), 100vh);
   height: var(--height);
   /* y starting from the bottom edge */
   --northY: calc(var(--height) - var(--northHeight));
@@ -45,19 +42,14 @@
   --nearEastWidth: calc(var(--h) * var(--nearEastCount));
   --eastWidth: calc(var(--w) * var(--eastCount));
   --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
+    calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)),
     var(--northSouthWidth)
   );
   width: var(--width);
   position: relative;
   margin: auto;
   /* x starting from the right edge */
-  --northSouthX: calc(
-    var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2
-  );
+  --northSouthX: calc(var(--hereL) - var(--northSouthWidth) / 2 + var(--hereWidth) / 2);
   --westX: calc(var(--width) - var(--westWidth));
   --nearWestX: calc(var(--westX) - var(--nearWestWidth));
   --eastX: calc(var(--width) - var(--eastWidth));
@@ -82,10 +74,7 @@
   --nearWestWidth: calc(var(--w) * var(--nearWestCount));
   --nearEastWidth: calc(var(--w) * var(--nearEastCount));
   --width: max(
-    calc(
-      var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) +
-        var(--nearEastWidth) + var(--eastWidth)
-    ),
+    calc(var(--westWidth) + var(--nearWestWidth) + var(--hereWidth) + var(--nearEastWidth) + var(--eastWidth)),
     var(--northSouthWidth)
   );
   width: var(--width);
@@ -386,9 +375,7 @@ img {
 
 .opening {
   --accordionOffset: calc(50vw - (var(--width) / 2));
-  margin-left: calc(
-    0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth)
-  );
+  margin-left: calc(0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth));
   width: 100vw;
   position: relative;
   min-height: 0px;
@@ -414,8 +401,8 @@ img {
 }
 
 .segmentLabel {
-  text-shadow: 1px 1px 0px rgba(0, 0, 0, 1), -1px -1px 0px rgba(0, 0, 0, 1),
-    -1px 1px 0px rgba(0, 0, 0, 1), 1px -1px 0px rgba(0, 0, 0, 1);
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 1), -1px -1px 0px rgba(0, 0, 0, 1), -1px 1px 0px rgba(0, 0, 0, 1),
+    1px -1px 0px rgba(0, 0, 0, 1);
 }
 
 .artist .weblink {
@@ -433,7 +420,7 @@ img {
 }
 
 img.artist {
-  mix-blend-mode: overlay;
+  /* mix-blend-mode: screen; */
   position: relative;
   left: 0.5rem;
 }
@@ -445,8 +432,7 @@ img.artist {
 .F > a:hover,
 .A > a:hover {
   background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%),
-    linear-gradient(225deg, #8c8cff 25%, transparent 25%),
-    linear-gradient(45deg, #8c8cff 25%, transparent 25%),
+    linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%),
     linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
   background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
   background-size: 3rem 3rem;
@@ -456,8 +442,7 @@ img.artist {
 .F > a,
 .A > a {
   background-image: linear-gradient(135deg, transparent 25%, transparent 25%),
-    linear-gradient(225deg, transparent 25%, transparent 25%),
-    linear-gradient(45deg, transparent 25%, transparent 25%),
+    linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%),
     linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
   background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
   background-size: 1.5rem 1.5rem;
@@ -470,8 +455,7 @@ img.artist {
 .P > a:hover,
 a.weblink:hover {
   background-image: linear-gradient(135deg, #000 25%, transparent 25%),
-    linear-gradient(225deg, #000 25%, transparent 25%),
-    linear-gradient(45deg, #000 25%, transparent 25%),
+    linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%),
     linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
 }
 
@@ -479,11 +463,7 @@ a.weblink:hover {
 .B > a,
 .P > a {
   transition: all 0.2s;
-  background-image: linear-gradient(
-      135deg,
-      rgba(0, 0, 255, 0) 25%,
-      transparent 25%
-    ),
+  background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
