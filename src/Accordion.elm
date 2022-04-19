@@ -119,10 +119,10 @@ reset (Accordion config) =
 location : Accordion msg -> String
 location (Accordion config) =
     if Tree.isRoot config.tree then
-        ""
+        "" |> Debug.log ("Location: Root / " ++ .id (Tree.focus config.tree))
 
     else
-        config.tree |> Tree.up |> Tree.focus |> .id
+        config.tree |> Tree.up |> Tree.focus |> .id |> Debug.log ("Location: / " ++ .id (Tree.focus config.tree) ++ " \\")
 
 
 {-| -}
@@ -140,12 +140,16 @@ focus (Accordion config) =
 find : Url -> Accordion msg -> Accordion msg
 find { fragment } =
     let
+        debugLocation =
+            \accordion -> location accordion |> always accordion
+
         goToId =
             \str -> .id >> (==) str |> Find |> Tree.go
     in
-    case fragment of
+    case Debug.log "Accordion tries to find" fragment of
         Just parent ->
-            mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
+            debugLocation
+                >> mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
                 >> reset
 
         Nothing ->
@@ -163,17 +167,11 @@ go direction =
     Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
 
 
-set : Orientation -> String -> Maybe (Html msg) -> Accordion msg -> Accordion msg
+set : Orientation -> String -> Segment.Body msg -> Accordion msg -> Accordion msg
 set orientation caption body =
     Segment.singleton caption
         |> Segment.withOrientation orientation
-        |> (case body of
-                Nothing ->
-                    identity
-
-                Just b ->
-                    Segment.withBody b
-           )
+        |> Segment.withBody body
         |> setSegment
 
 
@@ -226,8 +224,8 @@ site =
         artists =
             Artist.artists
                 |> List.map
-                    (\({ name, photo, wide } as artist) ->
-                        set Horizontal (name ++ "(photo)") (Just (Artist.viewPhoto artist))
+                    (\({ name, wide } as artist) ->
+                        set Horizontal (name ++ "(photo)") (Artist.viewPhoto artist)
                             >> (if wide then
                                     mapSegment Segment.increaseColumnCount
 
@@ -237,7 +235,7 @@ site =
                             >> go Right
                             >> set Horizontal
                                 name
-                                (Just (Artist.view artist))
+                                (Artist.view artist)
                             >> mapSegment (Segment.withAdditionalAttributes [ class "fg" ])
                             >> go Right
                     )
@@ -259,16 +257,16 @@ site =
                 >> go Right
                 >> set2 Vertical "Radialsystem" "April 23 + 24"
                 >> go Down
-                >> set Horizontal "Info" Nothing
+                >> set Horizontal "Info" Segment.None
                 >> go Right
-                >> set Horizontal "Collage" (Just Festival.collage)
+                >> set Horizontal "Collage" Festival.collage
                 >> go Right
-                >> set Horizontal "Description" (Just Festival.description)
+                >> set Horizontal "Description" Festival.description
                 >> go Right
-                >> set Horizontal "Video" (Just Festival.video)
+                >> set Horizontal "Video" Festival.video
                 >> mapSegment Segment.increaseColumnCount
                 >> go Right
-                >> set Horizontal "Credits" Nothing
+                >> set Horizontal "Credits" Segment.None
                 >> go Left
                 >> go Left
                 >> go Up
@@ -277,34 +275,40 @@ site =
         subtreeForLabs =
             go Down
                 >> set2 Horizontal "Series 1" "2020"
+                >> appendSubtree
                 >> go Right
                 >> set2 Horizontal "Series 2" "2021"
+                >> appendSubtree
                 >> go Right
                 >> set2 Horizontal "Series 3" "2021"
+                >> appendSubtree
                 >> go Right
                 >> set2 Horizontal "Series 4" "2022"
+                >> appendSubtree
                 >> go Right
                 >> set2 Horizontal "Series 5" "2022"
+                >> appendSubtree
                 >> go Right
                 >> set2 Horizontal "Series 6" "2022"
+                >> appendSubtree
                 >> go Left
                 >> go Left
                 >> go Up
     in
     Tree.singleton Segment.empty
         |> singleton
-        |> set Vertical "Home" (Just Intro.intro)
+        |> set Vertical "Home" Intro.intro
         |> mapSegment (Segment.withBackground True)
         |> go Right
-        |> set Vertical "Labs" Nothing
-        |> mapSegment (Segment.withInfo <| Html.text "Biweekly on THursdays; 90mins")
+        |> set Vertical "Labs" Segment.None
+        |> mapSegment (Segment.withInfo <| Html.text "Biweekly on Thursdays; 90mins")
         |> subtreeForLabs
         |> go Right
-        |> set Vertical "Festivals" Nothing
+        |> set Vertical "Festivals" Segment.None
         |> mapSegment (Segment.withInfo <| Html.text "Text line - Festivals!")
         |> appendSubtree
         |> go Right
-        |> set Vertical "Artists" Nothing
+        |> set Vertical "Artists" Segment.None
         |> go Down
         |> doArtists
         |> go Left
@@ -315,24 +319,25 @@ site =
         |> go Up
         |> (\accordionWithArtists -> mapSegment (Segment.withInfo <| Artist.toc (createLink accordionWithArtists)) accordionWithArtists)
         |> go Right
-        |> set Vertical "Traces" Nothing
+        |> set Vertical "Traces" Segment.None
         |> go Right
-        |> set Vertical "Videos" Nothing
+        |> set Vertical "Videos" Segment.None
         |> go Right
-        |> set Vertical "Library" (Just anarchiveX)
+        |> set Vertical "Library" anarchiveX
         |> go Right
-        |> set Vertical "About" Nothing
+        |> set Vertical "About" Segment.None
         |> go Right
-        |> set Vertical "Newsletter" Nothing
+        |> set Vertical "Newsletter" Segment.None
         |> go Left
         |> go Left
         |> go Left
         |> go Left
         |> go Left
+        |> root
 
 
 {-| -}
-anarchiveX : Html msg
+anarchiveX : Segment.Body msg
 anarchiveX =
     Html.div [ class "anArchive" ]
         [ Html.iframe
@@ -343,6 +348,7 @@ anarchiveX =
             ]
             []
         ]
+        |> Segment.Content
 
 
 {-| -}
@@ -381,8 +387,8 @@ view (Accordion config) =
         classes =
             classList
                 [ ( "\u{1FA97}" ++ Segment.orientationToString (.orientation (Tree.focus config.tree)), True )
-                , ( "aisleHasBody", List.any (.body >> (/=) Nothing) (Tree.getAisleNodes config.tree |> Zipper.flat) )
-                , ( "focusHasBody", (.body >> (/=) Nothing) (Tree.focus config.tree) )
+                , ( "aisleHasBody", List.any (.body >> (/=) Segment.None) (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                , ( "focusHasBody", (.body >> (/=) Segment.None) (Tree.focus config.tree) )
                 , ( "focusIsRoot", Tree.isRoot config.tree )
                 , ( "focusIsBackground", .isBackground (Tree.focus config.tree) )
                 ]
@@ -391,9 +397,21 @@ view (Accordion config) =
         createRegions { up, left, x, here, nest, y, right, down } =
             let
                 ( peek, cache ) =
-                    List.uncons nest
-                        |> Maybe.map (Tuple.mapFirst List.singleton)
-                        |> Maybe.withDefault ( [], [] )
+                    let
+                        recurse toCache toTest =
+                            case toTest of
+                                [] ->
+                                    Result.Err ( [], toCache )
+
+                                (( _, seg ) as a) :: rest ->
+                                    if Segment.isIllustration seg then
+                                        Result.Ok ( [ a ], toCache )
+
+                                    else
+                                        recurse (a :: toCache) rest
+                    in
+                    recurse [] nest
+                        |> Result.withDefault ( [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ], nest )
             in
             [ ( North, List.reverse up )
             , ( West, List.reverse left )
@@ -414,7 +432,7 @@ view (Accordion config) =
                         mode =
                             { position = position, region = region, offset = offset }
                     in
-                    ( ViewSegment.addWidth mode segment offset
+                    ( ViewSegment.addWidth mode (Segment.hasBody segment) segment offset
                     , Segment.view mode segment :: newList
                     )
                 )
@@ -428,7 +446,9 @@ view (Accordion config) =
 
         overlays : List ( String, Html msg )
         overlays =
-            [ ( "screenBackground", Html.div [ class "screenBackground" ] [] ) ]
+            [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
+            , ( "hamburgerMenu", Layout.hamburgerMenu "#" )
+            ]
 
         renderAccordion : List (Renderable msg) -> Html msg
         renderAccordion =
