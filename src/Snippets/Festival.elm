@@ -1,7 +1,7 @@
 module Snippets.Festival exposing (..)
+
+import Accordion.Segment as Segment
 import Css exposing (..)
-
-
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (css)
 
@@ -20,6 +20,8 @@ description =
         , p []
             [ text "The workshop at Radialsystem deals specifically with the topic of “Foregrounding the background”; that is, with the invisible thresholds that mark power and privilege in the relationship between foreground and background. What is highlighted and what is pushed into the background is not accidental, but the result of historical processes, dominant pedagogical practices as well as systematic relations of power and oppression. With international artists and researchers based in Berlin, São Paulo and Dar es salaam/Tanzania, the workshop reverses this relationship: what happens when the background comes to life and makes its presence felt? What if the landscape becomes a part of us, just as we are a part of it? What if we centre the periphery?" ]
         ]
+        |> Segment.Content
+
 
 collage =
     img
@@ -27,10 +29,12 @@ collage =
         , Attr.alt "Collage"
         ]
         []
+        |> Segment.Illustration
+
 
 video =
-    div [Attr.class "bleeding" ]
-        [div
+    div [ Attr.class "bleeding" ]
+        [ div
             [ Attr.class "TextformatterVideoEmbed"
             , Attr.style "position" "relative"
             , Attr.style "padding-bottom" "56.25%"
@@ -57,4 +61,6 @@ video =
                 , Attr.attribute "dnt" "true"
                 ]
                 []
-            ]]
+            ]
+        ]
+        |> Segment.Illustration

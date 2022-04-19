@@ -1,5 +1,6 @@
 module Snippets.Artist exposing (..)
 
+import Accordion.Segment as Segment
 import Html.Styled as Html exposing (Html, a, div, p, text)
 import Html.Styled.Attributes exposing (..)
 import List.Extra as List
@@ -53,14 +54,15 @@ toc getLink =
         |> Html.span [ class "toc" ]
 
 
-view : Artist -> Html msg
+view : Artist -> Segment.Body msg
 view artist =
     Html.div [ class "artist richtext" ]
         [ Html.h2 [] [ Html.text artist.name ]
         , Html.map never artist.bio
         ]
+        |> Segment.Content
 
 
-viewPhoto : Artist -> Html msg
+viewPhoto : Artist -> Segment.Body msg
 viewPhoto artist =
-    Html.img [ class "artist", src artist.photo ] []
+    Html.img [ class "artist", src artist.photo ] [] |> Segment.Illustration

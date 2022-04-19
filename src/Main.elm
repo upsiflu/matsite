@@ -40,10 +40,10 @@ main =
                         }
 
                     initialUrl =
-                        { url | fragment = Just (Accordion.location initialAccordion) }
+                        { url | fragment = Just (Accordion.location initialAccordion |> Debug.log "Initial Model location is") }
                 in
                 initialModel
-                    |> (case url.fragment of
+                    |> (case Debug.log "Initialize with fragment" url.fragment of
                             Nothing ->
                                 update (LinkClicked (Browser.Internal initialUrl))
 
@@ -73,7 +73,7 @@ update msg model =
         LinkClicked (Browser.Internal url) ->
             let
                 ( newUrl, newAccordion ) =
-                    if url == model.url then
+                    if Debug.log "Internal url clicked" url == model.url then
                         Accordion.exit model.accordion |> (\acc -> ( "#" ++ Accordion.location acc, acc ))
 
                     else
@@ -93,7 +93,7 @@ update msg model =
         UrlChanged url ->
             let
                 newModel =
-                    if url /= model.url then
+                    if Debug.log "Url changed to" url /= Debug.log "Url was previously" model.url then
                         { model | accordion = Accordion.find url model.accordion, url = url }
 
                     else

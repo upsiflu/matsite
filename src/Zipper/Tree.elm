@@ -531,6 +531,7 @@ go w =
                             |> List.find (Tuple.second >> isHere)
                             |> Maybe.map Tuple.first
                             |> Maybe.withDefault []
+                            |> Debug.log "This is how to find the id for this fragment"
                 in
                 Fold.list (\d -> go (Walk d Wrap)) myDirections t
 
@@ -1057,15 +1058,18 @@ defoldWithDirections =
             -> (Branch.DirBranch a -> DirTree a -> DirTree a)
             -> Branch.DirBranch a
             -> (DirTree a -> DirTree a)
-        withDirection dir getLastNode fu newBranch oldTree =
+        withDirection dir getReferenceNode build newBranch oldTree =
             let
                 previousPath =
-                    getLastNode oldTree |> Tuple.first
+                    getReferenceNode oldTree |> Tuple.first
 
                 integratedBranch =
-                    (Tuple.mapFirst >> Branch.map) (\p -> p ++ previousPath ++ [ dir ]) newBranch
+                    newBranch
+                        |> (Tuple.mapFirst >> Branch.map)
+                            -- !!!!!!! --
+                            (\newPath -> dir :: previousPath ++ newPath)
             in
-            fu integratedBranch oldTree
+            build integratedBranch oldTree
     in
     { init = defold.init
     , branch = Branch.defoldWithDirections
@@ -1074,8 +1078,8 @@ defoldWithDirections =
         , rightwards = withDirection Right getRightmostRoot defold.grow.rightwards
         , upwards =
             \newNode oldTree ->
-                Up
-                    :: Tuple.first (getRoot oldTree)
+                Tuple.first (getRoot oldTree)
+                    ++ [ Up ]
                     |> (<|) Tuple.pair
                     |> (|>) newNode
                     |> (<|) defold.grow.upwards
@@ -1290,7 +1294,7 @@ view : ViewMode f a msg viewmodel aisle z zB trunk b c html -> Tree a -> html
 view viewMode =
     case viewMode of
         Uniform f config ->
-            fold f >> config.toHtml
+            fold defold >> fold f >> config.toHtml
 
 
 viewFolder :

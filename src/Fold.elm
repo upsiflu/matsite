@@ -4,7 +4,7 @@ module Fold exposing
     , Direction(..), viewDirection
     , Position, Role(..), viewPosition
     , list
-    , directionsToRole
+    , directionsToRole, fataMorganaPosition
     )
 
 {-| Helpers for folding over lists and Zippers
@@ -67,6 +67,11 @@ type alias Foldr f a aisle z zB trunk b e =
 
 type alias Position =
     { role : Role, isRoot : Bool, isLeaf : Bool, path : List Direction }
+
+
+fataMorganaPosition : Position
+fataMorganaPosition =
+    { role = Child, isRoot = False, isLeaf = False, path = [] }
 
 
 {-| indicates any `a`'s relation to the `Zipper`'s `focus`:

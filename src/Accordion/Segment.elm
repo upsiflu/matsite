@@ -2,10 +2,10 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
+    , withIllustration, withContent, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
     , decreaseColumnCount, increaseColumnCount
     , view, structureClass, orientationToString, hasBody
-    , decreaseInfoLines, increaseInfoLines, withBackground
+    , Body(..), decreaseInfoLines, defaultIllustration, increaseInfoLines, isIllustration, withBackground, withBody
     )
 
 {-| contain the immutable site content
@@ -23,7 +23,7 @@ _To render Segments differently based on their position in the tree, use
 
 # Map
 
-@docs withBody, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
+@docs withIllustration, withContent, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
 @docs decreaseColumnCount, increaseColumnCount
 
 
@@ -44,7 +44,7 @@ import Layout exposing (..)
 
 
 debugging =
-    False
+    True
 
 
 {-| -}
@@ -52,12 +52,39 @@ type alias Segment msg =
     { caption : List String
     , id : String
     , isBackground : Bool
-    , body : Maybe (Html msg)
+    , body : Body msg
     , info : Maybe ( Int, Html msg )
     , orientation : Orientation
     , width : Width
     , additionalAttributes : List (Html.Attribute Never)
     }
+
+
+{-| -}
+isIllustration : Segment msg -> Bool
+isIllustration { body } =
+    case body of
+        Illustration _ ->
+            True
+
+        _ ->
+            False
+
+
+{-| -}
+defaultIllustration : Segment msg
+defaultIllustration =
+    { empty
+        | id = "Moving-Across-Thresholds(default)"
+        , body = Illustration (Html.div [] [ Html.text "Default Illustration" ])
+    }
+
+
+{-| -}
+type Body msg
+    = Content (Html msg)
+    | Illustration (Html Never)
+    | None
 
 
 {-| -}
@@ -79,9 +106,21 @@ withBackground isBackground segment =
 
 
 {-| -}
-withBody : Html msg -> Segment msg -> Segment msg
+withBody : Body msg -> Segment msg -> Segment msg
 withBody body segment =
-    { segment | body = Just body }
+    { segment | body = body }
+
+
+{-| -}
+withIllustration : Html Never -> Segment msg -> Segment msg
+withIllustration body segment =
+    { segment | body = Illustration body }
+
+
+{-| -}
+withContent : Html msg -> Segment msg -> Segment msg
+withContent body segment =
+    { segment | body = Content body }
 
 
 {-| -}
@@ -104,7 +143,7 @@ withoutCaption segment =
 {-| -}
 withAdditionalCaption : String -> Segment msg -> Segment msg
 withAdditionalCaption string segment =
-    { segment | caption = string :: segment.caption }
+    { segment | caption = segment.caption ++ [ string ] }
 
 
 {-| -}
@@ -176,7 +215,7 @@ empty =
     { caption = []
     , id = "_"
     , isBackground = False
-    , body = Nothing
+    , body = None
     , orientation = Vertical
     , width = Columns 1
     , additionalAttributes = []
@@ -225,10 +264,18 @@ view mode s =
             else
                 identity
 
-        viewBody =
-            Maybe.withDefault (Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] [ Html.text "" ])
-                >> List.singleton
-                >> Html.div [ class "body" ]
+        viewBody body =
+            [ case body of
+                Illustration illu ->
+                    Html.map never illu
+
+                Content content ->
+                    content
+
+                None ->
+                    Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] []
+            ]
+                |> Html.div [ class "body" ]
 
         additionalAttributes =
             s.additionalAttributes
@@ -246,8 +293,12 @@ view mode s =
             mode.position
 
         headerCount =
-            Maybe.map (\_ -> 0) s.body
-                |> Maybe.withDefault 1
+            case s.body of
+                None ->
+                    1
+
+                _ ->
+                    0
 
         infoLineCount =
             Maybe.map Tuple.first s.info
@@ -264,7 +315,7 @@ view mode s =
     in
     Tuple.pair s.id <|
         Html.li (ViewMode.toClass mode :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: ViewMode.toCssVariables mode :: css ownWidthAsVars :: additionalAttributes)
-            [ viewCaption s.caption |> notIf (s.body /= Nothing && isLeaf && not isRoot)
+            [ viewCaption s.caption |> notIf (s.body /= None && isLeaf && not isRoot)
             , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
             , viewBody s.body
             , viewInfo
@@ -292,4 +343,4 @@ structureClass s =
 {-| -}
 hasBody : Segment a -> Bool
 hasBody =
-    .body >> (/=) Nothing
+    .body >> (/=) None

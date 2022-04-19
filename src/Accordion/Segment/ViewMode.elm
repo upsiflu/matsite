@@ -157,8 +157,8 @@ cumulativeOffset =
 
 
 {-| -}
-addWidth : ViewMode -> { x | body : Maybe a, width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
-addWidth mode segment acc =
+addWidth : ViewMode -> Bool -> { x | width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
+addWidth mode isExpanded segment acc =
     let
         respectInfoLines : Bool
         respectInfoLines =
@@ -176,7 +176,7 @@ addWidth mode segment acc =
             else
                 0
     in
-    case ( segment.body /= Nothing, segment.width ) of
+    case ( isExpanded, segment.width ) of
         ( True, Columns c ) ->
             { acc | columns = acc.columns + c, units = acc.units + 1 + infoLines, infoLines = acc.infoLines + infoLines }
 

@@ -416,9 +416,13 @@ defoldWithDirections =
             Direction
             -> (DirBranch a -> ( List Direction, a ))
             -> Map (DirBranch a -> DirBranch a -> DirBranch a)
-        insertDir dir getLastNode build newBranch oldBranch =
-            Tuple.mapFirst ((::) dir >> (++) (Tuple.first (getLastNode oldBranch)))
-                |> map
+        insertDir dir getReferenceNode build newBranch oldBranch =
+            -- 1. Prepend the direction and the reference node path to all paths in the new branch
+            (Tuple.mapFirst >> map)
+                (\directionsOfNewBranch ->
+                    -- !!!!!!! --
+                    dir :: Tuple.first (getReferenceNode oldBranch) ++ directionsOfNewBranch
+                )
                 |> (|>) newBranch
                 |> (<|) build
                 |> (|>) oldBranch
@@ -454,24 +458,6 @@ fold :
     -> Branch a
     -> b
 fold f (Branch br) =
-    let
-        composeFold : (b -> b -> b) -> Branch a -> (b -> b) -> (b -> b)
-        composeFold fu branch bb =
-            (fold f >> bb >> fu) branch
-
-        myZipFold : MixedZipper.Fold {} a (Branch a) (b -> b)
-        myZipFold =
-            { init = f.grow.downwards
-            , grow =
-                { leftwards = composeFold f.grow.leftwards
-                , rightwards = composeFold f.grow.rightwards
-                }
-            }
-
-        foldGeneration1 : MixedZipper a (Branch a) -> b -> b
-        foldGeneration1 =
-            MixedZipper.fold myZipFold
-    in
     MixedNonempty.fold
         { init = f.init
         , grow =
