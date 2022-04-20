@@ -412,31 +412,41 @@ type alias Map x =
 defoldWithDirections : Fold {} a (Branch ( List Direction, a ))
 defoldWithDirections =
     let
-        insertDir :
+        insertDirection :
             Direction
             -> (DirBranch a -> ( List Direction, a ))
             -> Map (DirBranch a -> DirBranch a -> DirBranch a)
-        insertDir dir getReferenceNode build newBranch oldBranch =
-            -- 1. Prepend the direction and the reference node path to all paths in the new branch
-            (Tuple.mapFirst >> map)
-                (\directionsOfNewBranch ->
-                    -- !!!!!!! --
-                    dir :: Tuple.first (getReferenceNode oldBranch) ++ directionsOfNewBranch
-                )
-                |> (|>) newBranch
+        insertDirection dir getReferenceNode build newBranch oldBranch =
+            let
+                accumulatedPath =
+                    Tuple.first (getReferenceNode oldBranch)
+
+                newPath =
+                    \subPath ->
+                        accumulatedPath
+                            ++ dir
+                            :: subPath
+            in
+            map (Tuple.mapFirst newPath) newBranch
                 |> (<|) build
                 |> (|>) oldBranch
     in
     { init = Tuple.pair [] >> defold.init
     , grow =
         { leftwards =
-            insertDir Left getLeftmostLeaf defold.grow.leftwards
+            insertDirection
+                Left
+                getLeftmostLeaf
+                defold.grow.leftwards
         , rightwards =
-            insertDir Right getRightmostLeaf defold.grow.rightwards
+            insertDirection
+                Right
+                getRightmostLeaf
+                defold.grow.rightwards
         , downwards =
             \newNode oldBranch ->
-                Down
-                    :: Tuple.first (leaf oldBranch)
+                Tuple.first (leaf oldBranch)
+                    ++ [ Down ]
                     |> (<|) Tuple.pair
                     |> (|>) newNode
                     |> (<|) defold.grow.downwards

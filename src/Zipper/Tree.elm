@@ -1060,16 +1060,18 @@ defoldWithDirections =
             -> (DirTree a -> DirTree a)
         withDirection dir getReferenceNode build newBranch oldTree =
             let
-                previousPath =
-                    getReferenceNode oldTree |> Tuple.first
+                accumulatedPath =
+                    Tuple.first (getReferenceNode oldTree)
 
-                integratedBranch =
-                    newBranch
-                        |> (Tuple.mapFirst >> Branch.map)
-                            -- !!!!!!! --
-                            (\newPath -> dir :: previousPath ++ newPath)
+                newPath =
+                    \subPath ->
+                        accumulatedPath
+                            ++ dir
+                            :: subPath
             in
-            build integratedBranch oldTree
+            Branch.map (Tuple.mapFirst newPath) newBranch
+                |> (<|) build
+                |> (|>) oldTree
     in
     { init = defold.init
     , branch = Branch.defoldWithDirections
