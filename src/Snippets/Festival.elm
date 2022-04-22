@@ -6,6 +6,23 @@ import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (css)
 
 
+type alias Festival =
+    { date : String
+    , title : String
+    , description : Segment.Body Never
+    , collage : String
+    , video : Maybe String
+    }
+
+
+festivals : List Festival
+festivals =
+    [
+        {
+
+        }
+    ]
+
 description =
     div
         [ Attr.class "richtext"
@@ -64,3 +81,9 @@ video =
             ]
         ]
         |> Segment.Illustration
+
+
+view : Festival -> List (Segment)
+view festival =
+    []
+    

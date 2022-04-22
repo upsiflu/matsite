@@ -74,10 +74,10 @@ update msg model =
             let
                 ( newUrl, newAccordion ) =
                     if Debug.log "Internal url clicked" url == model.url then
-                        Accordion.exit model.accordion |> (\acc -> ( "#" ++ Accordion.location acc, acc ))
+                        Accordion.exit model.accordion |> (\acc -> ( Accordion.location acc, acc ))
 
                     else
-                        ( Url.toString url, model.accordion )
+                        ( Url.toString url |> Debug.log "chosen new url", model.accordion )
             in
             ( { model | accordion = newAccordion }
             , if Accordion.isRoot model.accordion && newUrl == "" then

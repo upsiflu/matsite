@@ -1,6 +1,6 @@
 module Accordion exposing
     ( Accordion
-    , site
+    , Action(..)
     , exit
     , find, root
     , location, focus
@@ -76,11 +76,11 @@ import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..)
 
 {-| -}
 type Accordion msg
-    = Accordion { tree : Tree (Segment msg), collapsed : Bool }
+    = Accordion { tree : Tree (Segment), collapsed : Bool }
 
 
 {-| -}
-singleton : Tree (Segment msg) -> Accordion msg
+singleton : Tree (Segment) -> Accordion msg
 singleton tree =
     Accordion { tree = tree, collapsed = False }
 
@@ -122,7 +122,7 @@ location (Accordion config) =
         "" |> Debug.log ("Location: Root / " ++ .id (Tree.focus config.tree))
 
     else
-        config.tree |> Tree.up |> Tree.focus |> .id |> Debug.log ("Location: / " ++ .id (Tree.focus config.tree) ++ " \\")
+        config.tree |> Tree.up |> Tree.focus |> .id |> (++) "#" |> Debug.log ("Location: / " ++ .id (Tree.focus config.tree) ++ " \\")
 
 
 {-| -}
@@ -133,6 +133,76 @@ focus (Accordion config) =
 
     else
         config.tree |> Tree.focus |> .id
+
+
+
+
+
+
+---- A C T I O N S ----
+
+
+{-| Serialize the creation of an Accordion -}
+type Action
+    = Name String
+    | Modify Segment.Action
+    | Generate Generator
+    | Find String
+    | Go Direction
+
+
+
+type Generator
+    = Toc
+
+generate : Generator -> Accordion msg -> List Action
+generate g =
+    case g of
+        Toc ->
+            (\accordionWithArtists -> 
+                [ Modify Segment.withInfo <| Artist.toc (createLink accordionWithArtists) ] )
+
+
+create : List Action -> Accordion msg
+create =
+    let
+        applyAction : Action -> Accordion msg -> Accordion msg
+        applyAction a =
+            case a of
+                Name caption ->
+                    Segment.singleton caption
+                        |> setSegment
+
+                Modify segmentAction ->
+                    Segment.apply segmentAction
+                        |> mapSegment
+
+                Generate generator ->
+                    \input ->
+                        generate generator input
+                            |> List.foldl ( (>>) applyAction ) input
+
+                Find searchString ->
+                    closestId searchString
+                        |> goTo
+
+                Go direction ->
+                    go direction`
+
+
+        empty : Accordion msg 
+        empty =
+            Tree.singleton Segment.empty
+                |> singleton
+
+    in
+    List.foldl
+        ( (>>) applyAction)
+        empty
+
+
+---- Navigate -----
+
 
 
 {-| The Url encodes the parent of the focus!
@@ -147,17 +217,17 @@ find { fragment } =
             \str -> .id >> (==) str |> Find |> Tree.go
     in
     case Debug.log "Accordion tries to find" fragment of
+        Nothing ->
+            mapTree Tree.root
+
         Just parent ->
             debugLocation
                 >> mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
                 >> reset
 
-        Nothing ->
-            mapTree Tree.root
-
 
 {-| -}
-mapTree : (Tree (Segment msg) -> Tree (Segment msg)) -> Accordion msg -> Accordion msg
+mapTree : (Tree (Segment) -> Tree (Segment)) -> Accordion msg -> Accordion msg
 mapTree fu (Accordion config) =
     Accordion { config | tree = fu config.tree }
 
@@ -165,6 +235,9 @@ mapTree fu (Accordion config) =
 go : Direction -> Accordion msg -> Accordion msg
 go direction =
     Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
+
+goTo id =
+    .id >> (==) id |> Find |> Tree.go |> mapTree
 
 
 set : Orientation -> String -> Segment.Body msg -> Accordion msg -> Accordion msg
@@ -175,7 +248,7 @@ set orientation caption body =
         |> setSegment
 
 
-setSegment : Segment msg -> Accordion msg -> Accordion msg
+setSegment : Segment -> Accordion msg -> Accordion msg
 setSegment segment ((Accordion { tree }) as accordion) =
     let
         id =
@@ -204,16 +277,30 @@ setSegment segment ((Accordion { tree }) as accordion) =
 
 
 createLink : Accordion msg -> String -> Html.Attribute msg
-createLink (Accordion { tree }) string =
-    Tree.flatten tree
-        |> List.minimumBy (.id >> Levenshtein.distance string)
-        |> Maybe.map (\segment -> href ("#" ++ segment.id))
-        |> Maybe.withDefault (href "#")
+createLink accordion string =
+    closestId string accordion
+        |> \id -> href ("#" ++ id)
+
+closestId : String -> Accordion msg -> String
+closestId searchString =
+    tree
+        >> Tree.flatten
+        >> List.minimumBy (.id >> Levenshtein.distance searchString)
+        >> Maybe.map .id
+        >> Maybe.withDefault ""
 
 
-mapSegment : (Segment msg -> Segment msg) -> Accordion msg -> Accordion msg
+tree : Accordion msg -> Tree Segment
+tree (Accordion { tree }) = tree
+
+
+
+mapSegment : (Segment -> Segment) -> Accordion msg -> Accordion msg
 mapSegment =
     Tree.mapFocus >> mapTree
+
+        
+
 
 
 {-| -}
@@ -295,8 +382,7 @@ site =
                 >> go Left
                 >> go Up
     in
-    Tree.singleton Segment.empty
-        |> singleton
+    
         |> set Vertical "Home" Intro.intro
         |> mapSegment (Segment.withBackground True)
         |> go Right
@@ -393,31 +479,50 @@ view (Accordion config) =
                 , ( "focusIsBackground", .isBackground (Tree.focus config.tree) )
                 ]
 
+        findPeekConfig : Segment -> { targetId : String, hint : String }
+        findPeekConfig seg =
+            let
+                peekParent =
+                    .id
+                        >> (==) seg.id
+                        |> Find
+                        |> Tree.go
+                        |> (|>) config.tree
+                        |> Tree.up
+                        |> Tree.focus
+            in
+            { targetId = peekParent.id, hint = String.join ", " peekParent.caption }
+
         createRegions : C msg -> List ( Region, List (A msg) )
         createRegions { up, left, x, here, nest, y, right, down } =
             let
-                ( peek, cache ) =
+                ( perhapsPeek, cache ) =
                     let
-                        recurse toCache toTest =
+                        findPeek toCache toTest =
                             case toTest of
                                 [] ->
-                                    Result.Err ( [], toCache )
+                                    Result.Err ()
 
                                 (( _, seg ) as a) :: rest ->
                                     if Segment.isIllustration seg then
-                                        Result.Ok ( [ a ], toCache )
+                                        Result.Ok ( ( Peek (findPeekConfig seg), [ a ] ), toCache ++ rest )
 
                                     else
-                                        recurse (a :: toCache) rest
+                                        findPeek (a :: toCache) rest
                     in
-                    recurse [] nest
-                        |> Result.withDefault ( [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ], nest )
+                    findPeek [] nest
+                        |> Result.withDefault
+                            ( ( ViewSegment.defaultPeek
+                              , [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ]
+                              )
+                            , nest
+                            )
             in
             [ ( North, List.reverse up )
             , ( West, List.reverse left )
             , ( NearWest, List.reverse x )
             , ( Center, [ here ] )
-            , ( Peek, peek )
+            , perhapsPeek
             , ( Cache, cache )
             , ( NearEast, y )
             , ( East, right )
@@ -447,7 +552,8 @@ view (Accordion config) =
         overlays : List ( String, Html msg )
         overlays =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
-            , ( "hamburgerMenu", Layout.hamburgerMenu "#" )
+            , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
+            , ( "hamburgerMenu", Layout.hamburgerMenu "" )
             ]
 
         renderAccordion : List (Renderable msg) -> Html msg
@@ -484,7 +590,7 @@ view (Accordion config) =
 
 
 type alias A msg =
-    ( Position, Segment msg )
+    ( Position, Segment )
 
 
 type alias B msg =
@@ -496,19 +602,20 @@ type alias C msg =
 
 
 {-| assigns sub-nodes to `left`, `right` and `down` while nesting sub-trees, thus `nest` contains all collapsed DOM nodes
-in no particular order
+in no particular order.
+All sub-branches are carried over.
 -}
 renderBranch : Branch.Fold {} (A msg) (B msg)
 renderBranch =
+    let
+        {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
+        nest inner b =
+            ( inner, { b | nest = b.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
+    in
     { init =
         \(( position, segment ) as here) ->
             { orientation = segment.orientation, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
     , grow =
-        let
-            {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
-            nest inner b =
-                ( inner, { b | nest = b.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
-        in
         { downwards =
             \a b ->
                 { b | down = b.down ++ [ a ] }
@@ -541,7 +648,7 @@ renderBranch =
 renderTree : Tree.Fold {} (A msg) (B msg) (C msg)
 renderTree =
     let
-        {- copy the inner branches of the branch into the tree -}
+        {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
         nest : B msg -> C msg -> ( B msg, C msg )
         nest inner c =
             ( inner, { c | nest = c.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )

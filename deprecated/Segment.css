@@ -3,10 +3,13 @@
 }
 .multipleHeaders {
   overflow: hidden;
+  width: 100%;
 }
 
 .multipleHeaders > :first-child {
+  /* First header will always display full content and grow to fill headerspace */
   flex-shrink: 0;
+  flex-grow: 1;
 }
 
 .multipleHeaders > :not(:first-child) {
@@ -45,6 +48,7 @@
 
 .segmentLabel {
   --border-color: #0ff;
+  --border-color: transparent;
   text-shadow: 1px 1px 0px var(--border-color), -1px -1px 0px var(--border-color), -1px 1px 0px var(--border-color),
     1px -1px 0px var(--border-color);
 }
@@ -64,10 +68,11 @@
 }
 
 .richtext {
-  padding: calc(var(--bleed) * 1);
+  /* padding: calc(var(--bleed) * 1); */
 }
 
-img.artist {
+.A img.artist,
+.F img.artist {
   mix-blend-mode: overlay;
   position: relative;
   left: 1rem;
@@ -78,8 +83,8 @@ img.artist {
   z-index: 9;
 }
 
-.F > a:hover,
-.A > a:hover {
+.F > a.segmentLabel:hover,
+.A > a.segmentLabel:hover {
   background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%),
     linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%),
     linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
@@ -99,9 +104,9 @@ img.artist {
   transition: all 0.2s;
 }
 
-.Ba > a:hover,
-.B > a:hover,
-.P > a:hover,
+.Ba > a.segmentLabel:hover,
+.B > a.segmentLabel:hover,
+.P > a.segmentLabel:hover,
 a.weblink:hover {
   background-image: linear-gradient(135deg, #000 25%, transparent 25%),
     linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%),
@@ -132,16 +137,52 @@ img {
   white-space: nowrap;
 }
 .P {
-  background: rgba(255, 255, 255, 0.1);
+  /* background: #4f8; */
   overflow: visible;
 }
+.P a.segmentLabel:link,
+.P a.segmentLabel:visited,
+.B a.segmentLabel:link,
+.B a.segmentLabel:visited {
+  color: #fff;
+  background: white;
+  color: black;
+}
+.F a.segmentLabel:link,
+.F a.segmentLabel:visited {
+  color: #ddd;
+}
+.A a.segmentLabel:link,
+.A a.segmentLabel:visited,
+.F a.segmentLabel:link,
+.F a.segmentLabel:visited {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.A a.segmentLabel:hover,
+.Ba a.segmentLabel:hover,
+.F a.segmentLabel:hover,
+.P a.segmentLabel:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
 .A.🁣 {
   overflow-y: hidden;
 }
-
-.F {
-  background: rgba(255, 255, 255, 0.02);
+.Accordion > .peek > .body {
+  transition: transform 0.2s;
 }
+.peek:hover > .body {
+  transform: scale(1.05);
+}
+:not(.peek).illustration > .body {
+  overflow: visible;
+  width: calc(100% + 2 * var(--bleed));
+  margin-left: calc(0px - var(--bleed));
+  margin-top: calc(0px - var(--bleed));
+}
+
 .info {
   inline-size: 21rem;
 }
@@ -162,13 +203,24 @@ img {
 
 .info .toc li {
   display: inline-block;
-  margin-right: 1rem;
 }
 .info .toc {
-  margin-top: -1.125rem;
+  margin: -0.75rem;
+  margin-top: -1.5rem;
   display: block;
+  background: white;
+  padding: 0.5rem 1rem;
 }
-
+.P .info .toc li a {
+  background: white;
+  padding: 0.25rem;
+}
+.P .info .toc li a:hover {
+  text-decoration: underline;
+}
+.P .info .toc li a:active {
+  background: black;
+}
 /*
 *  ==============================================================
 *                  Segment widths and animations
@@ -180,14 +232,13 @@ img {
 .🀱,
 .🁣 {
   position: absolute;
-  transition: opacity 0.2s, height 0.5s, left 0.2s, top 0.7s;
-  outline: 1px dotted black;
+  transition: opacity 0.2s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
   outline-offset: -1.5px;
 }
 .cache {
   visibility: hidden;
   opacity: 0;
-  transition: height 0.3s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
+  transition: height 0.3s, width 0.3s, left 0.2s, top 0.7s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
 }
 .cache.🀱 {
   width: var(--unit);
@@ -254,4 +305,14 @@ img {
 .🁣.here.hasBody {
   width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
   height: var(--hereHeight);
+}
+
+.richtext > h2 {
+  font-family: space_monoregular;
+  color: white;
+  font-size: 1.2rem;
+  position: relative;
+  left: -2px;
+  padding-right: 0;
+  letter-spacing: -0.5px;
 }

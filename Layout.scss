@@ -12,7 +12,7 @@
     --fit-height: calc(100vh - 6rem - var(--padding) * 2);
 
     /* How much the segments can bleed behind each other */
-    --bleed: calc(var(--unit) / 3);
+    --bleed: calc(var(--unit) / 6);
 
     /* spacing around top and bottom of the accordion */
 
@@ -26,6 +26,7 @@
     --east-width: calc(var(--east-units) * var(--unit));
     --north-height: calc(var(--north-units) * var(--unit));
     --south-height: calc(var(--south-units) * var(--unit));
+    --info-height: calc(var(--north-infoLines) * var(--unit));
 
     /* Cross stroke-widths */
 
@@ -70,7 +71,7 @@
     }
 
     &:not(.focusIsBackground) {
-        --here-height: var(--fit-height);
+        --here-height: max(var(--column), calc(var(--fit-height) - var(--info-height)));
 
         &.🪗🁣 {
             --x: calc(var(--west-width) + var(--here-width) / 2 - var(--column) / 2);
@@ -80,8 +81,8 @@
 
 
             /* Compress height in main menu-like situation */
-            &:not(.focusHasBody) {
-                --here-height: calc(100vh - var(--padding) * 2 - var(--north-height) - var(--nearEast-height) - var(--nearWest-height) - var(--south-height));
+            &.focusIsRoot:not(.focusHasBody) {
+                --here-height: max(var(--column), calc(100vh - var(--padding) * 2 - var(--north-height) - var(--info-height) - var(--nearEast-height) - var(--nearWest-height) - var(--south-height)));
             }
         }
 
@@ -105,6 +106,7 @@
         top: calc(var(--units) * var(--unit));
         width: var(--column);
         height: var(--unit);
+        z-index: 4;
     }
 
     >.south {
@@ -112,6 +114,7 @@
         top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
         width: var(--column);
         height: var(--unit);
+        z-index: 4;
     }
 
     >.west {
@@ -121,6 +124,7 @@
         // height: var(--here-height);
         height: var(--column);
         writing-mode: vertical-rl;
+        z-index: 4;
     }
 
     >.east {
@@ -130,17 +134,20 @@
         // height: var(--here-height);
         height: var(--column);
         writing-mode: vertical-rl;
+        z-index: 4;
     }
 
 
     &.🪗🁣>.nearWest {
         left: var(--x);
         top: calc(var(--north-height) + var(--units) * var(--unit));
+        z-index: 3;
     }
 
     &.🪗🀱>.nearWest {
         left: calc(var(--west-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
         top: var(--y);
+        z-index: 3;
 
         &:not(.hasBody) {
             height: var(--column);
@@ -153,11 +160,14 @@
     &.🪗🁣>.nearEast {
         left: var(--x);
         top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
+
+        z-index: 3;
     }
 
     &.🪗🀱>.nearEast {
         left: calc(var(--width) - var(--east-width) - var(--nearEast-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
         top: var(--y);
+        z-index: 3;
 
         &:not(.hasBody) {
             height: var(--column);
@@ -183,10 +193,16 @@
 
     }
 
-    &.focusIsBackground>.🀱,
-    &.focusIsBackground>.🁣 {
+    &.focusIsBackground>.🀱:not(.center),
+    &.focusIsBackground>.🁣:not(.center) {
         z-index: 2;
     }
+
+    &.focusIsBackground>.🀱:not(.center):hover,
+    &.focusIsBackground>.🁣:not(.center):hover {
+        background: black;
+    }
+
 
 
     &.focusIsBackground>.center {
@@ -258,9 +274,16 @@
         width: var(--here-width);
         height: calc(var(--here-height) - var(--center-height));
         background: grey;
-        border-top: 1px dashed white;
+        border-top: 1px dashed black;
         border-bottom: 1px dashed white;
         box-sizing: border-box;
+
+        img {
+            object-fit: cover;
+            max-width: max(100vw, 100vh);
+            min-width: 100%;
+            height: 100%;
+        }
     }
 
     &.🪗🀱:not(.focusHasBody)>.peek {
@@ -268,9 +291,14 @@
         top: var(--y);
         width: calc(var(--column) - var(--unit));
         height: var(--here-height);
-        border-left: 1px dashed white;
         border-right: 1px dashed white;
         box-sizing: border-box;
+
+        img {
+            max-width: 100vw;
+            width: auto;
+            height: 100%;
+        }
     }
 }
 
@@ -284,14 +312,29 @@
 .screenBackground {
     width: 100vw;
     height: 100vh;
-    outline: 0.5px dashed rgba(44, 255, 99, 0.5);
+    outline: 1px dashed black;
     outline-offset: -1.5rem;
     pointer-events: none;
     position: absolute;
     left: calc(var(--west-width) + var(--nearWest-width, 0rem) + var(--here-width) / 2 - 50vw);
-    top: calc(var(--north-height) + var(--nearWest-height, 0rem) + var(--here-height) / 2 - 50vh);
+    top: calc(var(--north-height) + var(--nearWest-height, 0rem) - var(--info-height) / 2 + var(--here-height) / 2 - 50vh);
     pointer-events: none;
-    background: #222;
+    background: transparent;
+}
+
+.aisleBackground {
+    width: calc(var(--width) - var(--west-width) - var(--east-width));
+    height: calc(var(--height) - var(--north-height) - var(--south-height) + var(--info-height));
+    border: 0.5px solid grey;
+    border-left: 0.5px solid white;
+    border-top: 0.5px solid white;
+    box-sizing: border-box;
+    pointer-events: none;
+    position: absolute;
+    left: var(--west-width);
+    top: calc(var(--north-height) - var(--info-height));
+    background: transparent;
+    z-index: 5;
 }
 
 .focusIsBackground>.screenBackground {
@@ -316,7 +359,8 @@
 
 /* Segment Layout */
 .body {
-    max-height: var(--fit-height);
+    /* crop and provide scrollbars */
+    max-height: var(--here-height);
     overflow: auto;
 }
 
@@ -332,21 +376,20 @@
     top: 0;
     right: 0;
     color: white;
-    z-index: 3;
+    z-index: 4;
     border-radius: 100%;
     padding: .75rem;
     width: 3rem;
     height: 3rem;
     background: rgba(0, 0, 0, .5);
-    border: 0.5px dotted #4f8;
     transition: all .4s;
-    color: #4f8;
 }
 
 .hamburgerMenu:hover {
 
-    background: rgba(255, 255, 255, .2);
-    border: 1px dotted rgb(0, 26, 255);
+    background: white;
+    color: black;
+    border-top-right-radius: 0;
 }
 
 .focusIsRoot>.hamburgerMenu {

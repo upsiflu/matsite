@@ -1,5 +1,6 @@
 module Accordion.Segment exposing
     ( Segment
+    , Action(..), Info(..)
     , empty, singleton
     , Orientation(..)
     , withIllustration, withContent, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
@@ -42,13 +43,15 @@ import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
 
+import Time
+
 
 debugging =
-    True
+    False
 
 
 {-| -}
-type alias Segment msg =
+type alias Segment =
     { caption : List String
     , id : String
     , isBackground : Bool
@@ -56,12 +59,51 @@ type alias Segment msg =
     , info : Maybe ( Int, Html msg )
     , orientation : Orientation
     , width : Width
+    , fab : Maybe Fab
     , additionalAttributes : List (Html.Attribute Never)
     }
 
 
+type Action
+    = WithBody Body
+    | WithInfo Info
+    | AddInfoLine
+    | WithFab Fab
+    | AddColumn
+    | AddClass String
+    | AsBackground
+    | Horizontal
+
+type Info
+    = Byline String
+    | Toc (Html Never)
+
+type Fab
+    = Register {link : String, from : Time.Posix, until : Time.Posix}
+    | Subscribe {link : String}
+
+apply : Action -> Segment -> Segment
+apply a =
+    case a of
+        WithBody body -> withBody body
+        WithInfo (Byline byline) ->
+            withInfo (Html.text byline)
+        WithInfo (Toc toc) ->
+            withInfo toc
+        AddInfoLine -> increaseInfoLines
+        WithFab fab ->
+            \segment -> { segment | fab = Just fab }
+        AddColumn -> increaseColumnCount
+        AddClass className -> withAdditionalAttributes [class className]
+        AsBackground ->
+            withBackground True
+        Horizontal ->
+            withOrientation Horizontal
+
+            
+
 {-| -}
-isIllustration : Segment msg -> Bool
+isIllustration : Segment -> Bool
 isIllustration { body } =
     case body of
         Illustration _ ->
@@ -72,7 +114,7 @@ isIllustration { body } =
 
 
 {-| -}
-defaultIllustration : Segment msg
+defaultIllustration : Segment
 defaultIllustration =
     { empty
         | id = "Moving-Across-Thresholds(default)"
@@ -84,7 +126,7 @@ defaultIllustration =
 type Body msg
     = Content (Html msg)
     | Illustration (Html Never)
-    | None
+    | None -- None means there is a Peek, so here we can add some config for the peek!
 
 
 {-| -}
@@ -94,37 +136,37 @@ type Orientation
 
 
 {-| -}
-withOrientation : Orientation -> Segment msg -> Segment msg
+withOrientation : Orientation -> Segment -> Segment
 withOrientation orientation segment =
     { segment | orientation = orientation }
 
 
 {-| -}
-withBackground : Bool -> Segment msg -> Segment msg
+withBackground : Bool -> Segment -> Segment
 withBackground isBackground segment =
     { segment | isBackground = isBackground }
 
 
 {-| -}
-withBody : Body msg -> Segment msg -> Segment msg
+withBody : Body msg -> Segment -> Segment
 withBody body segment =
     { segment | body = body }
 
 
 {-| -}
-withIllustration : Html Never -> Segment msg -> Segment msg
+withIllustration : Html Never -> Segment -> Segment
 withIllustration body segment =
     { segment | body = Illustration body }
 
 
 {-| -}
-withContent : Html msg -> Segment msg -> Segment msg
+withContent : Html msg -> Segment -> Segment
 withContent body segment =
     { segment | body = Content body }
 
 
 {-| -}
-withInfo : Html msg -> Segment msg -> Segment msg
+withInfo : Html msg -> Segment -> Segment
 withInfo info segment =
     case segment.info of
         Nothing ->
@@ -135,19 +177,19 @@ withInfo info segment =
 
 
 {-| -}
-withoutCaption : Segment msg -> Segment msg
+withoutCaption : Segment -> Segment
 withoutCaption segment =
     { segment | caption = [] }
 
 
 {-| -}
-withAdditionalCaption : String -> Segment msg -> Segment msg
+withAdditionalCaption : String -> Segment -> Segment
 withAdditionalCaption string segment =
     { segment | caption = segment.caption ++ [ string ] }
 
 
 {-| -}
-increaseColumnCount : Segment msg -> Segment msg
+increaseColumnCount : Segment -> Segment
 increaseColumnCount segment =
     { segment
         | width =
@@ -161,7 +203,7 @@ increaseColumnCount segment =
 
 
 {-| -}
-decreaseColumnCount : Segment msg -> Segment msg
+decreaseColumnCount : Segment -> Segment
 decreaseColumnCount segment =
     { segment
         | width =
@@ -175,7 +217,7 @@ decreaseColumnCount segment =
 
 
 {-| -}
-increaseInfoLines : Segment msg -> Segment msg
+increaseInfoLines : Segment -> Segment
 increaseInfoLines segment =
     { segment
         | info =
@@ -185,7 +227,7 @@ increaseInfoLines segment =
 
 
 {-| -}
-decreaseInfoLines : Segment msg -> Segment msg
+decreaseInfoLines : Segment -> Segment
 decreaseInfoLines segment =
     { segment
         | info =
@@ -195,13 +237,13 @@ decreaseInfoLines segment =
 
 
 {-| -}
-withAdditionalAttributes : List (Html.Attribute Never) -> Segment msg -> Segment msg
+withAdditionalAttributes : List (Html.Attribute Never) -> Segment -> Segment
 withAdditionalAttributes cc segment =
     { segment | additionalAttributes = cc ++ segment.additionalAttributes }
 
 
 {-| -}
-singleton : String -> Segment msg
+singleton : String -> Segment
 singleton id =
     { empty
         | caption = [ id ]
@@ -210,7 +252,7 @@ singleton id =
 
 
 {-| -}
-empty : Segment msg
+empty : Segment
 empty =
     { caption = []
     , id = "_"
@@ -219,6 +261,7 @@ empty =
     , orientation = Vertical
     , width = Columns 1
     , additionalAttributes = []
+    , fab = Nothing
     , info = Nothing
     }
 
@@ -228,7 +271,7 @@ empty =
 
 
 {-| -}
-view : ViewMode -> Segment msg -> ( String, Html msg )
+view : ViewMode -> Segment -> ( String, Html msg )
 view mode s =
     let
         viewOrientation =
@@ -267,7 +310,12 @@ view mode s =
         viewBody body =
             [ case body of
                 Illustration illu ->
-                    Html.map never illu
+                    case mode.region of
+                        ViewMode.Peek config ->
+                            Html.a [ href ("#" ++ config.targetId), title config.hint ] [ Html.map never illu ]
+
+                        _ ->
+                            Html.map never illu
 
                 Content content ->
                     content
@@ -314,11 +362,20 @@ view mode s =
                         ( 0, 1 )
     in
     Tuple.pair s.id <|
-        Html.li (ViewMode.toClass mode :: class (orientationToString s.orientation) :: id segmentId :: structureClass s :: ViewMode.toCssVariables mode :: css ownWidthAsVars :: additionalAttributes)
+        Html.li
+            (id segmentId
+                :: ViewMode.toClass mode
+                :: class (orientationToString s.orientation)
+                :: class (bodyTypeToString s.body)
+                :: structureClass s
+                :: ViewMode.toCssVariables mode
+                :: css ownWidthAsVars
+                :: additionalAttributes
+            )
             [ viewCaption s.caption |> notIf (s.body /= None && isLeaf && not isRoot)
-            , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
             , viewBody s.body
             , viewInfo
+            , viewOverlay (List.map Fold.viewDirection path |> String.join "") |> notIf (not debugging)
             , viewOrientation |> notIf (not debugging)
             ]
 
@@ -335,7 +392,21 @@ orientationToString orientation =
 
 
 {-| -}
-structureClass : Segment msg -> Html.Attribute msg
+bodyTypeToString : Body msg -> String
+bodyTypeToString body =
+    case body of
+        Content _ ->
+            "content"
+
+        Illustration _ ->
+            "illustration"
+
+        None ->
+            "noBody"
+
+
+{-| -}
+structureClass : Segment -> Html.Attribute msg
 structureClass s =
     classList [ ( "noCaption", s.caption == [] ), ( "hasBody", hasBody s ) ]
 

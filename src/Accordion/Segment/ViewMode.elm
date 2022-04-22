@@ -2,7 +2,7 @@ module Accordion.Segment.ViewMode exposing
     ( ViewMode
     , path
     , toClass
-    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
+    , Offset, Region(..), defaultPeek, Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
     )
 
 {-| reflects a Segment's position within the Tree
@@ -73,9 +73,12 @@ type Region
     | NearWest
     | NearEast
     | Center
-    | Peek
+    | Peek { targetId : String, hint : String }
     | Cache
-
+{-| -}
+defaultPeek : Region
+defaultPeek =
+    Peek { targetId = "", hint = "" }
 
 {-| -}
 type Width
@@ -118,7 +121,7 @@ regionToString region =
         Center ->
             "center"
 
-        Peek ->
+        Peek _ ->
             "peek"
 
         Cache ->
@@ -156,13 +159,28 @@ cumulativeOffset =
         |> List.foldl (.offset >> addOffset)
 
 
+isPeek : ViewMode -> Bool
+isPeek { region } =
+    case region of
+        Peek _ ->
+            True
+
+        _ ->
+            False
+
+
+isParent : ViewMode -> Bool
+isParent =
+    path >> (==) [ Up ]
+
+
 {-| -}
 addWidth : ViewMode -> Bool -> { x | width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
 addWidth mode isExpanded segment acc =
     let
         respectInfoLines : Bool
         respectInfoLines =
-            path mode == [ Up ] || mode.region == Center || mode.region == Peek
+            mode.region == Center || isPeek mode || isParent mode
 
         infoLines =
             if respectInfoLines then

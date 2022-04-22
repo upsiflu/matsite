@@ -238,9 +238,13 @@
   /* background: rgba(0, 0, 255, .8) */
   /* outline       : 1px dashed blue;
   outline-offset: -1px; */
-  background: rgba(255, 255, 255, 0.1);
+  /* background: rgba(255, 255, 255, 0.1); */
   overflow: visible;
   outline: none;
+}
+.Accordion2 .P a:link,
+.Accordion2 .P a:visited {
+  color: white;
 }
 
 .Accordion2 .P H1 {
