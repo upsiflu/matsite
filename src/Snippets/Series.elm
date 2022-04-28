@@ -3,6 +3,7 @@ module Snippets.Series exposing (..)
 import Accordion exposing (Action(..))
 import Article as Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
 import Article.Fab as Fab
+import Directory
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -11,6 +12,7 @@ import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
+import Snippets.Artist as Artist
 import Snippets.Video as Video
 import Time exposing (Month(..))
 import Ui exposing (cacheImg)
@@ -47,7 +49,7 @@ collageToIllustration event =
                     )
                 |> Maybe.map
                     (\illustration ->
-                        Article.Illustration (div [] [ illustration ])
+                        Article.Illustration (\_ -> div [] [ illustration ])
                             |> Tuple.pair (event.title ++ " (Collage)")
                     )
 
@@ -56,6 +58,7 @@ collageToIllustration event =
                 |> Maybe.map
                     (\d ->
                         p [] [ text d ]
+                            |> always
                             |> Article.Content Nothing
                             |> Tuple.pair (event.title ++ " (Description)")
                     )
@@ -176,7 +179,18 @@ https://www.robertssempijja.com/""")
             "-"
             Nothing
             (Just <| Image 2 "https://lh6.googleusercontent.com/rc6wGHzTBev9pAnBUWaRYSN8gtx0qviUyBPNjseI9foLL5F2RxDYTINnTGd0wlPKhny-6cuzMY3xGWWgmtN3PWFDb0q5h_hgYAC5j5rT8pbxCaY0pBEDsWIuiLZAg3gukA44xLQed86zeifYAwU")
-        , Event 21 Jul 22 "t.b.a. (Queering #6)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
+        , Event 21
+            Jul
+            22
+            "learning to love the microbiome"
+            (Just """Microbes are everywhere and we have a long, intense and sometimes symbiotic relationship with bacteria. At the same time we are only partially aware of our little companions. The diversity of microbes has come to our attention only with the development of microscope and DNA sequencing, but still the vast majority of them are unknown to humans.
+
+In this gathering, facilitated by filmmaker and gardener - Ella von der Haide, we explore how to become better hosts, vectors and habitats for bacteria. Together we can learn to use our senses in a more attentive way and be more conscious of our symbionts. Participants are invited to give their skin to microbes in a symbolic way by drawing temporary tattoos of enlarged microbes on themselves.""")
+            "Gather-town + bUm, Kreuzberg"
+            "Ella von der Haide"
+            "-"
+            Nothing
+            (Just <| Image 2 "https://lh3.googleusercontent.com/NhIWSaWHGSq0xZzW1yyG6n6uLDrWb_kPvsKHa4_F8Z31iWqZio-fYD-e0yVqO-gF7HLslUFWiZkBT0lAm3S3N4j-l0atmBRKj54uJM7G3QnsX8AY_1Uig7aHDYWQsLv4Pd9c1eCOMiSfV2p5E1Q")
         ]
     , Series 6
         "LOCALITY"
@@ -197,25 +211,34 @@ presets timezone =
             .events
         |> List.concatMap
             (\event ->
-                (article [ class "generic lab" ]
-                    [ h3 []
-                        [ Occurrence.view (Occurrence.Short timezone Minutes) (eventDate timezone event) ]
-                    , p []
-                        ([ b [] [ text "Facilitator " ]
-                         , a [ href (Layout.sanitise event.facilitator) ] [ text event.facilitator ]
-                         ]
-                            ++ (if event.companion /= "" then
-                                    [ br [] []
-                                    , b [] [ text "Creative Companion " ]
-                                    , a [ href (Layout.sanitise event.companion) ] [ text event.companion ]
-                                    ]
+                let
+                    closeArtist who dir =
+                        Directory.getClosestBy (String.length who // 4) who dir
+                            |> Maybe.map
+                                (\uuid -> a [ href uuid ] [ text ("☛ " ++ who) ])
+                            |> Maybe.withDefault (text who)
+                in
+                ((\dir ->
+                    article [ class "generic lab" ]
+                        [ h3 []
+                            [ Occurrence.view (Occurrence.Short timezone Minutes) (eventDate timezone event) ]
+                        , p []
+                            ([ b [] [ text "Facilitator " ]
+                             , closeArtist event.facilitator dir
+                             ]
+                                ++ (if event.companion /= "" then
+                                        [ br [] []
+                                        , b [] [ text "Creative Companion " ]
+                                        , closeArtist event.companion dir
+                                        ]
 
-                                else
-                                    []
-                               )
-                            ++ (Maybe.map (\c -> [ text (" (" ++ c ++ ")") ]) event.country |> Maybe.withDefault [])
-                        )
-                    ]
+                                    else
+                                        []
+                                   )
+                                ++ (Maybe.map (\c -> [ text (" (" ++ c ++ ")") ]) event.country |> Maybe.withDefault [])
+                            )
+                        ]
+                 )
                     |> Article.Content (Just event.title)
                     |> Tuple.pair (event.title ++ "-")
                 )
