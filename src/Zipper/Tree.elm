@@ -26,7 +26,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , flatten, mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
+    , flatten, insert, mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -420,6 +420,25 @@ type EdgeOperation a
     = Wrap
     | Insert (Branch a)
     | Fail (a -> a)
+
+
+insert : Direction -> a -> Tree a -> Tree a
+insert direction a =
+    case direction of
+        Left ->
+            insertLeft (Branch.singleton a)
+
+        Right ->
+            insertRight (Branch.singleton a)
+
+        Up ->
+            MixedNonempty.insert (MixedZipper.singleton a)
+
+        Down ->
+            MixedNonempty.mapHead (Zipper.mapFocus (Branch.cons (MixedZipper.singleton a)))
+
+        Here ->
+            identity
 
 
 {-|

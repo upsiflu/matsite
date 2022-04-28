@@ -1,12 +1,11 @@
 module Accordion exposing
     ( Accordion
-    , Action(..)
     , exit
     , find, root
     , location, focus
     , view
     , anarchiveX, vimeoX
-    , isRoot, renderBranch
+    , Action(..), Generator(..), create, isRoot, renderBranch
     )
 
 {-|
@@ -63,10 +62,8 @@ import Layout
 import Levenshtein
 import List.Extra as List
 import Snippets.Artist as Artist
-import Snippets.Festival as Festival
-import Snippets.Intro as Intro
-import Snippets.Lab as Lab
 import String exposing (left)
+import Time
 import Url exposing (Url)
 import Zipper exposing (Zipper)
 import Zipper.Branch as Branch exposing (Branch)
@@ -76,11 +73,11 @@ import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..)
 
 {-| -}
 type Accordion msg
-    = Accordion { tree : Tree (Segment), collapsed : Bool }
+    = Accordion { tree : Tree Segment, collapsed : Bool }
 
 
 {-| -}
-singleton : Tree (Segment) -> Accordion msg
+singleton : Tree Segment -> Accordion msg
 singleton tree =
     Accordion { tree = tree, collapsed = False }
 
@@ -136,31 +133,30 @@ focus (Accordion config) =
 
 
 
-
-
-
 ---- A C T I O N S ----
 
 
-{-| Serialize the creation of an Accordion -}
+{-| Serialize the creation of an Accordion
+-}
 type Action
     = Name String
     | Modify Segment.Action
     | Generate Generator
     | Find String
     | Go Direction
-
+    | Insert Direction
 
 
 type Generator
     = Toc
 
+
 generate : Generator -> Accordion msg -> List Action
 generate g =
     case g of
         Toc ->
-            (\accordionWithArtists -> 
-                [ Modify Segment.withInfo <| Artist.toc (createLink accordionWithArtists) ] )
+            \accordionWithArtists ->
+                [ Modify <| Segment.WithInfo <| Artist.toc (createLink accordionWithArtists) ]
 
 
 create : List Action -> Accordion msg
@@ -180,29 +176,28 @@ create =
                 Generate generator ->
                     \input ->
                         generate generator input
-                            |> List.foldl ( (>>) applyAction ) input
+                            |> List.foldl applyAction input
 
                 Find searchString ->
-                    closestId searchString
-                        |> goTo
+                    \input ->
+                        goTo (closestId searchString input) input
 
                 Go direction ->
-                    go direction`
+                    go direction
 
+                Insert direction ->
+                    insert direction
 
-        empty : Accordion msg 
+        empty : Accordion msg
         empty =
             Tree.singleton Segment.empty
                 |> singleton
-
     in
-    List.foldl
-        ( (>>) applyAction)
-        empty
+    List.foldl applyAction empty
+
 
 
 ---- Navigate -----
-
 
 
 {-| The Url encodes the parent of the focus!
@@ -214,7 +209,7 @@ find { fragment } =
             \accordion -> location accordion |> always accordion
 
         goToId =
-            \str -> .id >> (==) str |> Find |> Tree.go
+            \str -> .id >> (==) str |> Tree.Find |> Tree.go
     in
     case Debug.log "Accordion tries to find" fragment of
         Nothing ->
@@ -227,20 +222,27 @@ find { fragment } =
 
 
 {-| -}
-mapTree : (Tree (Segment) -> Tree (Segment)) -> Accordion msg -> Accordion msg
+mapTree : (Tree Segment -> Tree Segment) -> Accordion msg -> Accordion msg
 mapTree fu (Accordion config) =
     Accordion { config | tree = fu config.tree }
 
 
 go : Direction -> Accordion msg -> Accordion msg
 go direction =
-    Branch.singleton Segment.empty |> Insert |> Walk direction |> Tree.go |> mapTree
+    Branch.singleton Segment.empty |> Tree.Insert |> Walk direction |> Tree.go |> mapTree
 
+
+insert : Direction -> Accordion msg -> Accordion msg
+insert direction =
+    Tree.insert direction Segment.empty |> mapTree
+
+
+goTo : String -> Accordion msg -> Accordion msg
 goTo id =
-    .id >> (==) id |> Find |> Tree.go |> mapTree
+    .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
 
 
-set : Orientation -> String -> Segment.Body msg -> Accordion msg -> Accordion msg
+set : Orientation -> String -> Segment.Body -> Accordion msg -> Accordion msg
 set orientation caption body =
     Segment.singleton caption
         |> Segment.withOrientation orientation
@@ -276,154 +278,27 @@ setSegment segment ((Accordion { tree }) as accordion) =
     mapTree (Tree.mapFocus (\_ -> { segment | id = uniqueId })) accordion
 
 
-createLink : Accordion msg -> String -> Html.Attribute msg
+createLink : Accordion msg -> String -> Html.Attribute Never
 createLink accordion string =
     closestId string accordion
-        |> \id -> href ("#" ++ id)
+        |> (\id -> href ("#" ++ id))
+
 
 closestId : String -> Accordion msg -> String
-closestId searchString =
-    tree
-        >> Tree.flatten
-        >> List.minimumBy (.id >> Levenshtein.distance searchString)
-        >> Maybe.map .id
-        >> Maybe.withDefault ""
-
-
-tree : Accordion msg -> Tree Segment
-tree (Accordion { tree }) = tree
-
+closestId searchString (Accordion { tree }) =
+    Tree.flatten tree
+        |> List.minimumBy (.id >> Levenshtein.distance searchString)
+        |> Maybe.map .id
+        |> Maybe.withDefault ""
 
 
 mapSegment : (Segment -> Segment) -> Accordion msg -> Accordion msg
 mapSegment =
     Tree.mapFocus >> mapTree
 
-        
-
-
 
 {-| -}
-site : Accordion msg
-site =
-    let
-        artists : List (Accordion msg -> Accordion msg)
-        artists =
-            Artist.artists
-                |> List.map
-                    (\({ name, wide } as artist) ->
-                        set Horizontal (name ++ "(photo)") (Artist.viewPhoto artist)
-                            >> (if wide then
-                                    mapSegment Segment.increaseColumnCount
-
-                                else
-                                    identity
-                               )
-                            >> go Right
-                            >> set Horizontal
-                                name
-                                (Artist.view artist)
-                            >> mapSegment (Segment.withAdditionalAttributes [ class "fg" ])
-                            >> go Right
-                    )
-
-        doArtists : Accordion msg -> Accordion msg
-        doArtists =
-            List.foldl (<<) identity artists
-
-        set2 : Orientation -> String -> String -> Accordion msg -> Accordion msg
-        set2 orientation cap1 cap2 =
-            Segment.singleton cap1
-                |> Segment.withOrientation orientation
-                |> Segment.withAdditionalCaption cap2
-                |> setSegment
-
-        appendSubtree =
-            go Down
-                >> set2 Vertical "Perform[d]ance" "November 25-27"
-                >> go Right
-                >> set2 Vertical "Radialsystem" "April 23 + 24"
-                >> go Down
-                >> set Horizontal "Info" Segment.None
-                >> go Right
-                >> set Horizontal "Collage" Festival.collage
-                >> go Right
-                >> set Horizontal "Description" Festival.description
-                >> go Right
-                >> set Horizontal "Video" Festival.video
-                >> mapSegment Segment.increaseColumnCount
-                >> go Right
-                >> set Horizontal "Credits" Segment.None
-                >> go Left
-                >> go Left
-                >> go Up
-                >> go Up
-
-        subtreeForLabs =
-            go Down
-                >> set2 Horizontal "Series 1" "2020"
-                >> appendSubtree
-                >> go Right
-                >> set2 Horizontal "Series 2" "2021"
-                >> appendSubtree
-                >> go Right
-                >> set2 Horizontal "Series 3" "2021"
-                >> appendSubtree
-                >> go Right
-                >> set2 Horizontal "Series 4" "2022"
-                >> appendSubtree
-                >> go Right
-                >> set2 Horizontal "Series 5" "2022"
-                >> appendSubtree
-                >> go Right
-                >> set2 Horizontal "Series 6" "2022"
-                >> appendSubtree
-                >> go Left
-                >> go Left
-                >> go Up
-    in
-    
-        |> set Vertical "Home" Intro.intro
-        |> mapSegment (Segment.withBackground True)
-        |> go Right
-        |> set Vertical "Labs" Segment.None
-        |> mapSegment (Segment.withInfo <| Html.text "Biweekly on Thursdays; 90mins")
-        |> subtreeForLabs
-        |> go Right
-        |> set Vertical "Festivals" Segment.None
-        |> mapSegment (Segment.withInfo <| Html.text "Text line - Festivals!")
-        |> appendSubtree
-        |> go Right
-        |> set Vertical "Artists" Segment.None
-        |> go Down
-        |> doArtists
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Up
-        |> (\accordionWithArtists -> mapSegment (Segment.withInfo <| Artist.toc (createLink accordionWithArtists)) accordionWithArtists)
-        |> go Right
-        |> set Vertical "Traces" Segment.None
-        |> go Right
-        |> set Vertical "Videos" Segment.None
-        |> go Right
-        |> set Vertical "Library" anarchiveX
-        |> go Right
-        |> set Vertical "About" Segment.None
-        |> go Right
-        |> set Vertical "Newsletter" Segment.None
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> go Left
-        |> root
-
-
-{-| -}
-anarchiveX : Segment.Body msg
+anarchiveX : Segment.Body
 anarchiveX =
     Html.div [ class "anArchive" ]
         [ Html.iframe
@@ -435,6 +310,7 @@ anarchiveX =
             []
         ]
         |> Segment.Content
+        |> Segment.Preset
 
 
 {-| -}
@@ -465,16 +341,25 @@ type Renderable msg
     | Class String
 
 
+type alias ViewMode msg =
+    { zone : Maybe Time.Zone
+    , do : Action -> msg
+    }
+
+
 {-| -}
-view : Accordion msg -> Html msg
-view (Accordion config) =
+view : ViewMode msg -> Accordion msg -> Html msg
+view { zone, do } (Accordion config) =
     let
+        viewSegment =
+            Segment.edit { do = Modify >> do, insert = Insert >> do }
+
         classes : Html.Attribute msg
         classes =
             classList
                 [ ( "\u{1FA97}" ++ Segment.orientationToString (.orientation (Tree.focus config.tree)), True )
-                , ( "aisleHasBody", List.any (.body >> (/=) Segment.None) (Tree.getAisleNodes config.tree |> Zipper.flat) )
-                , ( "focusHasBody", (.body >> (/=) Segment.None) (Tree.focus config.tree) )
+                , ( "aisleHasBody", List.any Segment.hasBody (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                , ( "focusHasBody", Segment.hasBody (Tree.focus config.tree) )
                 , ( "focusIsRoot", Tree.isRoot config.tree )
                 , ( "focusIsBackground", .isBackground (Tree.focus config.tree) )
                 ]
@@ -485,7 +370,7 @@ view (Accordion config) =
                 peekParent =
                     .id
                         >> (==) seg.id
-                        |> Find
+                        |> Tree.Find
                         |> Tree.go
                         |> (|>) config.tree
                         |> Tree.up
@@ -493,7 +378,7 @@ view (Accordion config) =
             in
             { targetId = peekParent.id, hint = String.join ", " peekParent.caption }
 
-        createRegions : C msg -> List ( Region, List (A msg) )
+        createRegions : C -> List ( Region, List A )
         createRegions { up, left, x, here, nest, y, right, down } =
             let
                 ( perhapsPeek, cache ) =
@@ -529,16 +414,16 @@ view (Accordion config) =
             , ( South, down )
             ]
 
-        renderRegion : ( Region, List (A msg) ) -> List (Renderable msg)
+        renderRegion : ( Region, List A ) -> List (Renderable msg)
         renderRegion ( region, list ) =
             List.foldl
                 (\( position, segment ) ( offset, newList ) ->
                     let
                         mode =
-                            { position = position, region = region, offset = offset }
+                            { zone = zone, position = position, region = region, offset = offset }
                     in
                     ( ViewSegment.addWidth mode (Segment.hasBody segment) segment offset
-                    , Segment.view mode segment :: newList
+                    , viewSegment mode segment :: newList
                     )
                 )
                 ( ViewSegment.zeroOffset, [] )
@@ -589,23 +474,23 @@ view (Accordion config) =
             )
 
 
-type alias A msg =
+type alias A =
     ( Position, Segment )
 
 
-type alias B msg =
-    { orientation : Orientation, role : Role, here : A msg, nest : List (A msg), left : List (A msg), right : List (A msg), down : List (A msg) }
+type alias B =
+    { orientation : Orientation, role : Role, here : A, nest : List A, left : List A, right : List A, down : List A }
 
 
-type alias C msg =
-    { up : List (A msg), left : List (A msg), x : List (A msg), here : A msg, nest : List (A msg), y : List (A msg), right : List (A msg), down : List (A msg) }
+type alias C =
+    { up : List A, left : List A, x : List A, here : A, nest : List A, y : List A, right : List A, down : List A }
 
 
 {-| assigns sub-nodes to `left`, `right` and `down` while nesting sub-trees, thus `nest` contains all collapsed DOM nodes
 in no particular order.
 All sub-branches are carried over.
 -}
-renderBranch : Branch.Fold {} (A msg) (B msg)
+renderBranch : Branch.Fold {} A B
 renderBranch =
     let
         {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
@@ -645,11 +530,11 @@ renderBranch =
     }
 
 
-renderTree : Tree.Fold {} (A msg) (B msg) (C msg)
+renderTree : Tree.Fold {} A B C
 renderTree =
     let
         {- Keep the sub-trees around in the DOM, even if they don't appear in any region, to allow for smooth transitions -}
-        nest : B msg -> C msg -> ( B msg, C msg )
+        nest : B -> C -> ( B, C )
         nest inner c =
             ( inner, { c | nest = c.nest ++ inner.left ++ inner.down ++ inner.right ++ inner.nest } )
     in

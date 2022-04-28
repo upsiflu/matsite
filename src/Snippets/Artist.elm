@@ -45,7 +45,7 @@ artists =
         |> List.sortBy (.name >> String.split " " >> List.last >> Maybe.withDefault "z")
 
 
-toc : (String -> Html.Attribute msg) -> Segment.Info
+toc : (String -> Html.Attribute Never) -> Segment.Info
 toc generateLink =
     artists
         |> List.map .name
@@ -62,8 +62,11 @@ view artist =
         , Html.map never artist.bio
         ]
         |> Segment.Content
+        |> Segment.Preset
 
 
 viewPhoto : Artist -> Segment.Body
 viewPhoto artist =
-    Html.img [ class "artist", src artist.photo ] [] |> Segment.Illustration
+    Html.img [ class "artist", src artist.photo ] []
+        |> Segment.Illustration
+        |> Segment.Preset

@@ -2,7 +2,7 @@ module Accordion.Segment.ViewMode exposing
     ( ViewMode
     , path
     , toClass
-    , Offset, Region(..), defaultPeek, Width(..), addWidth, cumulativeOffset, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
+    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, defaultPeek, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
     )
 
 {-| reflects a Segment's position within the Tree
@@ -57,11 +57,12 @@ import Html.Styled as Html
 import Html.Styled.Attributes exposing (class, css)
 import Layout
 import List.Extra as List
+import Time
 
 
 {-| -}
 type alias ViewMode =
-    { position : Position, region : Region, offset : Offset }
+    { zone : Maybe Time.Zone, position : Position, region : Region, offset : Offset }
 
 
 {-| -}
@@ -75,10 +76,13 @@ type Region
     | Center
     | Peek { targetId : String, hint : String }
     | Cache
+
+
 {-| -}
 defaultPeek : Region
 defaultPeek =
     Peek { targetId = "", hint = "" }
+
 
 {-| -}
 type Width

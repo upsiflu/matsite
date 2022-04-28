@@ -189,6 +189,9 @@
     max-height: 100vh;
   }
 }
+.Accordion:not(.focusIsBackground) > .center {
+  z-index: 8;
+}
 .Accordion:not(.focusHasBody) > .center.🁣 {
   top: calc(var(--north-height) + var(--nearWest-height));
   height: var(--unit);

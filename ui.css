@@ -1,0 +1,57 @@
+.overlay button {
+  width: var(--unit);
+  height: var(--unit);
+  border-radius: 50%;
+  margin: calc(0px - var(--unit) / 2);
+  border: 3px dotted red;
+  box-sizing: border-box;
+  font-size: 1rem;
+  color: red;
+  transition: all 0.2s;
+  background: rgba(0, 0, 0, 0.1);
+  mix-blend-mode: overlay;
+}
+.overlay button:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.9);
+  cursor: cell;
+}
+
+.sheet {
+  position: fixed;
+  width: var(--column);
+  left: 50vw;
+  bottom: 0;
+  margin-left: calc(0px - var(--column) / 2);
+  background: black;
+  outline: 3px solid red;
+  outline-offset: 1px;
+  padding-bottom: 1rem;
+}
+.sheet .pick {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  border: none;
+}
+.sheet .pick > label {
+  flex-grow: 1;
+  text-align: center;
+  position: relative;
+}
+.sheet .pick > label > span {
+  display: block;
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transition: all 0.5s;
+}
+.sheet .pick > label > input:checked ~ span {
+  background: red;
+}
+.sheet .pick > label:hover {
+  background: rgba(255, 0, 0, 0.5);
+}/*# sourceMappingURL=ui.css.map */

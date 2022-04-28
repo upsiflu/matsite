@@ -5,7 +5,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 
 
-intro : Segment.Body msg
+intro : Segment.Body
 intro =
     div [ attribute "class" "intro" ]
         [ div [ attribute "style" "padding:56.25% 0 0 0;position:relative;" ]
@@ -23,3 +23,4 @@ intro =
             ]
         ]
         |> Segment.Illustration
+        |> Segment.Preset

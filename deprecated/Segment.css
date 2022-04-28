@@ -124,7 +124,7 @@ a.weblink:hover {
 }
 img {
   transform-origin: center;
-  transform: translateZ(0.08px);
+  transform: translateZ(-0.08px);
 }
 .B > a {
   background: hsl(0, 0%, 10%);

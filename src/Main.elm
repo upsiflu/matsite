@@ -4,10 +4,13 @@ import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
 import Css exposing (..)
+import Data
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (class, css, href)
 import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
+import Task
+import Time
 import Url exposing (Url)
 
 
@@ -21,6 +24,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
+    , zone : Maybe Time.Zone
     }
 
 
@@ -31,12 +35,13 @@ main =
             \_ url key ->
                 let
                     initialAccordion =
-                        Accordion.site
+                        Data.initial
 
                     initialModel =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
+                        , zone = Nothing
                         }
 
                     initialUrl =
@@ -50,6 +55,7 @@ main =
                             Just _ ->
                                 update (UrlChanged url)
                        )
+                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Task.perform ZoneReceived Time.here ])
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -65,11 +71,20 @@ main =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | ZoneReceived Time.Zone
+    | ActionInvoked Accordion.Action
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
+        ActionInvoked action ->
+            ( model, Cmd.none )
+
+        -- Send action via port to js!
+        ZoneReceived zone ->
+            ( { model | zone = Just zone }, Cmd.none )
+
         LinkClicked (Browser.Internal url) ->
             let
                 ( newUrl, newAccordion ) =
@@ -115,7 +130,7 @@ view model =
 
         -- , Html.hr [] []
         , Html.div [ Attributes.class "overflow" ]
-            [ Accordion.view model.accordion ]
+            [ Accordion.view { zone = model.zone, do = ActionInvoked } model.accordion ]
 
         -- , Html.hr [] []
         -- , section
