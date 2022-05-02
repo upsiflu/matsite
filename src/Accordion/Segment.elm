@@ -2,10 +2,9 @@ module Accordion.Segment exposing
     ( Segment
     , empty, singleton
     , Orientation(..)
-    , withIllustration, withContent, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
-    , decreaseColumnCount, increaseColumnCount
+    , withoutCaption, withInfo
     , view, structureClass, orientationToString, hasBody
-    , Action(..), Body(..), Fab(..), Info(..), Template(..), apply, decreaseInfoLines, defaultIllustration, edit, increaseInfoLines, isIllustration, withBackground, withBody
+    , Action(..), BodyChoice(..), Info(..), Shape(..), Template(..), addClass, apply, decrementColumnCount, decrementInfoLines, defaultIllustration, edit, incrementColumnCount, incrementInfoLines, isIllustration, withBackground, withBody, withShape
     )
 
 {-| contain the immutable site content
@@ -33,6 +32,7 @@ _To render Segments differently based on their position in the tree, use
 
 -}
 
+import Accordion.Segment.Fab as Fab exposing (Fab(..))
 import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode, Width(..))
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
@@ -42,9 +42,8 @@ import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Layout exposing (..)
-import Occurrence exposing (Occurrence)
 import Time
-import View
+import Ui
 import Zipper
 
 
@@ -54,7 +53,9 @@ debugging =
 
 {-| -}
 type alias Segment =
-    { caption : List String
+    { caption : String
+    , heading : Maybe String
+    , showsDate : Bool
     , id : String
     , isBackground : Bool
     , body : Body
@@ -62,20 +63,34 @@ type alias Segment =
     , orientation : Orientation
     , width : Width
     , fab : Maybe Fab
-    , additionalAttributes : List (Html.Attribute Never)
+    , additionalClasses : List String
     }
 
 
 type Action
-    = WithBody Body
+    = WithBodyChoice BodyChoice
+    | WithTemplate Template
+    | WithHeading (Maybe String)
     | WithInfo Info
-    | AddInfoLine
     | WithFab Fab
-    | AddColumn
-    | RemoveColumn
+    | WithCaption String
+    | IncrementInfoLines
+    | DecrementInfoLines
+    | IncrementColumnCount
+    | DecrementColumnCount
     | AddClass String
-    | AsBackground Bool
-    | MakeHorizontal Bool
+    | RemoveClass String
+    | ShowsDate Bool
+    | WithShape Shape
+
+
+type Shape
+    = Oriented Orientation
+    | Background
+
+
+
+-- TOC needs to be generated on view so that we only need to store the unit token TOC on the database
 
 
 type Info
@@ -83,18 +98,23 @@ type Info
     | Toc (Html Never)
 
 
-type Fab
-    = Register { link : String, occurance : Occurrence }
-    | Subscribe { link : String }
-
-
 {-| This is akin to Msg, with the difference being that Action is serializable
 -}
 apply : Action -> Segment -> Segment
 apply a =
     case a of
-        WithBody body ->
-            withBody body
+        WithCaption c ->
+            withCaption c
+
+        WithHeading h ->
+            withHeading h
+
+        -- Content
+        WithTemplate t ->
+            withTemplate t
+
+        WithBodyChoice b ->
+            withBodyChoice b
 
         WithInfo (Byline byline) ->
             withInfo (Html.text byline)
@@ -102,40 +122,53 @@ apply a =
         WithInfo (Toc toc) ->
             withInfo toc
 
-        AddInfoLine ->
-            increaseInfoLines
-
         WithFab fab ->
             \segment -> { segment | fab = Just fab }
 
-        AddColumn ->
-            increaseColumnCount
+        -- Layout
+        IncrementInfoLines ->
+            incrementInfoLines
 
-        RemoveColumn ->
-            decreaseColumnCount
+        DecrementInfoLines ->
+            decrementInfoLines
+
+        IncrementColumnCount ->
+            incrementColumnCount
+
+        DecrementColumnCount ->
+            decrementColumnCount
 
         AddClass className ->
-            withAdditionalAttributes [ class className ]
+            addClass className
 
-        AsBackground bool ->
-            withBackground bool
+        RemoveClass className ->
+            removeClass className
 
-        MakeHorizontal bool ->
-            if bool then
-                withOrientation Horizontal
+        ShowsDate bool ->
+            showsDate bool
 
-            else
-                withOrientation Vertical
+        WithShape s ->
+            withShape s
+
+
+withCaption : String -> Segment -> Segment
+withCaption c s =
+    { s | caption = c }
+
+
+withHeading : Maybe String -> Segment -> Segment
+withHeading h s =
+    { s | heading = h }
 
 
 {-| -}
 isIllustration : Segment -> Bool
 isIllustration { body } =
     case body of
-        CustomIllustration _ ->
+        ( CustomIllustration, _ ) ->
             True
 
-        Preset (Illustration _) ->
+        ( Preset, Illustration _ ) ->
             True
 
         _ ->
@@ -150,21 +183,26 @@ defaultIllustration =
         , body =
             Html.div [] [ Html.text "Default Illustration" ]
                 |> Illustration
-                |> Preset
+                |> Tuple.pair Preset
     }
 
 
 {-| Choosing 'Preset' or 'None' will ignore any existing remote content
 -}
-type Body
-    = Preset Template
-    | None (Maybe Template) -- None means there is a Peek, so here we can add some config for the peek
-    | CustomContent (Maybe Template)
-    | CustomIllustration (Maybe Template)
+type alias Body =
+    ( BodyChoice, Template )
+
+
+type BodyChoice
+    = Preset
+    | NoBody
+    | CustomContent
+    | CustomIllustration
 
 
 type Template
-    = Content (Html Never)
+    = None -- None means there is a Peek, so here we can add some config for the peek
+    | Content (Html Never)
     | Illustration (Html Never)
 
 
@@ -175,9 +213,14 @@ type Orientation
 
 
 {-| -}
-withOrientation : Orientation -> Segment -> Segment
-withOrientation orientation segment =
-    { segment | orientation = orientation }
+withShape : Shape -> Segment -> Segment
+withShape shape segment =
+    case shape of
+        Oriented o ->
+            { segment | orientation = o, isBackground = False }
+
+        Background ->
+            { segment | isBackground = True }
 
 
 {-| -}
@@ -193,15 +236,15 @@ withBody body segment =
 
 
 {-| -}
-withIllustration : Html Never -> Segment -> Segment
-withIllustration body segment =
-    { segment | body = Illustration body |> Preset }
+withTemplate : Template -> Segment -> Segment
+withTemplate t s =
+    { s | body = Tuple.mapSecond (always t) s.body }
 
 
 {-| -}
-withContent : Html Never -> Segment -> Segment
-withContent body segment =
-    { segment | body = Content body |> Preset }
+withBodyChoice : BodyChoice -> Segment -> Segment
+withBodyChoice b segment =
+    { segment | body = Tuple.mapFirst (always b) segment.body }
 
 
 {-| -}
@@ -218,18 +261,18 @@ withInfo info segment =
 {-| -}
 withoutCaption : Segment -> Segment
 withoutCaption segment =
-    { segment | caption = [] }
+    { segment | caption = "" }
 
 
 {-| -}
-withAdditionalCaption : String -> Segment -> Segment
-withAdditionalCaption string segment =
-    { segment | caption = segment.caption ++ [ string ] }
+showsDate : Bool -> Segment -> Segment
+showsDate bool segment =
+    { segment | showsDate = bool }
 
 
 {-| -}
-increaseColumnCount : Segment -> Segment
-increaseColumnCount segment =
+incrementColumnCount : Segment -> Segment
+incrementColumnCount segment =
     { segment
         | width =
             case segment.width of
@@ -242,8 +285,8 @@ increaseColumnCount segment =
 
 
 {-| -}
-decreaseColumnCount : Segment -> Segment
-decreaseColumnCount segment =
+decrementColumnCount : Segment -> Segment
+decrementColumnCount segment =
     { segment
         | width =
             case segment.width of
@@ -256,8 +299,8 @@ decreaseColumnCount segment =
 
 
 {-| -}
-increaseInfoLines : Segment -> Segment
-increaseInfoLines segment =
+incrementInfoLines : Segment -> Segment
+incrementInfoLines segment =
     { segment
         | info =
             segment.info
@@ -266,8 +309,8 @@ increaseInfoLines segment =
 
 
 {-| -}
-decreaseInfoLines : Segment -> Segment
-decreaseInfoLines segment =
+decrementInfoLines : Segment -> Segment
+decrementInfoLines segment =
     { segment
         | info =
             segment.info
@@ -276,30 +319,38 @@ decreaseInfoLines segment =
 
 
 {-| -}
-withAdditionalAttributes : List (Html.Attribute Never) -> Segment -> Segment
-withAdditionalAttributes cc segment =
-    { segment | additionalAttributes = cc ++ segment.additionalAttributes }
+addClass : String -> Segment -> Segment
+addClass str segment =
+    { segment | additionalClasses = str :: segment.additionalClasses }
+
+
+{-| -}
+removeClass : String -> Segment -> Segment
+removeClass str segment =
+    { segment | additionalClasses = List.filter ((/=) str) segment.additionalClasses }
 
 
 {-| -}
 singleton : String -> Segment
-singleton id =
+singleton caption =
     { empty
-        | caption = [ id ]
-        , id = String.replace " " "-" id
+        | caption = caption
+        , id = String.replace " " "-" caption
     }
 
 
 {-| -}
 empty : Segment
 empty =
-    { caption = []
+    { caption = ""
+    , heading = Nothing
+    , showsDate = False
     , id = "_"
     , isBackground = False
-    , body = None Nothing
+    , body = ( Preset, None )
     , orientation = Vertical
     , width = Columns 1
-    , additionalAttributes = []
+    , additionalClasses = []
     , fab = Nothing
     , info = Nothing
     }
@@ -315,32 +366,37 @@ edit : { do : Action -> msg, insert : Direction -> msg } -> ViewMode -> Segment 
 edit { do, insert } ({ position } as mode) s =
     let
         ( overlay, propertySheet ) =
+            let
+                overlaidButton dir hint symbol =
+                    Html.button [ onClick (insert dir), title hint ] [ Html.span [] [ Html.text symbol ] ]
+            in
             case position.role of
                 Focus ->
-                    ( [ View.overlay View.Top [ Html.button [ onClick (insert Up), title "insert empty segment to the top" ] [ Html.text "✦" ] ]
-                      , View.overlay View.Right [ Html.button [ onClick (insert Right), title "insert empty segment to the right" ] [ Html.text "✦" ] ]
-                      , View.overlay View.Bottom [ Html.button [ onClick (insert Down), title "insert empty segment to the bottom" ] [ Html.text "✦" ] ]
-                      , View.overlay View.Left [ Html.button [ onClick (insert Left), title "insert empty segment to the left" ] [ Html.text "✦" ] ]
+                    ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                      , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
+                      , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
+                      , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
                       ]
-                    , [ View.sheet
+                    , [ Ui.sheet
                             [ Html.div []
                                 [ Zipper.create
-                                    ( "Small", do (WithBody (None Nothing)) )
-                                    [ ( "Medium", do (WithBody (None Nothing)) )
-                                    , ( "Large", do (WithBody (None Nothing)) )
+                                    ( "Preset", do (WithBodyChoice Preset) )
+                                    [ ( "None", do (WithBodyChoice NoBody) )
+                                    , ( "Illustration", do (WithBodyChoice CustomIllustration) )
+                                    , ( "Content", do (WithBodyChoice CustomContent) )
                                     ]
                                     []
-                                    |> View.pick
+                                    |> Ui.pick
                                 ]
                             ]
                       ]
                     )
 
                 Parent ->
-                    ( [ View.none ], [ View.none ] )
+                    ( [ Ui.none ], [ Ui.none ] )
 
                 _ ->
-                    ( [ View.none ], [ View.none ] )
+                    ( [ Ui.none ], [ Ui.none ] )
     in
     view_ [] (overlay ++ propertySheet) mode s
 
@@ -355,44 +411,66 @@ view_ : List (Html.Attribute msg) -> List (Html msg) -> ViewMode -> Segment -> (
 view_ attr els mode s =
     let
         viewCaption cc =
-            case cc of
-                [] ->
-                    viewCaption [ "⋮" ]
+            header "" s.id cc
 
-                [ one ] ->
-                    header "" s.id one
-
-                _ ->
-                    List.map (header "" s.id) cc
-                        |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
-
+        --List.map (header "" s.id) cc |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
         viewBody body =
-            [ case body of
-                Preset (Illustration illu) ->
-                    case mode.region of
-                        ViewMode.Peek config ->
-                            Html.a [ href ("#" ++ config.targetId), title config.hint ] [ Html.map never illu ]
+            let
+                bodyIsVisible =
+                    (||) (isIllustration s) <|
+                        case mode.position.role of
+                            Focus ->
+                                True
 
-                        _ ->
-                            Html.map never illu
+                            Parent ->
+                                True
 
-                Preset (Content content) ->
-                    content
+                            Breadcrumb ->
+                                True
 
-                None _ ->
-                    Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] []
+                            Aisle ->
+                                True
 
-                CustomIllustration _ ->
-                    Html.text "need to load custom illustration"
+                            _ ->
+                                False
+            in
+            (if bodyIsVisible then
+                [ case s.heading of
+                    Nothing ->
+                        Html.text ""
 
-                CustomContent _ ->
-                    Html.text "need to load custom content"
-            ]
+                    Just h ->
+                        Html.a [ href ("#" ++ s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+                , case body of
+                    ( Preset, Illustration illu ) ->
+                        case mode.region of
+                            ViewMode.Peek config ->
+                                Html.a [ href ("#" ++ config.targetId), title config.hint ] [ Html.map never illu ]
+
+                            _ ->
+                                Html.map never illu
+
+                    ( Preset, Content content ) ->
+                        content
+
+                    ( CustomIllustration, _ ) ->
+                        Html.text "need to load custom illustration"
+
+                    ( CustomContent, _ ) ->
+                        Html.text "need to load custom content"
+
+                    _ ->
+                        Html.div [ css [ maxHeight (px 0), maxWidth (px 0) ] ] []
+                ]
+
+             else
+                []
+            )
                 |> Html.div [ class "body" ]
 
         additionalAttributes =
-            s.additionalAttributes
-                |> List.map (Attributes.map never)
+            s.additionalClasses
+                |> List.map Attributes.class
 
         ownWidthAsVars =
             (\( col, scr ) ->
@@ -425,11 +503,11 @@ view_ attr els mode s =
             )
         <|
             List.map (Html.map never)
-                [ s.caption |> viewCaption |> View.notIf (hasBody s && mode.position.isLeaf && not mode.position.isRoot)
+                [ s.caption |> viewCaption |> Ui.notIf (hasBody s && mode.position.isLeaf && not mode.position.isRoot)
                 , s.body |> viewBody
-                , s.info |> View.ifJust (Tuple.second >> List.singleton >> Html.div [ class "info" ])
-                , s.orientation |> orientationToString |> Html.text |> List.singleton |> View.overlay View.TopLeft |> View.debugOnly
-                , mode.position.path |> List.map (Fold.viewDirection >> Html.text) |> View.overlay View.TopRight |> View.debugOnly
+                , s.info |> Ui.ifJust (Tuple.second >> List.singleton >> Html.div [ class "info" ])
+                , s.orientation |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
+                , mode.position.path |> List.map (Fold.viewDirection >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
                 ]
                 ++ els
 
@@ -449,33 +527,36 @@ orientationToString orientation =
 bodyTypeToString : Body -> String
 bodyTypeToString body =
     case body of
-        Preset (Content _) ->
+        ( Preset, Content _ ) ->
             "content"
 
-        Preset (Illustration _) ->
+        ( Preset, Illustration _ ) ->
             "illustration"
 
-        CustomContent _ ->
+        ( CustomContent, _ ) ->
             "content"
 
-        CustomIllustration _ ->
+        ( CustomIllustration, _ ) ->
             "illustration"
 
-        None _ ->
+        _ ->
             "noBody"
 
 
 {-| -}
 structureClass : Segment -> Html.Attribute msg
 structureClass s =
-    classList [ ( "noCaption", s.caption == [] ), ( "hasBody", hasBody s ) ]
+    classList [ ( "noCaption", s.caption == "" ), ( "hasBody", hasBody s ) ]
 
 
 {-| -}
 hasBody : Segment -> Bool
 hasBody s =
     case s.body of
-        None _ ->
+        ( NoBody, _ ) ->
+            False
+
+        ( Preset, None ) ->
             False
 
         _ ->

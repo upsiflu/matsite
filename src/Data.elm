@@ -1,7 +1,8 @@
 module Data exposing (initial)
 
 import Accordion exposing (Accordion, Action(..))
-import Accordion.Segment as Segment exposing (Action(..))
+import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
+import Accordion.Segment.Fab as Fab
 import Calendar
 import DateTime exposing (DateTime)
 import Fold exposing (Direction(..), Foldr, Position, Role(..))
@@ -23,10 +24,10 @@ initial =
                 |> List.map
                     (\({ name, wide } as artist) ->
                         Name (name ++ "(photo)")
-                            :: Modify (MakeHorizontal True)
-                            :: Modify (WithBody (Artist.viewPhoto artist))
+                            :: Modify (WithShape (Oriented Horizontal))
+                            :: Modify (WithTemplate (Artist.viewPhoto artist))
                             :: (if wide then
-                                    [ Modify AddColumn
+                                    [ Modify IncrementColumnCount
                                     ]
 
                                 else
@@ -34,8 +35,9 @@ initial =
                                )
                             ++ Go Right
                             :: Name name
-                            :: Modify (MakeHorizontal True)
-                            :: Modify (WithBody (Artist.view artist))
+                            :: Modify (WithShape (Oriented Horizontal))
+                            :: Modify (WithHeading (Artist.viewHeading artist))
+                            :: Modify (WithTemplate (Artist.view artist))
                             :: Modify (AddClass "fg")
                             :: []
                     )
@@ -43,8 +45,8 @@ initial =
                 |> List.concat
 
         register : Occurrence -> Accordion.Action
-        register occurance =
-            Segment.Register { link = "TODO eventbrite link", occurance = occurance }
+        register occurrence =
+            Fab.Register { link = "TODO eventbrite link", occurrence = occurrence }
                 |> WithFab
                 |> Modify
 
@@ -63,23 +65,23 @@ initial =
                 :: register2 23 Apr 2022 1
                 :: Go Down
                 :: Name "Info"
-                :: Modify (MakeHorizontal True)
+                :: Modify (WithShape (Oriented Horizontal))
                 :: Go Right
                 :: Name "Collage"
-                :: Modify (WithBody Festival.collage)
-                :: Modify (MakeHorizontal True)
+                :: Modify (WithTemplate Festival.collage)
+                :: Modify (WithShape (Oriented Horizontal))
                 :: Go Right
                 :: Name "Description"
-                :: Modify (WithBody Festival.description)
-                :: Modify (MakeHorizontal True)
+                :: Modify (WithTemplate Festival.description)
+                :: Modify (WithShape (Oriented Horizontal))
                 :: Go Right
                 :: Name "Video"
-                :: Modify (WithBody Festival.video)
-                :: Modify (MakeHorizontal True)
-                :: Modify Segment.AddColumn
+                :: Modify (WithTemplate Festival.video)
+                :: Modify (WithShape (Oriented Horizontal))
+                :: Modify Segment.IncrementColumnCount
                 :: Go Right
                 :: Name "Credits"
-                :: Modify (MakeHorizontal True)
+                :: Modify (WithShape (Oriented Horizontal))
                 :: Go Left
                 :: Go Left
                 :: Go Up
@@ -111,8 +113,8 @@ initial =
         -}
     in
     Name "Home"
-        :: Modify (WithBody Intro.intro)
-        :: Modify (AsBackground True)
+        :: Modify (WithTemplate Intro.intro)
+        :: Modify (WithShape Segment.Background)
         :: Go Right
         :: Name "Labs"
         :: Modify
@@ -143,7 +145,7 @@ initial =
         :: Name "Videos"
         :: Go Right
         :: Name "Library"
-        :: Modify (WithBody Accordion.anarchiveX)
+        :: Modify (WithTemplate Accordion.anarchiveX)
         :: Go Right
         :: Name "About"
         :: Go Right

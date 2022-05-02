@@ -242,11 +242,11 @@ goTo id =
     .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
 
 
-set : Orientation -> String -> Segment.Body -> Accordion msg -> Accordion msg
-set orientation caption body =
+set : Orientation -> String -> Segment.Template -> Accordion msg -> Accordion msg
+set orientation caption t =
     Segment.singleton caption
-        |> Segment.withOrientation orientation
-        |> Segment.withBody body
+        |> Segment.withShape (Segment.Oriented orientation)
+        |> Segment.withBody ( Segment.Preset, t )
         |> setSegment
 
 
@@ -298,7 +298,7 @@ mapSegment =
 
 
 {-| -}
-anarchiveX : Segment.Body
+anarchiveX : Segment.Template
 anarchiveX =
     Html.div [ class "anArchive" ]
         [ Html.iframe
@@ -310,11 +310,10 @@ anarchiveX =
             []
         ]
         |> Segment.Content
-        |> Segment.Preset
 
 
 {-| -}
-vimeoX : Html msg
+vimeoX : Segment.Template
 vimeoX =
     Html.iframe
         [ attribute "width" "100%"
@@ -329,6 +328,7 @@ vimeoX =
         , class "entered lazyloaded"
         ]
         []
+        |> Segment.Content
 
 
 
@@ -376,7 +376,7 @@ view { zone, do } (Accordion config) =
                         |> Tree.up
                         |> Tree.focus
             in
-            { targetId = peekParent.id, hint = String.join ", " peekParent.caption }
+            { targetId = peekParent.id, hint = peekParent.caption }
 
         createRegions : C -> List ( Region, List A )
         createRegions { up, left, x, here, nest, y, right, down } =

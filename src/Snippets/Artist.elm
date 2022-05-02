@@ -55,18 +55,19 @@ toc generateLink =
         |> Segment.Toc
 
 
-view : Artist -> Segment.Body
+view : Artist -> Segment.Template
 view artist =
     Html.div [ class "artist richtext" ]
-        [ Html.h2 [] [ Html.text artist.name ]
-        , Html.map never artist.bio
-        ]
+        [ Html.map never artist.bio ]
         |> Segment.Content
-        |> Segment.Preset
 
 
-viewPhoto : Artist -> Segment.Body
+viewHeading : Artist -> Maybe String
+viewHeading =
+    .name >> Just
+
+
+viewPhoto : Artist -> Segment.Template
 viewPhoto artist =
     Html.img [ class "artist", src artist.photo ] []
         |> Segment.Illustration
-        |> Segment.Preset

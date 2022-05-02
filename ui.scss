@@ -4,19 +4,39 @@
         height: var(--unit);
         border-radius: 50%;
         margin: calc(0px - var(--unit) / 2);
-        border: 3px dotted red;
+        border: 0.5px dashed orangered;
+        background: rgba(0, 0, 0, .01);
         box-sizing: border-box;
         font-size: 1rem;
-        color: red;
+        color: white;
         transition: all .2s;
-        background: rgba(0, 0, 0, .1);
-        mix-blend-mode: overlay;
+        mix-blend-mode: screen;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+
+        >span {
+            height: 2rem;
+            width: 2rem;
+            line-height: 1.9rem;
+            font-size: 1.4rem;
+            border-radius: 1rem;
+            display: block;
+            background: rgba(0, 0, 0, .01);
+            color: orangered;
+        }
     }
 
     button:hover {
         transform: scale(1.1);
         background: rgba(0, 0, 0, .9);
         cursor: cell;
+
+        >span {
+            background: orangered;
+            color: black;
+        }
     }
 }
 
@@ -27,8 +47,13 @@
     left: 50vw;
     bottom: 0;
     margin-left: calc(0px - var(--column) / 2);
-    background: black;
-    outline: 3px solid red;
+    background: orangered;
+    color: black;
+    border: 2px double black;
+    // border-top-left-radius: 1rem;
+    ;
+    // border-top-right-radius: 1rem;
+    ;
     outline-offset: 1px;
     padding-bottom: 1rem;
 
@@ -39,36 +64,50 @@
         box-sizing: border-box;
         width: 100%;
         border: none;
+        position: relative;
+
+        justify-content: center;
 
         >label {
-            flex-grow: 1;
-            text-align: center;
             position: relative;
 
-            // >input {
-            //     position: absolute;
-            //     top: 0;
-            //     left: 0;
-            //     width: 100%;
-            //     height: 100%;
-            //     opacity: .1;
-            // }
             >span {
+                font-family: space_monoregular;
+                font-weight: bold;
+                font-size: 0.75rem;
                 display: block;
-                position: absolute;
-                width: 100%;
-                top: 0;
-                left: 0;
                 transition: all .5s;
+                border-radius: 1rem;
+                padding: .2rem .5rem;
+            }
+
+            >input {
+                width: 1rem;
+                height: 1rem;
+                margin: -1rem;
+                opacity: .1;
+                padding: 0;
+                border: 0;
+                position: absolute;
             }
 
             >input:checked~span {
-                background: red;
+                background: black;
+                color: orangered;
             }
 
-            &:hover {
-                background: rgba(255, 0, 0, .5);
+            >input:not(:checked)~span {
+                cursor: pointer;
+                background: orangered;
+                letter-spacing: -.2px;
+            }
+
+            transition:all .1s;
+
+            &:hover>input:not(:checked)~span {
+                letter-spacing: 2px;
             }
         }
     }
+
 }
