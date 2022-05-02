@@ -1,3 +1,7 @@
+# parcielle
+build/
+dist/
+.parcel-cache
 # elm-package generated
 elm-stuff
 # elm-repl generated
