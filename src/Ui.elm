@@ -118,6 +118,7 @@ type Field msg
     = OneOf String (Zipper ( Face, msg ))
     | ZeroOrOneOf String Bool msg (Zipper ( Face, msg ))
     | ManyOccurrences
+        String
         { data : List Occurrence
         , edit : Occurrence -> Occurrence -> msg
         , add : Occurrence -> msg
