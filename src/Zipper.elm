@@ -17,6 +17,7 @@ module Zipper exposing
     , length
     , Fold, fold, defold
     , foldl, foldr
+    , findClosest, mapByPosition
     )
 
 {-|
@@ -107,6 +108,31 @@ create a l r =
 focus : Zipper a -> a
 focus =
     .focus
+
+
+{-| goes to the outmost hit it finds. If none found, identity
+-}
+findClosest : (a -> Bool) -> Zipper a -> Zipper a
+findClosest test =
+    fold
+        { init = singleton
+        , grow =
+            { leftwards =
+                \b ->
+                    if test b then
+                        growLeft b >> leftmost
+
+                    else
+                        growLeft b
+            , rightwards =
+                \b ->
+                    if test b then
+                        growRight b >> rightmost
+
+                    else
+                        growRight b
+            }
+        }
 
 
 {-| -}
@@ -240,6 +266,12 @@ mapFocus fu z =
 mapPeriphery : (a -> a) -> Zipper a -> Zipper a
 mapPeriphery fu z =
     { z | left = List.map fu z.left, right = List.map fu z.right }
+
+
+{-| -}
+mapByPosition : ({ isFocus : Bool } -> a -> b) -> Zipper a -> Zipper b
+mapByPosition fu z =
+    { left = List.map (fu { isFocus = False }) z.left, focus = fu { isFocus = True } z.focus, right = List.map (fu { isFocus = False }) z.right }
 
 
 {-| Removes the focused segment

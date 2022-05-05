@@ -3,9 +3,12 @@ module Data exposing (initial)
 import Accordion exposing (Accordion, Action(..))
 import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
 import Accordion.Segment.Fab as Fab
+import Accordion.Segment.ViewMode as ViewSegment
 import Calendar
 import DateTime exposing (DateTime)
+import Dict
 import Fold exposing (Direction(..), Foldr, Position, Role(..))
+import Layout
 import Loop
 import Occurrence exposing (Occurrence)
 import Snippets.Artist as Artist
@@ -13,6 +16,37 @@ import Snippets.Festival as Festival
 import Snippets.Intro as Intro
 import Snippets.Lab as Lab
 import Time exposing (Month(..))
+
+
+addTemplates : Segment.Templates -> Segment.Templates
+addTemplates =
+    let
+        presetBody key value t =
+            { t | body = Dict.insert key ( True, value ) t.body }
+
+        presetInfo key value t =
+            { t | info = Dict.insert key ( True, value ) t.info }
+
+        addArtistTemplates t =
+            Artist.artists
+                |> List.map
+                    (\artist ->
+                        presetBody (artist.name ++ "(photo)") (Artist.viewPhoto artist)
+                            >> presetBody artist.name (Artist.view artist)
+                    )
+                |> List.foldl (<|) t
+
+        addOtherTemplates =
+            presetBody "Collage" Festival.collage
+                >> presetBody "Video" Festival.video
+                >> presetBody "Description" Festival.description
+                >> presetBody "Home" Intro.intro
+                >> presetBody "Library" Accordion.anarchiveX
+                >> presetInfo "Artists" Segment.Toc
+                >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
+                >> presetInfo "Festivals" (Segment.Byline 1 (Layout.byline "Festivals Byline"))
+    in
+    addArtistTemplates >> addOtherTemplates
 
 
 initial : Accordion msg
@@ -23,23 +57,24 @@ initial =
             Artist.artists
                 |> List.map
                     (\({ name, wide } as artist) ->
-                        Name (name ++ "(photo)")
-                            :: Modify (WithShape (Oriented Horizontal))
-                            :: Modify (WithTemplate (Artist.viewPhoto artist))
-                            :: (if wide then
-                                    [ Modify IncrementColumnCount
-                                    ]
+                        [ Name (name ++ "(photo)")
+                        , Modify
+                            (WithShape
+                                (Oriented Horizontal
+                                    (if wide then
+                                        ViewSegment.Columns 2
 
-                                else
-                                    []
-                               )
-                            ++ Go Right
-                            :: Name name
-                            :: Modify (WithShape (Oriented Horizontal))
-                            :: Modify (WithHeading (Artist.viewHeading artist))
-                            :: Modify (WithTemplate (Artist.view artist))
-                            :: Modify (AddClass "fg")
-                            :: []
+                                     else
+                                        ViewSegment.Columns 1
+                                    )
+                                )
+                            )
+                        , Go Right
+                        , Name name
+                        , Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                        , Modify (WithHeading (Artist.viewHeading artist))
+                        , Modify (WithClasses [ "fg" ])
+                        ]
                     )
                 |> List.intersperse [ Go Right ]
                 |> List.concat
@@ -47,6 +82,7 @@ initial =
         register : Occurrence -> Accordion.Action
         register occurrence =
             Fab.Register { link = "TODO eventbrite link", occurrence = occurrence }
+                |> Just
                 |> WithFab
                 |> Modify
 
@@ -65,23 +101,19 @@ initial =
                 :: register2 23 Apr 2022 1
                 :: Go Down
                 :: Name "Info"
-                :: Modify (WithShape (Oriented Horizontal))
+                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
                 :: Go Right
                 :: Name "Collage"
-                :: Modify (WithTemplate Festival.collage)
-                :: Modify (WithShape (Oriented Horizontal))
+                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
                 :: Go Right
                 :: Name "Description"
-                :: Modify (WithTemplate Festival.description)
-                :: Modify (WithShape (Oriented Horizontal))
+                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
                 :: Go Right
                 :: Name "Video"
-                :: Modify (WithTemplate Festival.video)
-                :: Modify (WithShape (Oriented Horizontal))
-                :: Modify Segment.IncrementColumnCount
+                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 2)))
                 :: Go Right
                 :: Name "Credits"
-                :: Modify (WithShape (Oriented Horizontal))
+                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
                 :: Go Left
                 :: Go Left
                 :: Go Up
@@ -113,20 +145,11 @@ initial =
         -}
     in
     Name "Home"
-        :: Modify (WithTemplate Intro.intro)
         :: Modify (WithShape Segment.Background)
         :: Go Right
         :: Name "Labs"
-        :: Modify
-            (Segment.WithInfo <|
-                Segment.Byline "Biweekly on Thursdays; 90mins"
-            )
         :: Go Right
         :: Name "Festivals"
-        :: Modify
-            (Segment.WithInfo <|
-                Segment.Byline "Text line - Festivals!"
-            )
         :: appendSubtree
         ++ Go Right
         :: Name "Artists"
@@ -138,14 +161,12 @@ initial =
         :: Go Left
         :: Go Left
         :: Go Up
-        :: Generate Accordion.Toc
         :: Go Right
         :: Name "Traces"
         :: Go Right
         :: Name "Videos"
         :: Go Right
         :: Name "Library"
-        :: Modify (WithTemplate Accordion.anarchiveX)
         :: Go Right
         :: Name "About"
         :: Go Right

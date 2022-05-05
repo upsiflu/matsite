@@ -45,17 +45,7 @@ artists =
         |> List.sortBy (.name >> String.split " " >> List.last >> Maybe.withDefault "z")
 
 
-toc : (String -> Html.Attribute Never) -> Segment.Info
-toc generateLink =
-    artists
-        |> List.map .name
-        |> List.map
-            (\name -> Html.li [] [ Html.a [ target "_self", generateLink name ] [ Html.text name ] ])
-        |> Html.span [ class "toc" ]
-        |> Segment.Toc
-
-
-view : Artist -> Segment.Template
+view : Artist -> Segment.BodyTemplate
 view artist =
     Html.div [ class "artist richtext" ]
         [ Html.map never artist.bio ]
@@ -67,7 +57,7 @@ viewHeading =
     .name >> Just
 
 
-viewPhoto : Artist -> Segment.Template
+viewPhoto : Artist -> Segment.BodyTemplate
 viewPhoto artist =
     Html.img [ class "artist", src artist.photo ] []
         |> Segment.Illustration

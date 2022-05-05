@@ -5,7 +5,7 @@ module Accordion exposing
     , location, focus
     , view
     , anarchiveX, vimeoX
-    , Action(..), Generator(..), create, isRoot, renderBranch
+    , Action(..), Msg, create, isRoot, renderBranch, update
     )
 
 {-|
@@ -73,13 +73,19 @@ import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..)
 
 {-| -}
 type Accordion msg
-    = Accordion { tree : Tree Segment, collapsed : Bool }
+    = Accordion { tree : Tree Segment, templates : Segment.Templates }
+
+
+{-| -}
+type State
+    = Viewing
+    | Editing { templates : Segment.Templates }
 
 
 {-| -}
 singleton : Tree Segment -> Accordion msg
 singleton tree =
-    Accordion { tree = tree, collapsed = False }
+    Accordion { tree = tree, templates = Segment.initialTemplates }
 
 
 {-| -}
@@ -104,12 +110,6 @@ isRoot (Accordion config) =
 root : Accordion msg -> Accordion msg
 root (Accordion config) =
     Accordion { config | tree = Tree.root config.tree }
-
-
-{-| -}
-reset : Accordion msg -> Accordion msg
-reset (Accordion config) =
-    Accordion { config | collapsed = False }
 
 
 {-| -}
@@ -141,22 +141,9 @@ focus (Accordion config) =
 type Action
     = Name String
     | Modify Segment.Action
-    | Generate Generator
     | Find String
     | Go Direction
     | Insert Direction
-
-
-type Generator
-    = Toc
-
-
-generate : Generator -> Accordion msg -> List Action
-generate g =
-    case g of
-        Toc ->
-            \accordionWithArtists ->
-                [ Modify <| Segment.WithInfo <| Artist.toc (createLink accordionWithArtists) ]
 
 
 create : List Action -> Accordion msg
@@ -172,11 +159,6 @@ create =
                 Modify segmentAction ->
                     Segment.apply segmentAction
                         |> mapSegment
-
-                Generate generator ->
-                    \input ->
-                        generate generator input
-                            |> List.foldl applyAction input
 
                 Find searchString ->
                     \input ->
@@ -218,7 +200,6 @@ find { fragment } =
         Just parent ->
             debugLocation
                 >> mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
-                >> reset
 
 
 {-| -}
@@ -240,14 +221,6 @@ insert direction =
 goTo : String -> Accordion msg -> Accordion msg
 goTo id =
     .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
-
-
-set : Orientation -> String -> Segment.Template -> Accordion msg -> Accordion msg
-set orientation caption t =
-    Segment.singleton caption
-        |> Segment.withShape (Segment.Oriented orientation)
-        |> Segment.withBody ( Segment.Preset, t )
-        |> setSegment
 
 
 setSegment : Segment -> Accordion msg -> Accordion msg
@@ -298,7 +271,7 @@ mapSegment =
 
 
 {-| -}
-anarchiveX : Segment.Template
+anarchiveX : Segment.BodyTemplate
 anarchiveX =
     Html.div [ class "anArchive" ]
         [ Html.iframe
@@ -313,7 +286,7 @@ anarchiveX =
 
 
 {-| -}
-vimeoX : Segment.Template
+vimeoX : Segment.BodyTemplate
 vimeoX =
     Html.iframe
         [ attribute "width" "100%"
@@ -344,24 +317,36 @@ type Renderable msg
 type alias ViewMode msg =
     { zone : Maybe Time.Zone
     , do : Action -> msg
+    , volatile : Msg -> msg
     }
+
+
+type Msg
+    = TemplatesUpdated (Segment.Templates -> Segment.Templates)
+
+
+update : Msg -> Accordion msg -> Accordion msg
+update msg (Accordion config) =
+    case msg of
+        TemplatesUpdated fu ->
+            Accordion { config | templates = fu config.templates }
 
 
 {-| -}
 view : ViewMode msg -> Accordion msg -> Html msg
-view { zone, do } (Accordion config) =
+view { zone, do, volatile } (Accordion config) =
     let
         viewSegment =
-            Segment.edit { do = Modify >> do, insert = Insert >> do }
+            Segment.edit { do = Modify >> do, insert = Insert >> do, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
 
         classes : Html.Attribute msg
         classes =
             classList
-                [ ( "\u{1FA97}" ++ Segment.orientationToString (.orientation (Tree.focus config.tree)), True )
+                [ ( "\u{1FA97}" ++ Segment.orientationToString (Segment.orientation (Tree.focus config.tree)), True )
                 , ( "aisleHasBody", List.any Segment.hasBody (Tree.getAisleNodes config.tree |> Zipper.flat) )
                 , ( "focusHasBody", Segment.hasBody (Tree.focus config.tree) )
                 , ( "focusIsRoot", Tree.isRoot config.tree )
-                , ( "focusIsBackground", .isBackground (Tree.focus config.tree) )
+                , ( "focusIsBackground", Segment.isBackground (Tree.focus config.tree) )
                 ]
 
         findPeekConfig : Segment -> { targetId : String, hint : String }
@@ -376,7 +361,7 @@ view { zone, do } (Accordion config) =
                         |> Tree.up
                         |> Tree.focus
             in
-            { targetId = peekParent.id, hint = peekParent.caption }
+            { targetId = peekParent.id, hint = Segment.hint peekParent }
 
         createRegions : C -> List ( Region, List A )
         createRegions { up, left, x, here, nest, y, right, down } =
@@ -389,7 +374,7 @@ view { zone, do } (Accordion config) =
                                     Result.Err ()
 
                                 (( _, seg ) as a) :: rest ->
-                                    if Segment.isIllustration seg then
+                                    if Segment.isIllustration { templates = config.templates } seg then
                                         Result.Ok ( ( Peek (findPeekConfig seg), [ a ] ), toCache ++ rest )
 
                                     else
@@ -422,7 +407,7 @@ view { zone, do } (Accordion config) =
                         mode =
                             { zone = zone, position = position, region = region, offset = offset }
                     in
-                    ( ViewSegment.addWidth mode (Segment.hasBody segment) segment offset
+                    ( ViewSegment.addWidth mode (Segment.hasBody segment) (Segment.width segment) (Segment.infoLineCount segment) offset
                     , viewSegment mode segment :: newList
                     )
                 )
@@ -499,7 +484,7 @@ renderBranch =
     in
     { init =
         \(( position, segment ) as here) ->
-            { orientation = segment.orientation, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
+            { orientation = Segment.orientation segment, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
     , grow =
         { downwards =
             \a b ->
@@ -555,7 +540,7 @@ renderTree =
     , grow =
         { upwards =
             \(( _, segment ) as a) c ->
-                case segment.orientation of
+                case Segment.orientation segment of
                     Horizontal ->
                         { c | left = c.left ++ [ a ] }
 

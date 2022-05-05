@@ -254,3 +254,7 @@ header query id t =
 
 section =
     Html.section [ css [ margin2 zero rhythm.minMargin ] ]
+
+
+byline =
+    Html.text

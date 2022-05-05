@@ -1,4 +1,5 @@
 import {Elm} from "./src/Main.elm"
+import _ from "lodash"
 
 var app = Elm.Main.init({
     node: document.getElementById('app')
@@ -14,3 +15,10 @@ app.ports.pleaseCenter.subscribe(function (message) {
 app.ports.pleaseConfirm.subscribe(function (message) {
     document.getElementById(message)?.classList.add("blink");
 });
+
+
+const findMiddle=()=>{
+    console.log("e");
+}
+
+window.addEventListener("scroll", _.debounce(findMiddle, 400)());

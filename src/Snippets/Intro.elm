@@ -5,7 +5,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 
 
-intro : Segment.Template
+intro : Segment.BodyTemplate
 intro =
     div [ attribute "class" "intro" ]
         [ div [ attribute "style" "padding:56.25% 0 0 0;position:relative;" ]

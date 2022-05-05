@@ -73,6 +73,7 @@ type Msg
     | UrlChanged Url.Url
     | ZoneReceived Time.Zone
     | ActionInvoked Accordion.Action
+    | AccordionMessage Accordion.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -80,6 +81,9 @@ update msg model =
     case msg of
         ActionInvoked action ->
             ( model, Cmd.none )
+
+        AccordionMessage amsg ->
+            ( { model | accordion = Accordion.update amsg model.accordion }, Cmd.none )
 
         -- Send action via port to js!
         ZoneReceived zone ->
@@ -130,7 +134,7 @@ view model =
 
         -- , Html.hr [] []
         , Html.div [ Attributes.class "overflow" ]
-            [ Accordion.view { zone = model.zone, do = ActionInvoked } model.accordion ]
+            [ Accordion.view { zone = model.zone, do = ActionInvoked, volatile = AccordionMessage } model.accordion ]
 
         -- , Html.hr [] []
         -- , section

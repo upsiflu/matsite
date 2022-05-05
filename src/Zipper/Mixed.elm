@@ -243,9 +243,9 @@ mapFocus fu z =
 
 
 {-| -}
-mapPeriphery : (a -> a) -> MixedZipper f a -> MixedZipper f a
+mapPeriphery : (a -> b) -> MixedZipper f a -> MixedZipper f b
 mapPeriphery fu z =
-    { z | left = List.map fu z.left, right = List.map fu z.right }
+    { left = List.map fu z.left, focus = z.focus, right = List.map fu z.right }
 
 
 {-| -}

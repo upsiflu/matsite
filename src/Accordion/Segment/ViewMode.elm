@@ -179,8 +179,8 @@ isParent =
 
 
 {-| -}
-addWidth : ViewMode -> Bool -> { x | width : Width, info : Maybe ( Int, b ) } -> Offset -> Offset
-addWidth mode isExpanded segment acc =
+addWidth : ViewMode -> Bool -> Width -> Int -> Offset -> Offset
+addWidth mode isExpanded width infoLineCount acc =
     let
         respectInfoLines : Bool
         respectInfoLines =
@@ -188,17 +188,12 @@ addWidth mode isExpanded segment acc =
 
         infoLines =
             if respectInfoLines then
-                case segment.info of
-                    Just ( count, _ ) ->
-                        count
-
-                    Nothing ->
-                        0
+                infoLineCount
 
             else
                 0
     in
-    case ( isExpanded, segment.width ) of
+    case ( isExpanded, width ) of
         ( True, Columns c ) ->
             { acc | columns = acc.columns + c, units = acc.units + 1 + infoLines, infoLines = acc.infoLines + infoLines }
 

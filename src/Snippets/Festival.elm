@@ -9,7 +9,7 @@ import Html.Styled.Attributes as Attr exposing (css)
 type alias Festival =
     { date : String
     , title : String
-    , description : Segment.Template
+    , description : Segment.BodyTemplate
     , collage : String
     , video : Maybe String
     }

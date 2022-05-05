@@ -6,6 +6,7 @@
     "parcel": "^2.5.0"
   },
   "dependencies": {
-    "@vimeo/player": "^2.16.4"
+    "@vimeo/player": "^2.16.4",
+    "lodash": "^4.17.21"
   }
 }

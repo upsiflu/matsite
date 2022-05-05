@@ -9,6 +9,7 @@ module Zipper.Tree exposing
     , root, leaf
     , go, Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
+    , mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
     , deleteFocus
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
@@ -26,7 +27,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , flatten, insert, mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
+    , flatten, insert
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -67,7 +68,7 @@ module Zipper.Tree exposing
 # Map
 
 @docs map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
-@docs positionalMap
+@docs mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
 
 
 ## Shrink and Grow
