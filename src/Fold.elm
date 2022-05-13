@@ -1,13 +1,18 @@
 module Fold exposing
     ( Fold
     , Foldr
-    , Direction(..), viewDirection
-    , Position, Role(..), viewPosition
+    , Direction(..)
+    , decodeDirection, encodeDirection
+    , directionFromString, directionToString
+    , directionsToRole
+    , Position
+    , Role(..)
+    , positionToString
+    , fataMorganaPosition
     , list
-    , directionsToRole, fataMorganaPosition
     )
 
-{-| Helpers for folding over lists and Zippers
+{-| Folding over (nonempty) Lists and Zippers
 
 @docs Fold
 
@@ -16,12 +21,27 @@ module Fold exposing
 
 # Directions
 
-@docs Direction, viewDirection
+@docs Direction
+@docs decodeDirection, encodeDirection
+
+---
+
+@docs directionFromString, directionToString
+@docs directionsToRole
 
 
 # Position
 
-@docs Position, Role, viewPosition
+@docs Position
+@docs Role
+
+---
+
+@docs positionToString
+
+---
+
+@docs fataMorganaPosition
 
 
 # Helpers
@@ -29,6 +49,9 @@ module Fold exposing
 @docs list
 
 -}
+
+import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Encode as Encode
 
 
 {-| The generic type for folding any recursive structure
@@ -65,10 +88,12 @@ type alias Foldr f a aisle z zB trunk b e =
     }
 
 
+{-| -}
 type alias Position =
     { role : Role, isRoot : Bool, isLeaf : Bool, path : List Direction }
 
 
+{-| -}
 fataMorganaPosition : Position
 fataMorganaPosition =
     { role = Child, isRoot = False, isLeaf = False, path = [] }
@@ -94,6 +119,7 @@ type Role
     | Periphery
 
 
+{-| -}
 directionsToRole : List Direction -> Role
 directionsToRole dir =
     case dir of
@@ -124,8 +150,9 @@ directionsToRole dir =
                 Aisle
 
 
-viewPosition : Position -> String
-viewPosition pos =
+{-| -}
+positionToString : Position -> String
+positionToString pos =
     let
         role =
             case pos.role of
@@ -164,7 +191,7 @@ viewPosition pos =
             )
 
         pth =
-            List.map viewDirection pos.path |> String.join ""
+            List.map directionToString pos.path |> String.join ""
     in
     String.join " " [ role, leaf, root, pth ]
 
@@ -179,8 +206,8 @@ type Direction
 
 
 {-| -}
-viewDirection : Direction -> String
-viewDirection dir =
+directionToString : Direction -> String
+directionToString dir =
     case dir of
         Left ->
             "⪪"
@@ -196,6 +223,46 @@ viewDirection dir =
 
         Here ->
             "⚬"
+
+
+{-| -}
+directionFromString : String -> Maybe Direction
+directionFromString str =
+    case str of
+        "⪪" ->
+            Just Left
+
+        "⪫" ->
+            Just Right
+
+        "⩚" ->
+            Just Up
+
+        "⩛" ->
+            Just Down
+
+        "⚬" ->
+            Just Here
+
+        _ ->
+            Nothing
+
+
+{-| -}
+decodeDirection : Decoder Direction
+decodeDirection =
+    Decode.string
+        |> Decode.andThen
+            (directionFromString
+                >> Maybe.map Decode.succeed
+                >> Maybe.withDefault (Decode.fail "Unknown Constructor for Fold.Direction")
+            )
+
+
+{-| -}
+encodeDirection : Direction -> Value
+encodeDirection =
+    directionToString >> Encode.string
 
 
 

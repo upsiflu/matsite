@@ -3,10 +3,22 @@
     "@parcel/transformer-elm": "^2.5.0",
     "elm": "^0.19.1-5",
     "elm-review": "^2.7.0",
-    "parcel": "^2.5.0"
+    "parcel": "^2.5.0",
+    "process": "^0.11.10"
   },
   "dependencies": {
     "@vimeo/player": "^2.16.4",
+    "firebase": "^9.8.0",
     "lodash": "^4.17.21"
+  },
+  "browserslist": "> 15%",
+  "scripts": {
+    "clear-build-cache": "rm -rf .cache/ dist/",
+    "local": "parcel index.html",
+    "dev": "parcel --host=192.168.178.93 index.html",
+    "build": "cross-env NODE_ENV=production parcel build ./index.html --public-url ./",
+    "format": "prettier --write \"./**/*.{js,jsx}\"",
+    "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

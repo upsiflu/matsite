@@ -1,20 +1,17 @@
-module Data exposing (initial)
+module Data exposing (addTemplates, initial)
 
 import Accordion exposing (Accordion, Action(..))
 import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
 import Accordion.Segment.Fab as Fab
 import Accordion.Segment.ViewMode as ViewSegment
-import Calendar
-import DateTime exposing (DateTime)
 import Dict
-import Fold exposing (Direction(..), Foldr, Position, Role(..))
+import Fold exposing (Direction(..), Role(..))
 import Layout
-import Loop
 import Occurrence exposing (Occurrence)
+import Snippets.Anarchive as Anarchive
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
 import Snippets.Intro as Intro
-import Snippets.Lab as Lab
 import Time exposing (Month(..))
 
 
@@ -41,7 +38,7 @@ addTemplates =
                 >> presetBody "Video" Festival.video
                 >> presetBody "Description" Festival.description
                 >> presetBody "Home" Intro.intro
-                >> presetBody "Library" Accordion.anarchiveX
+                >> presetBody "Library" Anarchive.anarchive
                 >> presetInfo "Artists" Segment.Toc
                 >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
                 >> presetInfo "Festivals" (Segment.Byline 1 (Layout.byline "Festivals Byline"))
@@ -179,3 +176,4 @@ initial =
         :: Go Up
         :: []
         |> Accordion.create
+        |> Accordion.mapTemplates addTemplates

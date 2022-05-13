@@ -1,11 +1,14 @@
 module Accordion exposing
     ( Accordion
-    , exit
-    , find, root
-    , location, focus
+    , create
+    , exit, mapTemplates
+    , Msg, update
+    , Action(..), decodeAction, encodeAction
+    , goToId, goToParentId
+    , parentId, focusId
+    , isRoot
+    , closestId
     , view
-    , anarchiveX, vimeoX
-    , Action(..), Msg, create, isRoot, renderBranch, update
     )
 
 {-|
@@ -13,79 +16,96 @@ module Accordion exposing
 
 ## To Do
 
-  - [ ] Each `view` produces all Segments, in order of the alphabet
-  - [ ] `flip` simply goes up one level
+  - [ ] Check `exit` behavior (mainly pertains to Main)
 
 ---
 
 @docs Accordion
-@docs site
+
+
+# Create
+
+@docs create
 
 
 # Modify
 
-@docs exit
+@docs exit, mapTemplates
+
+
+# Update
+
+@docs Msg, update
+
+
+# Persist
+
+@docs Action, decodeAction, encodeAction
 
 
 # Navigate
 
-@docs find, root
+@docs find, goToId, goToParentId
 
 
 # Deconstruct
 
-Get textual representations fo use in Url and animation
+@docs parentId, focusId
 
-@docs location, focus
+@docs isRoot
+
+
+# Query
+
+@docs closestId
 
 
 # View
 
-@docs Remainder, view
-
----
-
-@docs anarchiveX, vimeoX
+@docs view
 
 -}
 
-import Accordion.Attributable as Cls exposing (Att)
 import Accordion.Segment as Segment exposing (Orientation(..), Segment)
-import Accordion.Segment.ViewMode as ViewSegment exposing (Offset, Region(..), ViewMode, Width(..))
+import Accordion.Segment.ViewMode as ViewSegment exposing (Region(..), ViewMode, Width(..))
 import Css exposing (..)
-import Fold exposing (Direction(..), Foldr, Position, Role(..))
+import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (class, classList, css, id)
 import Html.Styled.Keyed as Keyed
+import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Encode as Encode
 import Layout
 import Levenshtein
 import List.Extra as List
-import Snippets.Artist as Artist
 import String exposing (left)
 import Time
 import Url exposing (Url)
-import Zipper exposing (Zipper)
-import Zipper.Branch as Branch exposing (Branch)
-import Zipper.Mixed as MixedZipper exposing (MixedZipper)
+import Zipper
+import Zipper.Branch as Branch
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
-{-| -}
+{-|
+
+  - `tree`: the result of the Action log
+  - `templates`: volatile switchable presets for editing
+
+-}
 type Accordion msg
     = Accordion { tree : Tree Segment, templates : Segment.Templates }
-
-
-{-| -}
-type State
-    = Viewing
-    | Editing { templates : Segment.Templates }
 
 
 {-| -}
 singleton : Tree Segment -> Accordion msg
 singleton tree =
     Accordion { tree = tree, templates = Segment.initialTemplates }
+
+
+{-| -}
+mapTemplates : (Segment.Templates -> Segment.Templates) -> Accordion msg -> Accordion msg
+mapTemplates fu (Accordion config) =
+    Accordion { config | templates = fu config.templates }
 
 
 {-| -}
@@ -101,20 +121,28 @@ exit =
         )
 
 
+{-| The focus is on a root node
+-}
 isRoot : Accordion msg -> Bool
 isRoot (Accordion config) =
     Tree.isRoot config.tree
 
 
-{-| -}
+{-| Go upmost
+-}
 root : Accordion msg -> Accordion msg
 root (Accordion config) =
     Accordion { config | tree = Tree.root config.tree }
 
 
-{-| -}
-location : Accordion msg -> String
-location (Accordion config) =
+
+---- ids
+
+
+{-| Parent id; if is root, then !!
+-}
+parentId : Accordion msg -> String
+parentId (Accordion config) =
     if Tree.isRoot config.tree then
         "" |> Debug.log ("Location: Root / " ++ .id (Tree.focus config.tree))
 
@@ -122,21 +150,18 @@ location (Accordion config) =
         config.tree |> Tree.up |> Tree.focus |> .id |> (++) "#" |> Debug.log ("Location: / " ++ .id (Tree.focus config.tree) ++ " \\")
 
 
-{-| -}
-focus : Accordion msg -> String
-focus (Accordion config) =
-    if Tree.isRoot config.tree then
-        ""
-
-    else
-        config.tree |> Tree.focus |> .id
+{-| Focus id
+-}
+focusId : Accordion msg -> String
+focusId (Accordion config) =
+    config.tree |> Tree.focus |> .id
 
 
 
 ---- A C T I O N S ----
 
 
-{-| Serialize the creation of an Accordion
+{-| Serialize the creation of an `Accordion`
 -}
 type Action
     = Name String
@@ -146,6 +171,80 @@ type Action
     | Insert Direction
 
 
+{-| -}
+decodeAction : Decoder Action
+decodeAction =
+    Decode.field "Constructor"
+        Decode.string
+        |> Decode.andThen
+            (\constructor ->
+                case constructor of
+                    "Name" ->
+                        Decode.map
+                            Name
+                            (Decode.field "A1" Decode.string)
+
+                    "Modify" ->
+                        Decode.map
+                            Modify
+                            (Decode.field "A1" Segment.decodeAction)
+
+                    "Find" ->
+                        Decode.map
+                            Find
+                            (Decode.field "A1" Decode.string)
+
+                    "Go" ->
+                        Decode.map
+                            Go
+                            (Decode.field "A1" Fold.decodeDirection)
+
+                    "Insert" ->
+                        Decode.map
+                            Insert
+                            (Decode.field "A1" Fold.decodeDirection)
+
+                    other ->
+                        Decode.fail <| "Unknown constructor for type Action: " ++ other
+            )
+
+
+{-| -}
+encodeAction : Action -> Value
+encodeAction a =
+    case a of
+        Name a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Name" )
+                , ( "A1", Encode.string a1 )
+                ]
+
+        Modify a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Modify" )
+                , ( "A1", Segment.encodeAction a1 )
+                ]
+
+        Find a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Find" )
+                , ( "A1", Encode.string a1 )
+                ]
+
+        Go a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Go" )
+                , ( "A1", Fold.encodeDirection a1 )
+                ]
+
+        Insert a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Insert" )
+                , ( "A1", Fold.encodeDirection a1 )
+                ]
+
+
+{-| -}
 create : List Action -> Accordion msg
 create =
     let
@@ -182,15 +281,15 @@ create =
 ---- Navigate -----
 
 
-{-| The Url encodes the parent of the focus!
+{-| The `Url` fragment encodes the parent of the focus!
 -}
-find : Url -> Accordion msg -> Accordion msg
-find { fragment } =
+goToParentId : Maybe String -> Accordion msg -> Accordion msg
+goToParentId fragment =
     let
         debugLocation =
-            \accordion -> location accordion |> always accordion
+            \accordion -> parentId accordion |> always accordion
 
-        goToId =
+        goToId_ =
             \str -> .id >> (==) str |> Tree.Find |> Tree.go
     in
     case Debug.log "Accordion tries to find" fragment of
@@ -199,7 +298,13 @@ find { fragment } =
 
         Just parent ->
             debugLocation
-                >> mapTree (goToId parent >> Tree.go (Walk Down (Fail identity)))
+                >> mapTree (goToId_ parent >> Tree.go (Walk Down (Fail identity)))
+
+
+{-| -}
+goToId : String -> Accordion msg -> Accordion msg
+goToId id =
+    mapTree (.id >> (==) id |> Tree.Find |> Tree.go)
 
 
 {-| -}
@@ -251,12 +356,8 @@ setSegment segment ((Accordion { tree }) as accordion) =
     mapTree (Tree.mapFocus (\_ -> { segment | id = uniqueId })) accordion
 
 
-createLink : Accordion msg -> String -> Html.Attribute Never
-createLink accordion string =
-    closestId string accordion
-        |> (\id -> href ("#" ++ id))
-
-
+{-| can be used to generate links, for example in Toc or Search
+-}
 closestId : String -> Accordion msg -> String
 closestId searchString (Accordion { tree }) =
     Tree.flatten tree
@@ -268,40 +369,6 @@ closestId searchString (Accordion { tree }) =
 mapSegment : (Segment -> Segment) -> Accordion msg -> Accordion msg
 mapSegment =
     Tree.mapFocus >> mapTree
-
-
-{-| -}
-anarchiveX : Segment.BodyTemplate
-anarchiveX =
-    Html.div [ class "anArchive" ]
-        [ Html.iframe
-            [ attribute "width" "100%"
-            , css [ position absolute, Css.height (pct 100), border (px 0) ]
-            , src "https://www.are.na/moving-across-thresholds/library-of-worded-companions/embed"
-            , title "Moving Across Thresholds - AnArchive"
-            ]
-            []
-        ]
-        |> Segment.Content
-
-
-{-| -}
-vimeoX : Segment.BodyTemplate
-vimeoX =
-    Html.iframe
-        [ attribute "width" "100%"
-        , css [ position absolute, Css.height (vh 100), border (px 0) ]
-        , attribute "loading" "lazy"
-        , src "https://player.vimeo.com/video/643915247?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;quality=1080p&amp;dnt=1"
-        , attribute "frameborder" "0"
-        , attribute "allowfullscreen" "allowfullscreen"
-        , attribute "data-rocket-lazyload" "fitvidscompatible"
-        , attribute "data-lazy-src" "https://player.vimeo.com/video/643915247?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;quality=1080p&amp;dnt=1"
-        , attribute "data-ll-status" "loaded"
-        , class "entered lazyloaded"
-        ]
-        []
-        |> Segment.Content
 
 
 
@@ -321,10 +388,12 @@ type alias ViewMode msg =
     }
 
 
+{-| -}
 type Msg
     = TemplatesUpdated (Segment.Templates -> Segment.Templates)
 
 
+{-| -}
 update : Msg -> Accordion msg -> Accordion msg
 update msg (Accordion config) =
     case msg of
@@ -343,8 +412,8 @@ view { zone, do, volatile } (Accordion config) =
         classes =
             classList
                 [ ( "\u{1FA97}" ++ Segment.orientationToString (Segment.orientation (Tree.focus config.tree)), True )
-                , ( "aisleHasBody", List.any Segment.hasBody (Tree.getAisleNodes config.tree |> Zipper.flat) )
-                , ( "focusHasBody", Segment.hasBody (Tree.focus config.tree) )
+                , ( "aisleHasBody", List.any (Segment.hasBody config) (Tree.getAisleNodes config.tree |> Zipper.flat) )
+                , ( "focusHasBody", Segment.hasBody config (Tree.focus config.tree) )
                 , ( "focusIsRoot", Tree.isRoot config.tree )
                 , ( "focusIsBackground", Segment.isBackground (Tree.focus config.tree) )
                 ]
@@ -407,7 +476,7 @@ view { zone, do, volatile } (Accordion config) =
                         mode =
                             { zone = zone, position = position, region = region, offset = offset }
                     in
-                    ( ViewSegment.addWidth mode (Segment.hasBody segment) (Segment.width segment) (Segment.infoLineCount segment) offset
+                    ( ViewSegment.addWidth mode (Segment.hasBody config segment) (Segment.width segment) (Segment.infoLineCount segment) offset
                     , viewSegment mode segment :: newList
                     )
                 )

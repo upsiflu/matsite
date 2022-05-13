@@ -65,9 +65,9 @@
   font-weight: bold;
   font-size: 0.75rem;
   display: block;
-  transition: all 0.5s;
-  border-radius: 1rem;
-  padding: 0.2rem 0.5rem;
+  transition: all 0.2s;
+  padding: 0.2rem 0.4rem;
+  letter-spacing: -0.2px;
 }
 .sheet .pick > label > input {
   width: 1rem;
@@ -85,8 +85,7 @@
 .sheet .pick > label > input:not(:checked) ~ span {
   cursor: pointer;
   background: orangered;
-  letter-spacing: -0.2px;
 }
 .sheet .pick > label:hover > input:not(:checked) ~ span {
-  letter-spacing: 2px;
-}/*# sourceMappingURL=ui.css.map */
+  background: white;
+} /*# sourceMappingURL=ui.css.map */

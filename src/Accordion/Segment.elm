@@ -1,9 +1,16 @@
 module Accordion.Segment exposing
     ( Segment
+    , defaultIllustration
     , empty, singleton
-    , Orientation(..)
-    , view, structureClass, orientationToString, hasBody
-    , Action(..), BodyChoice(..), BodyTemplate(..), InfoTemplate(..), Shape(..), Templates, addClass, apply, defaultIllustration, edit, hint, infoLineCount, initialTemplates, isBackground, isIllustration, orientation, removeClass, width
+    , Action(..)
+    , encodeAction, decodeAction
+    , apply
+    , Orientation(..), Shape(..)
+    , initialTemplates
+    , Templates, BodyTemplate(..), InfoTemplate(..)
+    , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
+    , infoLineCount
+    , view, edit
     )
 
 {-| contain the immutable site content
@@ -15,19 +22,41 @@ _To render Segments differently based on their position in the tree, use
   - `Segment` adds classes based on the intended config, independent from the position
 
 @docs Segment
+
+
+# Create
+
+@docs defaultIllustration
 @docs empty, singleton
-@docs Orientation
 
 
-# Map
+## Actions
 
-@docs withIllustration, withContent, withOrientation, withoutCaption, withAdditionalCaption, withInfo, withAdditionalAttributes
-@docs decreaseColumnCount, increaseColumnCount
+@docs Action
+@docs encodeAction, decodeAction
+@docs apply
+
+
+## Field types
+
+@docs Orientation, Shape
+
+
+## Template types
+
+@docs initialTemplates
+@docs Templates, BodyTemplate, InfoTemplate
+
+
+# Deconstruct
+
+@docs hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
+@docs infoLineCount
 
 
 # View
 
-@docs view, structureClass, orientationToString, hasBody
+@docs view, edit
 
 -}
 
@@ -40,13 +69,13 @@ import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick)
-import Html.Styled.Keyed as Keyed
+import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Encode as Encode
 import Layout exposing (..)
-import Time
 import Ui
-import Zipper exposing (Zipper)
+import Zipper
 import Zipper.Branch as Branch
-import Zipper.Mixed as MixedZipper exposing (MixedZipper)
+import Zipper.Mixed as MixedZipper
 import Zipper.Tree as Tree
 
 
@@ -80,11 +109,240 @@ type Action
     | WithClasses (List String)
 
 
+type alias Caption =
+    { text : String, showsDate : Bool }
+
+
+{-| -}
+decodeAction : Decoder Action
+decodeAction =
+    Decode.field "Constructor" Decode.string
+        |> Decode.andThen
+            (\constructor ->
+                case constructor of
+                    "WithCaption" ->
+                        Decode.map
+                            WithCaption
+                            (Decode.field "A1" decodeCaption)
+
+                    "WithInfo" ->
+                        Decode.map
+                            WithInfo
+                            (Decode.field "A1" (Decode.maybe decodeInfoChoice))
+
+                    "WithHeading" ->
+                        Decode.map
+                            WithHeading
+                            (Decode.field "A1" (Decode.maybe Decode.string))
+
+                    "WithBody" ->
+                        Decode.map
+                            WithBody
+                            (Decode.field "A1" decodeBodyChoice)
+
+                    "WithShape" ->
+                        Decode.map
+                            WithShape
+                            (Decode.field "A1" decodeShape)
+
+                    "WithFab" ->
+                        Decode.map
+                            WithFab
+                            (Decode.field "A1" (Decode.maybe Fab.decode))
+
+                    "WithClasses" ->
+                        Decode.map
+                            WithClasses
+                            (Decode.field "A1" (Decode.list Decode.string))
+
+                    other ->
+                        Decode.fail <| "Unknown constructor for type Action: " ++ other
+            )
+
+
+decodeBodyChoice : Decoder BodyChoice
+decodeBodyChoice =
+    let
+        recover x =
+            case x of
+                "PeekThrough" ->
+                    Decode.succeed PeekThrough
+
+                "CustomContent" ->
+                    Decode.succeed CustomContent
+
+                "CustomIllustration" ->
+                    Decode.succeed CustomIllustration
+
+                other ->
+                    Decode.fail <| "Unknown constructor for type BodyChoice: " ++ other
+    in
+    Decode.string |> Decode.andThen recover
+
+
+decodeInfoChoice : Decoder InfoChoice
+decodeInfoChoice =
+    Decode.field "Constructor" Decode.string
+        |> Decode.andThen
+            (\constructor ->
+                case constructor of
+                    "CustomByline" ->
+                        Decode.map
+                            CustomByline
+                            (Decode.field "A1" Decode.int)
+
+                    "CustomToc" ->
+                        Decode.succeed CustomToc
+
+                    other ->
+                        Decode.fail <| "Unknown constructor for type InfoChoice: " ++ other
+            )
+
+
+decodeCaption : Decoder Caption
+decodeCaption =
+    Decode.map2
+        Caption
+        (Decode.field "text" Decode.string)
+        (Decode.field "showsDate" Decode.bool)
+
+
+{-| -}
+encodeAction : Action -> Value
+encodeAction a =
+    case a of
+        WithCaption a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithCaption" )
+                , ( "A1", encodeRecord_text_String_showsDate_Bool_ a1 )
+                ]
+
+        WithInfo a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithInfo" )
+                , ( "A1", encodeMaybe encodeInfoChoice a1 )
+                ]
+
+        WithHeading a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithHeading" )
+                , ( "A1", encodeMaybe Encode.string a1 )
+                ]
+
+        WithBody a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithBody" )
+                , ( "A1", encodeBodyChoice a1 )
+                ]
+
+        WithShape a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithShape" )
+                , ( "A1", encodeShape a1 )
+                ]
+
+        WithFab a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithFab" )
+                , ( "A1", encodeMaybe Fab.encode a1 )
+                ]
+
+        WithClasses a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "WithClasses" )
+                , ( "A1", Encode.list Encode.string a1 )
+                ]
+
+
+encodeBodyChoice : BodyChoice -> Value
+encodeBodyChoice a =
+    Encode.string <|
+        case a of
+            PeekThrough ->
+                "PeekThrough"
+
+            CustomContent ->
+                "CustomContent"
+
+            CustomIllustration ->
+                "CustomIllustration"
+
+
+encodeInfoChoice : InfoChoice -> Value
+encodeInfoChoice a =
+    case a of
+        CustomByline lineCount ->
+            Encode.object
+                [ ( "Constructor", Encode.string "CustomByline" )
+                , ( "A1", Encode.int lineCount )
+                ]
+
+        CustomToc ->
+            Encode.object
+                [ ( "Constructor", Encode.string "CustomToc" )
+                ]
+
+
+encodeMaybe f a =
+    case a of
+        Just b ->
+            f b
+
+        Nothing ->
+            Encode.null
+
+
+encodeRecord_text_String_showsDate_Bool_ a =
+    Encode.object
+        [ ( "text", Encode.string a.text )
+        , ( "showsDate", Encode.bool a.showsDate )
+        ]
+
+
+{-| -}
 type Shape
     = Oriented Orientation Width
     | Background
 
 
+decodeOrientation : Decoder Orientation
+decodeOrientation =
+    let
+        recover x =
+            case x of
+                "Vertical" ->
+                    Decode.succeed Vertical
+
+                "Horizontal" ->
+                    Decode.succeed Horizontal
+
+                other ->
+                    Decode.fail <| "Unknown constructor for type Orientation: " ++ other
+    in
+    Decode.string |> Decode.andThen recover
+
+
+decodeShape : Decoder Shape
+decodeShape =
+    Decode.field "Constructor" Decode.string
+        |> Decode.andThen
+            (\constructor ->
+                case constructor of
+                    "Oriented" ->
+                        Decode.map2
+                            Oriented
+                            (Decode.field "A1" decodeOrientation)
+                            (Decode.field "A2" ViewMode.decodeWidth)
+
+                    "Background" ->
+                        Decode.succeed Background
+
+                    other ->
+                        Decode.fail <| "Unknown constructor for type Shape: " ++ other
+            )
+
+
+{-| -}
 width : Segment -> Width
 width s =
     case s.shape of
@@ -116,6 +374,7 @@ infoLineCount s =
             2
 
 
+{-| -}
 type InfoTemplate
     = Byline Int (Html Never)
     | Toc
@@ -127,12 +386,13 @@ type BodyChoice
     | CustomIllustration
 
 
+{-| -}
 type BodyTemplate
     = Content (Html Never)
     | Illustration (Html Never)
 
 
-{-| This is akin to Msg, with the difference being that Action is serializable
+{-| akin to update, but with serializable `Action` instead of `Msg`
 -}
 apply : Action -> Segment -> Segment
 apply a s =
@@ -160,6 +420,8 @@ apply a s =
             { s | shape = h }
 
 
+{-| per-session switchable hardcoded presets; off by default
+-}
 type alias Templates =
     { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
 
@@ -188,33 +450,18 @@ toggleInfoTemplate s t =
     { t | info = Dict.update s.id (Maybe.map (Tuple.mapFirst not)) t.info }
 
 
+{-| Volatile per-session preset dicts; individually switchable; all off by default; see `Data` module for presets
+-}
 initialTemplates : { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
 initialTemplates =
     { body =
-        Dict.fromList
-            [ ( "intro", Content (Html.text "intro") )
-            ]
-            |> Dict.map (\_ -> Tuple.pair False)
+        Dict.empty
     , info =
         Dict.empty
-            |> Dict.map (\_ -> Tuple.pair False)
     }
 
 
 {-| -}
-isIllustration : { templates : Templates } -> Segment -> Bool
-isIllustration { templates } s =
-    case ( s.body, getTemplate .body s templates ) of
-        ( _, Just (Illustration _) ) ->
-            True
-
-        ( CustomIllustration, Nothing ) ->
-            True
-
-        _ ->
-            False
-
-
 orientation : Segment -> Orientation
 orientation s =
     case s.shape of
@@ -225,6 +472,7 @@ orientation s =
             Vertical
 
 
+{-| -}
 isBackground : Segment -> Bool
 isBackground s =
     case s.shape of
@@ -239,6 +487,33 @@ isBackground s =
 type Orientation
     = Vertical
     | Horizontal
+
+
+encodeOrientation : Orientation -> Value
+encodeOrientation a =
+    Encode.string <|
+        case a of
+            Vertical ->
+                "Vertical"
+
+            Horizontal ->
+                "Horizontal"
+
+
+encodeShape : Shape -> Value
+encodeShape a =
+    case a of
+        Oriented a1 a2 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Oriented" )
+                , ( "A1", encodeOrientation a1 )
+                , ( "A2", ViewMode.encodeWidth a2 )
+                ]
+
+        Background ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Background" )
+                ]
 
 
 {-| -}
@@ -282,6 +557,8 @@ defaultIllustration =
     { empty | id = "defaultIllustration", body = CustomIllustration }
 
 
+{-| Title for peeks and images. May be extended later to include A11y captions.
+-}
 hint : Segment -> String
 hint s =
     s.caption.text
@@ -360,14 +637,22 @@ edit { do, insert, templates, updateTemplates, context } ({ position } as mode) 
                             Maybe.map (always [ ( "Preset", toggleBodyTemplate s |> updateTemplates ) ]) template.body
                                 |> Maybe.withDefault []
 
+                        activeOption =
+                            case ( getTemplate .body s templates, s.body ) of
+                                ( Just _, _ ) ->
+                                    "Preset"
+
+                                ( _, custom ) ->
+                                    bodyTypeToString custom
+
                         options =
-                            templateOption
-                                ++ [ ( "Illustration", do (WithBody CustomIllustration) )
-                                   , ( "Content", do (WithBody CustomContent) )
-                                   ]
+                            [ ( bodyTypeToString CustomIllustration, do (WithBody CustomIllustration) )
+                            , ( bodyTypeToString CustomContent, do (WithBody CustomContent) )
+                            ]
                                 |> Zipper.create
-                                    ( "Peek Through", do (WithBody PeekThrough) )
-                                    []
+                                    ( bodyTypeToString PeekThrough, do (WithBody PeekThrough) )
+                                    templateOption
+                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
                     in
                     ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
                       , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
@@ -399,7 +684,7 @@ view { templates, context } =
 
 
 view_ : { templates : Templates, context : Tree.Split Segment } -> List (Html.Attribute msg) -> List (Html msg) -> ViewMode -> Segment -> ( String, Html msg )
-view_ { templates, context } attr els mode s =
+view_ ({ templates, context } as config) attr els mode s =
     let
         viewCaption cc =
             header "" s.id cc.text
@@ -491,7 +776,7 @@ view_ { templates, context } attr els mode s =
                               , scr
                               )
                             , ( "ownHeaders"
-                              , hasBody s |> ifElse 1 0
+                              , hasBody config s |> ifElse 1 0
                               )
                             , ( "ownInfoLines"
                               , mode.position.role == Parent |> ifElse (infoLineCount s) 0
@@ -510,11 +795,11 @@ view_ { templates, context } attr els mode s =
                         [ toc context ]
     in
     List.map (Html.map never)
-        [ s.caption |> viewCaption |> Ui.notIf (hasBody s && mode.position.isLeaf && not mode.position.isRoot)
+        [ s.caption |> viewCaption |> Ui.notIf (hasBody config s && mode.position.isLeaf && not mode.position.isRoot)
         , s.body |> viewBody
         , s.info |> Ui.ifJust viewInfo
         , orientation s |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
-        , mode.position.path |> List.map (Fold.viewDirection >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
+        , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
         ]
         ++ els
         |> Html.li
@@ -522,13 +807,55 @@ view_ { templates, context } attr els mode s =
                 :: ViewMode.toClass mode
                 :: class (orientationToString (orientation s))
                 :: class (bodyTypeToString s.body)
-                :: structureClass s
+                :: structureClass config s
                 :: ViewMode.toCssVariables mode
                 :: css ownWidthAsVars
                 :: additionalAttributes
                 ++ attr
             )
         |> Tuple.pair s.id
+
+
+
+---- Deconstruct
+
+
+{-| -}
+structureClass : { c | templates : Templates } -> Segment -> Html.Attribute msg
+structureClass config s =
+    classList [ ( "noCaption", s.caption.text == "" ), ( "hasBody", hasBody config s ) ]
+
+
+{-| -}
+hasBody : { c | templates : Templates } -> Segment -> Bool
+hasBody { templates } s =
+    case ( s.body, getTemplate .body s templates ) of
+        ( _, Just _ ) ->
+            True
+
+        ( PeekThrough, Nothing ) ->
+            False
+
+        _ ->
+            True
+
+
+{-| -}
+isIllustration : { c | templates : Templates } -> Segment -> Bool
+isIllustration { templates } s =
+    case ( s.body, getTemplate .body s templates ) of
+        ( _, Just (Illustration _) ) ->
+            True
+
+        ( CustomIllustration, Nothing ) ->
+            True
+
+        _ ->
+            False
+
+
+
+---- Helpers
 
 
 {-| -}
@@ -547,27 +874,10 @@ bodyTypeToString : BodyChoice -> String
 bodyTypeToString body =
     case body of
         PeekThrough ->
-            "noBody"
+            "Peek-Through"
 
         CustomIllustration ->
-            "illustration"
+            "Illustration"
 
         CustomContent ->
-            "content"
-
-
-{-| -}
-structureClass : Segment -> Html.Attribute msg
-structureClass s =
-    classList [ ( "noCaption", s.caption.text == "" ), ( "hasBody", hasBody s ) ]
-
-
-{-| -}
-hasBody : Segment -> Bool
-hasBody s =
-    case s.body of
-        PeekThrough ->
-            False
-
-        _ ->
-            True
+            "Html"

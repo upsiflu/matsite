@@ -5,7 +5,6 @@ import Css.Global as Global
 import Css.Media as Media
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (class, css, href)
-import Html.Styled.Events exposing (onClick)
 import Svg.Styled as Svg exposing (svg)
 import Svg.Styled.Attributes as SvgAttributes
 
@@ -39,6 +38,7 @@ theme =
     }
 
 
+typography : Html msg
 typography =
     Global.global
         [ Global.selector "html"

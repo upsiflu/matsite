@@ -23,7 +23,10 @@
   --info-height: calc(var(--north-infoLines) * var(--unit));
   /* Cross stroke-widths */
   /* Total extents */
-  width: var(--width);
+  width: calc(var(--width) + 100vw);
+  margin-left: 50vw;
+  position: relative;
+  left: 50vw;
   height: var(--height);
   /* The extreme regions are tucked to the edges of the accordion */
 }
@@ -95,18 +98,22 @@
   top: var(--y);
   width: var(--unit);
   height: var(--column);
+  z-index: 4;
+}
+.Accordion > .west > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
-  z-index: 4;
 }
 .Accordion > .east {
   left: calc(var(--width) - var(--east-width) + var(--units) * var(--unit));
   top: var(--y);
   width: var(--unit);
   height: var(--column);
+  z-index: 4;
+}
+.Accordion > .east > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
-  z-index: 4;
 }
 .Accordion.🪗🁣 > .nearWest {
   left: var(--x);
@@ -120,6 +127,8 @@
 }
 .Accordion.🪗🀱 > .nearWest:not(.hasBody) {
   height: var(--column);
+}
+.Accordion.🪗🀱 > .nearWest:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
 }
@@ -135,6 +144,8 @@
 }
 .Accordion.🪗🀱 > .nearEast:not(.hasBody) {
   height: var(--column);
+}
+.Accordion.🪗🀱 > .nearEast:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
 }
@@ -199,10 +210,12 @@
 }
 .Accordion:not(.focusHasBody) > .center.🀱 {
   top: var(--y);
-  -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
   height: var(--center-height);
   width: var(--unit);
+}
+.Accordion:not(.focusHasBody) > .center.🀱 > .segmentLabel {
+  -ms-writing-mode: tb-rl;
+      writing-mode: vertical-rl;
 }
 .Accordion > .peek {
   overflow: hidden;

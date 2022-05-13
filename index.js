@@ -1,5 +1,6 @@
 import {Elm} from "./src/Main.elm"
-import _ from "lodash"
+import { } from './append-log'
+import { } from './closest-aisle'
 
 var app = Elm.Main.init({
     node: document.getElementById('app')
@@ -17,8 +18,7 @@ app.ports.pleaseConfirm.subscribe(function (message) {
 });
 
 
-const findMiddle=()=>{
-    console.log("e");
+const findMiddle=(str)=>{
+    console.log(str);
 }
 
-window.addEventListener("scroll", _.debounce(findMiddle, 400)());

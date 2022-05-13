@@ -20,6 +20,8 @@
 }
 
 
+
+
 .Accordion {
     /* Cumulative measures */
     --west-width: calc(var(--west-units) * var(--unit));
@@ -54,7 +56,10 @@
     }
 
     /* Total extents */
-    width: var(--width);
+    width: calc(var(--width) + 100vw);
+    margin-left:50vw;
+    position:relative;
+    left:50vw;
     height: var(--height);
 
     &.focusIsBackground {
@@ -123,7 +128,11 @@
         width: var(--unit);
         // height: var(--here-height);
         height: var(--column);
-        writing-mode: vertical-rl;
+
+        >.segmentLabel {
+            writing-mode: vertical-rl;
+        }
+
         z-index: 4;
     }
 
@@ -133,7 +142,11 @@
         width: var(--unit);
         // height: var(--here-height);
         height: var(--column);
-        writing-mode: vertical-rl;
+
+        >.segmentLabel {
+            writing-mode: vertical-rl;
+        }
+
         z-index: 4;
     }
 
@@ -151,7 +164,10 @@
 
         &:not(.hasBody) {
             height: var(--column);
-            writing-mode: vertical-rl;
+
+            >.segmentLabel {
+                writing-mode: vertical-rl;
+            }
         }
     }
 
@@ -171,7 +187,10 @@
 
         &:not(.hasBody) {
             height: var(--column);
-            writing-mode: vertical-rl;
+
+            >.segmentLabel {
+                writing-mode: vertical-rl;
+            }
         }
 
     }
@@ -256,7 +275,11 @@
 
         &.🀱 {
             top: var(--y);
-            writing-mode: vertical-rl;
+
+            >.segmentLabel {
+                writing-mode: vertical-rl;
+            }
+
             height: var(--center-height);
             width: var(--unit);
         }

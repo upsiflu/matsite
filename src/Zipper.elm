@@ -3,7 +3,7 @@ module Zipper exposing
     , singleton, create
     , left, right
     , leftmost, rightmost
-    , map, mapFocus, mapPeriphery
+    , map, mapFocus, mapPeriphery, mapByPosition
     , deleteFocus
     , growLeft, growRight
     , prepend, append
@@ -12,12 +12,12 @@ module Zipper exposing
     , consLeft, consRight
     , focus, periphery
     , getLeftmost, getRightmost
+    , findClosest
     , flat
     , isLeftmost, isRightmost, isSingleton
     , length
     , Fold, fold, defold
     , foldl, foldr
-    , findClosest, mapByPosition
     )
 
 {-|
@@ -36,7 +36,7 @@ This zipper wraps over the edges by default. If you want to implement a differen
 
 # Map
 
-@docs map, mapFocus, mapPeriphery
+@docs map, mapFocus, mapPeriphery, mapByPosition
 
 
 # Shrink and Grow
@@ -56,6 +56,11 @@ This zipper wraps over the edges by default. If you want to implement a differen
 
 @docs focus, periphery
 @docs getLeftmost, getRightmost
+
+
+# Query
+
+@docs findClosest
 
 ---
 

@@ -5,9 +5,13 @@ import Browser
 import Browser.Navigation as Nav
 import Css exposing (..)
 import Data
-import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (class, css, href)
-import Html.Styled.Events exposing (onClick)
+import Html as Unstyled
+import Html.Attributes as UnstyledAttributes
+import Html.Events as Events
+import Html.Styled as Html
+import Html.Styled.Attributes as Attributes exposing (href)
+import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Encode as Encode
 import Layout exposing (..)
 import Task
 import Time
@@ -24,6 +28,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
+    , backlog : Backlog
     , zone : Maybe Time.Zone
     }
 
@@ -41,11 +46,12 @@ main =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
+                        , backlog = ( 0, [] )
                         , zone = Nothing
                         }
 
                     initialUrl =
-                        { url | fragment = Just (Accordion.location initialAccordion |> Debug.log "Initial Model location is") }
+                        { url | fragment = Just (Accordion.parentId initialAccordion |> Debug.log "Initial Model location is") }
                 in
                 initialModel
                     |> (case Debug.log "Initialize with fragment" url.fragment of
@@ -72,18 +78,23 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | ZoneReceived Time.Zone
-    | ActionInvoked Accordion.Action
-    | AccordionMessage Accordion.Msg
+    | ActionGenerated Accordion.Action
+    | ActionsReceived (List Accordion.Action)
+    | AccordionMessageReceived Accordion.Msg
+    | ScrolledTo String
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
-        ActionInvoked action ->
-            ( model, Cmd.none )
+        ActionsReceived actions ->
+            ( { model | accordion = Accordion.create actions |> Accordion.goToParentId model.url.fragment }, Cmd.none )
 
-        AccordionMessage amsg ->
-            ( { model | accordion = Accordion.update amsg model.accordion }, Cmd.none )
+        ActionGenerated action ->
+            ( { model | backlog = model.backlog |> (\( count, _ ) -> ( count + 1, [ Accordion.Find (Accordion.focusId model.accordion), action ] )) }, Cmd.none )
+
+        AccordionMessageReceived accMsg ->
+            ( { model | accordion = Accordion.update accMsg model.accordion }, Cmd.none )
 
         -- Send action via port to js!
         ZoneReceived zone ->
@@ -93,7 +104,7 @@ update msg model =
             let
                 ( newUrl, newAccordion ) =
                     if Debug.log "Internal url clicked" url == model.url then
-                        Accordion.exit model.accordion |> (\acc -> ( Accordion.location acc, acc ))
+                        Accordion.exit model.accordion |> (\acc -> ( Accordion.parentId acc, acc ))
 
                     else
                         ( Url.toString url |> Debug.log "chosen new url", model.accordion )
@@ -113,17 +124,20 @@ update msg model =
             let
                 newModel =
                     if Debug.log "Url changed to" url /= Debug.log "Url was previously" model.url then
-                        { model | accordion = Accordion.find url model.accordion, url = url }
+                        { model | accordion = Accordion.goToParentId url.fragment model.accordion, url = url }
 
                     else
                         model
             in
             ( newModel
             , Cmd.batch
-                [ Accordion.focus newModel.accordion |> pleaseCenter
-                , Accordion.location newModel.accordion |> pleaseConfirm
+                [ Accordion.focusId newModel.accordion |> pleaseCenter
+                , Accordion.parentId newModel.accordion |> pleaseConfirm
                 ]
             )
+
+        ScrolledTo id ->
+            ( { model | accordion = Accordion.goToId id model.accordion }, Cmd.none )
 
 
 {-| -}
@@ -131,40 +145,41 @@ view model =
     { title = "Moving across Thresholds"
     , body =
         [ Layout.typography
+            |> Html.toUnstyled
 
         -- , Html.hr [] []
         , Html.div [ Attributes.class "overflow" ]
-            [ Accordion.view { zone = model.zone, do = ActionInvoked, volatile = AccordionMessage } model.accordion ]
-
-        -- , Html.hr [] []
-        -- , section
-        --     [ header "" "example" "Fatigue as creative proposition"
-        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-        --     , h2 "This Subheading is weirdäö@%&äÄ'"
-        --     , dense "For more concrete discussion of content and structure, check out these collaborative docs."
-        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-        --     , p "This is the new Moving Across Thresholds website. Right now, you can’t see anything yet. This week, I’ll create the prototype, and a link to test it will appear here."
-        --     ]
-        -- , Html.div
-        --     [ css
-        --         [ displayFlex
-        --         , position relative
-        --         , width (vw 100)
-        --         , height (vh 100)
-        --         , backgroundColor (rgb 100 200 200)
-        --         ]
-        --     ]
-        --     []
-        -- , Html.div
-        --     [ css
-        --         [ displayFlex
-        --         , position relative
-        --         , width (vw 100)
-        --         , height (vh 100)
-        --         , backgroundColor (rgb 100 200 200)
-        --         ]
-        --     ]
-        --     [ Accordion.vimeoX ]
+            [ Accordion.view
+                { zone = model.zone, do = ActionGenerated, volatile = AccordionMessageReceived }
+                model.accordion
+            ]
+            |> Html.toUnstyled
+        , Unstyled.div []
+            [ Unstyled.node "append-log" [ encodeBacklog model.backlog |> Encode.encode 0 |> UnstyledAttributes.attribute "backlog" ] []
+            , Unstyled.node "closest-aisle"
+                [ Events.on "scrolledToA" (Decode.map ScrolledTo (Decode.at [ "detail" ] Decode.string))
+                ]
+                []
+            ]
         ]
-            |> List.map Html.toUnstyled
     }
+
+
+decodeBacklog : Decoder Backlog
+decodeBacklog =
+    Decode.map2
+        (\a1 a2 -> ( a1, a2 ))
+        (Decode.field "A1" Decode.int)
+        (Decode.field "A2" (Decode.list Accordion.decodeAction))
+
+
+encodeBacklog : Backlog -> Value
+encodeBacklog ( a1, a2 ) =
+    Encode.object
+        [ ( "A1", Encode.int a1 )
+        , ( "A2", Encode.list Accordion.encodeAction a2 )
+        ]
+
+
+type alias Backlog =
+    ( Int, List Accordion.Action )

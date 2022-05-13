@@ -14,7 +14,7 @@ module Zipper.Tree exposing
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
     , growRootLeft, growRootRight
-    , insertLeft, insertRight
+    , insert, insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
     , focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
@@ -22,12 +22,12 @@ module Zipper.Tree exposing
     , path
     , circumference
     , petrify
+    , flatten
     , any
     , Fold, defold, fold
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , flatten, insert
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -81,7 +81,7 @@ module Zipper.Tree exposing
 
 ---
 
-@docs insertLeft, insertRight
+@docs insert, insertLeft, insertRight
 @docs prepend, append
 @docs consLeft, consRight
 
@@ -89,10 +89,18 @@ module Zipper.Tree exposing
 # Deconstruct
 
 @docs focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
+
+---
+
 @docs isRoot
 @docs path
 @docs circumference
 @docs petrify
+@docs flatten
+
+
+# Query
+
 @docs any
 
 
@@ -423,6 +431,9 @@ type EdgeOperation a
     | Fail (a -> a)
 
 
+{-| `Left` and `Right` are trivial, whereas `Up` will add a
+whole level with just a singleton `a`
+-}
 insert : Direction -> a -> Tree a -> Tree a
 insert direction a =
     case direction of
@@ -436,7 +447,7 @@ insert direction a =
             MixedNonempty.insert (MixedZipper.singleton a)
 
         Down ->
-            MixedNonempty.mapHead (Zipper.mapFocus (Branch.cons (MixedZipper.singleton a)))
+            MixedNonempty.mapHead (Zipper.mapFocus (Branch.insert (MixedZipper.singleton a)))
 
         Here ->
             identity

@@ -2,7 +2,8 @@ module Zipper.Branch exposing
     ( Branch
     , singleton, create, fromPath
     , map, mapOffspring, mapNode, mapSpine
-    , cons
+    , mapLeaves, mapFocusedLeaf
+    , cons, insert
     , forkLeft, forkRight
     , prepend, append
     , growRight, growLeft
@@ -17,7 +18,6 @@ module Zipper.Branch exposing
     , DirBranch
     , defoldWithDirections, zipDirections
     , flatFold
-    , PosBranch, mapFocusedLeaf, mapLeaves, zipPositions
     )
 
 {-|
@@ -29,11 +29,12 @@ module Zipper.Branch exposing
 # Map
 
 @docs map, mapOffspring, mapNode, mapSpine
+@docs mapLeaves, mapFocusedLeaf
 
 
 # Grow
 
-@docs cons
+@docs cons, insert
 @docs forkLeft, forkRight
 @docs prepend, append
 @docs growRight, growLeft
@@ -677,3 +678,11 @@ cons surface (Branch br) =
 isLeaf : Branch a -> Bool
 isLeaf (Branch b) =
     MixedNonempty.isSingleton b
+
+
+{-| adds between head and tail
+-}
+insert : MixedZipper a (Branch a) -> Branch a -> Branch a
+insert level (Branch b) =
+    MixedNonempty.insert level b
+        |> Branch

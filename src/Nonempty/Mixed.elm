@@ -1,16 +1,15 @@
 module Nonempty.Mixed exposing
     ( MixedNonempty
     , singleton, create
-    , map, mapTail, mapHead, mapSecond
+    , map, mapTail, mapHead, mapSecond, mapLast, mapLast2
     , delete, deleteWithDefault
     , grow
     , insert, append, cons
     , member, head, tail
-    , uncons, cut, last, mapLast, second
+    , uncons, cut, last, second
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
-    , mapLast2
     )
 
 {-|
@@ -21,7 +20,7 @@ module Nonempty.Mixed exposing
 
 # Map
 
-@docs map, mapTail, mapHead, mapSecond
+@docs map, mapTail, mapHead, mapSecond, mapLast, mapLast2
 
 
 # Shrink
@@ -39,7 +38,7 @@ module Nonempty.Mixed exposing
 # Deconstruct
 
 @docs member, head, tail
-@docs uncons, cut, last, mapLast, second
+@docs uncons, cut, last, second
 @docs justSingleton, isSingleton
 
 

@@ -1,8 +1,14 @@
 module Accordion.Segment.ViewMode exposing
-    ( ViewMode
+    ( defaultPeek
+    , ViewMode
+    , Region(..)
+    , regionToString
+    , Width(..), addWidth, widthToString, Offset, cumulativeOffset
+    , decodeWidth, encodeWidth
+    , offsetToCssVariables, zeroOffset
     , path
+    , toCssVariables
     , toClass
-    , Offset, Region(..), Width(..), addWidth, cumulativeOffset, defaultPeek, offsetToCssVariables, regionToString, toCssVariables, viewWidth, zeroOffset
     )
 
 {-| reflects a Segment's position within the Tree
@@ -35,19 +41,37 @@ module Accordion.Segment.ViewMode exposing
 
         { position = Tree.Position, region = Region, offset = List Width }
 
+
+# Create
+
+@docs defaultPeek
+
 ---
 
-@docs ViewMode, Role
+@docs ViewMode
+
+---
+
+@docs Region
+@docs regionToString
+
+
+### Width
+
+@docs Width, addWidth, widthToString, Offset, cumulativeOffset
+@docs decodeWidth, encodeWidth
+@docs offsetToCssVariables, zeroOffset
 
 
 # Deconstruct
 
-@docs role, path
+@docs path
+@docs toCssVariables
 
 
 # View
 
-@docs view, toClass
+@docs toClass
 
 -}
 
@@ -55,6 +79,8 @@ import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html
 import Html.Styled.Attributes exposing (class, css)
+import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Encode as Encode
 import Layout
 import List.Extra as List
 import Time
@@ -88,6 +114,42 @@ defaultPeek =
 type Width
     = Columns Int
     | Screen
+
+
+{-| -}
+encodeWidth : Width -> Value
+encodeWidth a =
+    case a of
+        Columns a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Columns" )
+                , ( "A1", Encode.int a1 )
+                ]
+
+        Screen ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Screen" )
+                ]
+
+
+{-| -}
+decodeWidth : Decoder Width
+decodeWidth =
+    Decode.field "Constructor" Decode.string
+        |> Decode.andThen
+            (\constructor ->
+                case constructor of
+                    "Columns" ->
+                        Decode.map
+                            Columns
+                            (Decode.field "A1" Decode.int)
+
+                    "Screen" ->
+                        Decode.succeed Screen
+
+                    other ->
+                        Decode.fail <| "Unknown constructor for type Width: " ++ other
+            )
 
 
 {-| -}
@@ -132,8 +194,9 @@ regionToString region =
             "cache"
 
 
-viewWidth : Width -> String
-viewWidth width =
+{-| -}
+widthToString : Width -> String
+widthToString width =
     case width of
         Columns c ->
             String.fromInt c ++ "-column"
@@ -142,10 +205,13 @@ viewWidth width =
             "screen"
 
 
+{-| encode the cumulative shift from the origin in a series of Segments
+-}
 type alias Offset =
     { screens : Int, columns : Int, units : Int, headers : Int, infoLines : Int }
 
 
+{-| -}
 zeroOffset : Offset
 zeroOffset =
     { screens = 0, columns = 0, units = 0, headers = 0, infoLines = 0 }
@@ -208,7 +274,7 @@ toString : ViewMode -> String
 toString mode =
     let
         pos =
-            Fold.viewPosition mode.position
+            Fold.positionToString mode.position
 
         reg =
             regionToString mode.region

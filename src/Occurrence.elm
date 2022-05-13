@@ -1,4 +1,12 @@
-module Occurrence exposing (..)
+module Occurrence exposing
+    ( Occurrence
+    , encode, decode
+    , moment
+    , withDurationDays, withDurationMinutes
+    , merge
+    , bounds
+    , ViewMode(..), view
+    )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
 timezones and canonical format.
@@ -6,12 +14,42 @@ timezones and canonical format.
 We are storing all dates as POSIX for interoperability, and add precision markers for
 improved humaneness.
 
+@docs Occurrence
+@docs encode, decode
+
+
+# Create
+
+@docs moment
+
+
+# Modify
+
+@docs withDurationDays, withDurationMinutes
+
+
+# Combine
+
+@docs merge
+
+
+# Deconstruct
+
+@docs bounds
+
+
+# View
+
+@docs ViewMode, view
+
 -}
 
 import DateFormat exposing (format)
 import DateTime exposing (DateTime)
 import Html.Styled as Html exposing (Html)
-import Time exposing (Month(..), Zone)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
+import Time exposing (Month(..), Posix, Zone)
 
 
 {-| An event has a single Occurrence which may comprise Occasions of varying precision.
@@ -23,6 +61,8 @@ type alias Occurrence =
     List Occasion
 
 
+{-| Zero-duration occurrence
+-}
 moment : Time.Zone -> Time.Month -> Int -> Int -> Int -> Int -> Occurrence
 moment zone month day year hour minute =
     DateTime.fromRawParts { day = day, month = month, year = year } { hours = hour, minutes = minute, seconds = 0, milliseconds = 0 }
@@ -33,6 +73,8 @@ moment zone month day year hour minute =
         |> Maybe.withDefault []
 
 
+{-| Discards the end dates in all `Occasion`s
+-}
 withDurationMinutes : Int -> Occurrence -> Occurrence
 withDurationMinutes duration =
     List.map
@@ -41,6 +83,8 @@ withDurationMinutes duration =
         )
 
 
+{-| Discards the end dates in all `Occasion`s
+-}
 withDurationDays : Int -> Occurrence -> Occurrence
 withDurationDays duration =
     List.map
@@ -58,6 +102,44 @@ withDurationDays duration =
 -}
 type alias Occasion =
     ( Time.Posix, Time.Posix )
+
+
+decodeOccasion : Decoder Occasion
+decodeOccasion =
+    Decode.map2
+        (\a1 a2 -> ( a1, a2 ))
+        (Decode.field "A1" decodePosix)
+        (Decode.field "A2" decodePosix)
+
+
+{-| -}
+decode : Decoder Occurrence
+decode =
+    Decode.list decodeOccasion
+
+
+encodeOccasion : Occasion -> Value
+encodeOccasion ( a1, a2 ) =
+    Encode.object
+        [ ( "A1", encodePosix a1 )
+        , ( "A2", encodePosix a2 )
+        ]
+
+
+encodePosix : Posix -> Value
+encodePosix =
+    Time.posixToMillis >> toFloat >> (\x -> x / 1000) >> Encode.float
+
+
+decodePosix : Decoder Posix
+decodePosix =
+    Decode.map (truncate >> (*) 1000 >> Time.millisToPosix) Decode.float
+
+
+{-| -}
+encode : Occurrence -> Value
+encode a =
+    Encode.list encodeOccasion a
 
 
 type Precision
@@ -93,11 +175,42 @@ toString zone precision =
         >> String.join ", "
 
 
+
+---- Combine
+
+
+{-| `merge = (++)`
+-}
+merge : Occurrence -> Occurrence -> Occurrence
+merge =
+    (++)
+
+
+
+---- Destructure
+
+
+{-| the first beginning and last end time
+-}
+bounds : Occurrence -> Occasion
+bounds =
+    let
+        sortTime listSort =
+            List.map Time.posixToMillis >> listSort >> Maybe.withDefault 0 >> Time.millisToPosix
+    in
+    List.unzip
+        >> Tuple.mapBoth
+            (sortTime List.minimum)
+            (sortTime List.maximum)
+
+
+{-| -}
 type ViewMode
     = AsList Time.Zone Precision
     | Short Time.Zone Precision
 
 
+{-| -}
 view : ViewMode -> Occurrence -> Html Never
 view mode =
     case mode of

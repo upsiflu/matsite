@@ -2,6 +2,7 @@ module Snippets.Series exposing (..)
 
 import Snippets.Festival exposing (Festival)
 import Snippets.Lab exposing (Lab)
+import Time
 
 
 type alias Series =
@@ -12,9 +13,10 @@ type alias Series =
     , festivals : List Festival
     }
 
+
 series0 =
-    { from =
-    , until =
+    { from = Time.millisToPosix 0
+    , until = Time.millisToPosix 0
     , title = ""
     , labs = []
     , festivals = []
