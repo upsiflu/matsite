@@ -58,8 +58,8 @@ type Edge
 
 
 sheet : List (Html msg) -> Html msg
-sheet =
-    Html.div [ class "sheet" ]
+sheet contents =
+    Html.details [ class "sheet", attribute "open" "True" ] <| contents ++ [ Html.summary [] [ Html.span [] [ Html.text "Properties" ] ] ]
 
 
 overlay : Edge -> List (Html msg) -> Html msg
@@ -134,6 +134,20 @@ pick =
         >> Zipper.flat
         >> List.map radio
         >> fieldset [ class "pick" ]
+
+
+pickOrNot : Bool -> Zipper ( String, msg ) -> Html msg
+pickOrNot isActive =
+    Zipper.map (Tuple.pair False)
+        >> (if isActive then
+                Zipper.mapFocus (Tuple.mapFirst not)
+
+            else
+                identity
+           )
+        >> Zipper.flat
+        >> List.map radio
+        >> fieldset [ class "pickOrNot" ]
 
 
 radio : ( Bool, ( String, msg ) ) -> Html msg

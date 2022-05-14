@@ -35,6 +35,7 @@
 }
 
 .sheet {
+  font-family: space_monoregular;
   position: fixed;
   width: var(--column);
   left: 50vw;
@@ -45,6 +46,29 @@
   border: 2px double black;
   outline-offset: 1px;
   padding-bottom: 1rem;
+  outline: 2px solid rgba(0, 0, 0, 0.3);
+}
+.sheet summary {
+  cursor: pointer;
+  position: fixed;
+  bottom: 0px;
+  left: calc(50vw - var(--column) / 2);
+  font-size: 0.7em;
+  text-align: center;
+  width: var(--column);
+}
+.sheet summary:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+.sheet summary:hover > span {
+  max-width: var(--column);
+}
+.sheet summary > span {
+  max-width: 0px;
+  transition: max-width 0.1s;
+  overflow: hidden;
+  display: inline-block;
+  position: absolute;
 }
 .sheet .pick {
   display: flex;
@@ -54,20 +78,18 @@
   width: 100%;
   border: none;
   position: relative;
-  justify-content: center;
 }
 .sheet .pick > label {
   position: relative;
   transition: all 0.1s;
 }
 .sheet .pick > label > span {
-  font-family: space_monoregular;
   font-weight: bold;
   font-size: 0.75rem;
   display: block;
   transition: all 0.2s;
-  padding: 0.2rem 0.4rem;
-  letter-spacing: -0.2px;
+  border-radius: 1rem;
+  padding: 0.2rem 0.5rem;
 }
 .sheet .pick > label > input {
   width: 1rem;
@@ -81,11 +103,13 @@
 .sheet .pick > label > input:checked ~ span {
   background: black;
   color: orangered;
+  letter-spacing: -0.2px;
 }
 .sheet .pick > label > input:not(:checked) ~ span {
   cursor: pointer;
   background: orangered;
 }
 .sheet .pick > label:hover > input:not(:checked) ~ span {
-  background: white;
-} /*# sourceMappingURL=ui.css.map */
+  outline: 0.5px solid black;
+  outline-offset: -1px;
+}/*# sourceMappingURL=ui.css.map */

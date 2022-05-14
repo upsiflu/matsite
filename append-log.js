@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence, collection, addDoc, getDocs, doc, onSnapshot } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence, collection, addDoc, getDocs, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 
 
 
@@ -89,7 +89,7 @@ store(); query();
 
 
 
-const log = doc(db, "cities", "DC");
+const log = doc(db, "log", "entries");
 
 
 const receive = onSnapshot(doc(db, "cities", "SF"), (doc) => {
@@ -97,7 +97,11 @@ const receive = onSnapshot(doc(db, "cities", "SF"), (doc) => {
 });
 
 
-const append = async function (localCount, actionList) {
+const append = async function (data) {
+  console.log("append", data)
+  await updateDoc(log, {
+    actions: arrayUnion(data)
+  });
 
 }
 
@@ -119,7 +123,7 @@ customElements.define(
     attributeChangedCallback(name, oldValue, newValue) {
       /**/
       console.log (name, oldValue, "------------->", newValue);
-      if (name=="backlog") {append (newValue.A1, newValue.A2);}
+      if (name=="backlog") {append (newValue);}
     }
     static get observedAttributes() {
       return ["backlog"];

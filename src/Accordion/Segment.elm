@@ -72,6 +72,7 @@ import Html.Styled.Events exposing (onClick)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
+import Time
 import Ui
 import Zipper
 import Zipper.Branch as Branch
@@ -591,7 +592,7 @@ toc =
                             (\entry ->
                                 Html.li
                                     [ classList [ ( "focused", pos.isFocus ) ] ]
-                                    [ Html.a [ Attributes.target "_self", href ("#" ++ id) ] [ Html.text entry ] ]
+                                    [ Html.a [ Attributes.target "_self", href (Layout.sanitise id) ] [ Html.text entry ] ]
                             )
                             heading
                             |> Maybe.withDefault (Html.text "")
@@ -609,7 +610,8 @@ toc =
 {-| In contrast to `view`, we can persist Segment Actions as well as insertions into the Accordion when editing
 -}
 edit :
-    { do : Action -> msg
+    { zone : Maybe Time.Zone
+    , do : Action -> msg
     , insert : Direction -> msg
     , templates : Templates
     , updateTemplates : (Templates -> Templates) -> msg
@@ -618,7 +620,7 @@ edit :
     -> ViewMode
     -> Segment
     -> ( String, Html msg )
-edit { do, insert, templates, updateTemplates, context } ({ position } as mode) s =
+edit { zone, do, insert, templates, updateTemplates, context } ({ position } as mode) s =
     let
         ( overlay, propertySheet ) =
             let
@@ -664,6 +666,7 @@ edit { do, insert, templates, updateTemplates, context } ({ position } as mode) 
                                 [ Ui.pick
                                     options
                                 ]
+                            , Fab.edit { zone = zone, save = \maybeFab -> do (WithFab maybeFab) } s.fab
                             ]
                       ]
                     )
@@ -721,7 +724,7 @@ view_ ({ templates, context } as config) attr els mode s =
                         Html.text ""
 
                     Just h ->
-                        Html.a [ href ("#" ++ s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+                        Html.a [ href (Layout.sanitise s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
                 , case ( template.body, body ) of
                     ( Just (Content c), _ ) ->
                         c

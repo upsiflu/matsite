@@ -6,6 +6,7 @@ module Occurrence exposing
     , merge
     , bounds
     , ViewMode(..), view
+    , edit
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -47,8 +48,12 @@ improved humaneness.
 import DateFormat exposing (format)
 import DateTime exposing (DateTime)
 import Html.Styled as Html exposing (Html)
+import Html.Styled.Attributes exposing (class, type_, value)
+import Html.Styled.Events exposing (onClick, onInput)
+import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import List.Extra as List
 import Time exposing (Month(..), Posix, Zone)
 
 
@@ -219,19 +224,19 @@ view mode =
                 >> Html.ul []
 
         Short zone precision ->
-            \occurance ->
-                case occurance of
+            \occurrence ->
+                case occurrence of
                     _ :: _ ->
                         let
                             beginning =
-                                occurance
+                                occurrence
                                     |> List.map (Tuple.first >> Time.posixToMillis)
                                     |> List.minimum
                                     |> Maybe.withDefault 0
                                     |> Time.millisToPosix
 
                             ending =
-                                occurance
+                                occurrence
                                     |> List.map (Tuple.second >> Time.posixToMillis)
                                     |> List.maximum
                                     |> Maybe.withDefault 0
@@ -465,3 +470,75 @@ occasionToString zone precision ( from, until ) =
                         ]
                         zone
                         until
+
+
+replace : Occasion -> Occasion -> Occurrence -> Occurrence
+replace oldOccasion =
+    List.setIf ((==) oldOccasion)
+
+
+addDefaultOccasion : Occurrence -> Occurrence
+addDefaultOccasion occurrence =
+    case List.reverse occurrence of
+        [] ->
+            moment Time.utc Time.Aug 1 2022 20 0
+                |> withDurationMinutes 90
+
+        latest :: earlier ->
+            List.reverse (latest :: latest :: earlier)
+
+
+edit : { zone : Time.Zone, save : Occurrence -> msg } -> Occurrence -> Html msg
+edit { zone, save } occurrence =
+    let
+        toPosix : String -> Maybe Time.Posix
+        toPosix =
+            Iso8601.toTime
+                >> Result.toMaybe
+
+        fromPosix : Time.Posix -> String
+        fromPosix =
+            Iso8601.fromTime
+
+        additionalOccurrence =
+            [ Html.details [ class "add" ]
+                [ Html.button [ onClick (save (addDefaultOccasion occurrence)) ] [ Html.text "+" ] ]
+            ]
+
+        makeEditable ( from, until ) =
+            [ Html.details [ class "edit" ]
+                [ Html.summary []
+                    [ occasionToString zone Minutes ( from, until ) |> Html.text
+                    , Html.button [ class "remove", onClick (List.remove ( from, until ) occurrence |> save) ] [ Html.text "⌫" ]
+                    ]
+                , Html.label []
+                    [ Html.span [] [ Html.text "from" ]
+                    , Html.input
+                        [ type_ "datetime"
+                        , onInput
+                            (\newFrom ->
+                                replace ( from, until ) ( toPosix newFrom |> Maybe.withDefault from, until ) occurrence |> save
+                            )
+                        , value (fromPosix from)
+                        ]
+                        []
+                    ]
+                , Html.label []
+                    [ Html.span [] [ Html.text "until" ]
+                    , Html.input
+                        [ type_ "datetime"
+                        , onInput
+                            (\newUntil ->
+                                replace ( from, until ) ( from, toPosix newUntil |> Maybe.withDefault until ) occurrence |> save
+                            )
+                        , value (fromPosix until)
+                        ]
+                        []
+                    ]
+                ]
+            ]
+                |> Html.li [ class "occasion" ]
+    in
+    List.map makeEditable occurrence
+        ++ additionalOccurrence
+        |> Html.ul []

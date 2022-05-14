@@ -562,7 +562,7 @@ go w =
                             |> List.find (Tuple.second >> isHere)
                             |> Maybe.map Tuple.first
                             |> Maybe.withDefault []
-                            |> Debug.log "This is how to find the id for this fragment"
+                            |> Debug.log "Found via"
                 in
                 Fold.list (\d -> go (Walk d Wrap)) myDirections t
 

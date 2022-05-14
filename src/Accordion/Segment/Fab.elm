@@ -3,6 +3,7 @@ module Accordion.Segment.Fab exposing
     , decode, encode
     , merge
     , view, edit
+    , default
     )
 
 {-| Functionality of a Floating Action Button (Google terminology)
@@ -25,9 +26,13 @@ that manages its own data and can be queried but is stateless
 
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
+import Html.Styled.Events exposing (onInput)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Occurrence exposing (Occurrence)
+import Time
+import Ui
+import Zipper
 
 
 {-| -}
@@ -38,6 +43,11 @@ type Fab
 
 type alias Record_link_String_occurrence_Occurrence_ =
     { link : String, occurrence : Occurrence }
+
+
+default : String -> Fab
+default =
+    stringToFabType >> Maybe.withDefault (Subscribe { link = "https://" })
 
 
 {-| -}
@@ -140,10 +150,70 @@ merge next prev =
 ---- View
 
 
+fabTypeToString : Fab -> String
+fabTypeToString fab =
+    case fab of
+        Register _ ->
+            "Register"
+
+        Subscribe _ ->
+            "Subscribe"
+
+
+stringToFabType : String -> Maybe Fab
+stringToFabType str =
+    case str of
+        "Register" ->
+            Register { link = "https://", occurrence = [] } |> Just
+
+        "Subscribe" ->
+            Subscribe { link = "https://" } |> Just
+
+        _ ->
+            Nothing
+
+
 {-| -}
-edit : { save : Fab -> msg } -> Fab -> Html msg
-edit { save } fab =
-    Html.text "TODO Fab.edit"
+edit : { a | zone : Maybe Time.Zone, save : Maybe Fab -> msg } -> Maybe Fab -> Html msg
+edit { zone, save } maybeFab =
+    let
+        editor =
+            case maybeFab of
+                Nothing ->
+                    Html.text ""
+
+                Just (Register ({ link, occurrence } as r)) ->
+                    Html.fieldset []
+                        [ Html.input [ type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
+                        , case zone of
+                            Nothing ->
+                                Html.text "Determining local time zone..."
+
+                            Just z ->
+                                Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } occurrence
+                        ]
+
+                Just (Subscribe { link }) ->
+                    Html.fieldset []
+                        [ Html.input [ type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] []
+                        ]
+    in
+    [ ( "Register", stringToFabType "Register" |> save )
+    ]
+        |> Zipper.create
+            ( "Subscribe", stringToFabType "Subscribe" |> save )
+            []
+        |> (case maybeFab of
+                Nothing ->
+                    Ui.pickOrNot False
+
+                Just fab ->
+                    Zipper.findClosest (Tuple.first >> (==) (fabTypeToString fab))
+                        >> Zipper.mapFocus (\( str, _ ) -> ( "⌦ " ++ str, save Nothing ))
+                        >> Ui.pickOrNot True
+           )
+        |> (\picker -> picker :: [ editor ])
+        |> Html.fieldset []
 
 
 

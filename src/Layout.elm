@@ -132,11 +132,12 @@ aStyle =
     ]
 
 
+sanitise : String -> String
+sanitise =
+    String.replace " " "-"
+
+
 anchoredLabel t =
-    let
-        sanitisedString =
-            String.replace " " "-" t
-    in
     Html.text t
         |> List.singleton
         >> Html.h1
@@ -146,11 +147,11 @@ anchoredLabel t =
                 , lineHeight rhythm.default
                 , margin zero
                 ]
-            , Attributes.id sanitisedString
+            , Attributes.id (sanitise t)
             ]
         |> List.singleton
         >> Html.a
-            [ Attributes.href sanitisedString
+            [ Attributes.href (sanitise t)
             , css
                 [ link
                     [ textDecoration inherit
@@ -191,7 +192,7 @@ h2 t =
             ]
         |> List.singleton
         >> Html.a
-            [ Attributes.href ("#" ++ sanitisedString)
+            [ Attributes.href (" " ++ sanitisedString)
             , css [ color inherit, hover [ textDecoration underline ] ]
             ]
 
@@ -226,14 +227,13 @@ header query id t =
         |> List.singleton
         >> Html.a
             [ Attributes.href
-                ((if query == "" then
-                    ""
+                (sanitise id
+                    ++ (if query == "" then
+                            ""
 
-                  else
-                    "?" ++ query
-                 )
-                    ++ "#"
-                    ++ id
+                        else
+                            "?" ++ query
+                       )
                 )
             , Attributes.class "segmentLabel"
             , css

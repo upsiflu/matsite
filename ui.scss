@@ -41,7 +41,36 @@
 }
 
 
+
 .sheet {
+    summary {
+        cursor: pointer;
+        position: fixed;
+        bottom: 0px;
+        left: calc(50vw - var(--column) / 2);
+        font-size: 0.7em;
+        text-align: center;
+        width: var(--column);
+
+        &:hover {
+            background: rgba(0, 0, 0, .2);
+
+            >span {
+                max-width: var(--column);
+            }
+        }
+
+        >span {
+            max-width: 0px;
+            transition: max-width .1s;
+            overflow: hidden;
+            display: inline-block;
+            position: absolute;
+        }
+
+    }
+
+    font-family: space_monoregular;
     position: fixed;
     width: var(--column);
     left: 50vw;
@@ -50,12 +79,9 @@
     background: orangered;
     color: black;
     border: 2px double black;
-    // border-top-left-radius: 1rem;
-    ;
-    // border-top-right-radius: 1rem;
-    ;
     outline-offset: 1px;
     padding-bottom: 1rem;
+    outline: 2px solid rgba(0, 0, 0, .3);
 
     .pick {
         display: flex;
@@ -66,17 +92,16 @@
         border: none;
         position: relative;
 
-        justify-content: center;
+        // justify-content: center;
 
         >label {
             position: relative;
 
             >span {
-                font-family: space_monoregular;
                 font-weight: bold;
                 font-size: 0.75rem;
                 display: block;
-                transition: all .5s;
+                transition: all .2s;
                 border-radius: 1rem;
                 padding: .2rem .5rem;
             }
@@ -94,18 +119,19 @@
             >input:checked~span {
                 background: black;
                 color: orangered;
+                letter-spacing: -.2px;
             }
 
             >input:not(:checked)~span {
                 cursor: pointer;
                 background: orangered;
-                letter-spacing: -.2px;
             }
 
             transition:all .1s;
 
             &:hover>input:not(:checked)~span {
-                letter-spacing: 2px;
+                outline: 0.5px solid black;
+                outline-offset: -1px;
             }
         }
     }

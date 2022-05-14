@@ -173,7 +173,6 @@ initial =
         :: Go Left
         :: Go Left
         :: Go Left
-        :: Go Up
         :: []
         |> Accordion.create
         |> Accordion.mapTemplates addTemplates

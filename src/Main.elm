@@ -16,6 +16,7 @@ import Layout exposing (..)
 import Task
 import Time
 import Url exposing (Url)
+import Url.Parser as UrlParser exposing (Parser)
 
 
 port pleaseCenter : String -> Cmd msg
@@ -28,7 +29,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
-    , backlog : Backlog
+    , backlog : Maybe Backlog
     , zone : Maybe Time.Zone
     }
 
@@ -46,21 +47,15 @@ main =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
-                        , backlog = ( 0, [] )
+                        , backlog = Nothing
                         , zone = Nothing
                         }
 
                     initialUrl =
-                        { url | fragment = Just (Accordion.parentId initialAccordion |> Debug.log "Initial Model location is") }
+                        { url | path = Accordion.parentId initialAccordion |> Debug.log "Initial Model location is" }
                 in
                 initialModel
-                    |> (case Debug.log "Initialize with fragment" url.fragment of
-                            Nothing ->
-                                update (LinkClicked (Browser.Internal initialUrl))
-
-                            Just _ ->
-                                update (UrlChanged url)
-                       )
+                    |> update (UrlChanged initialUrl)
                     |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Task.perform ZoneReceived Time.here ])
         , view = view
         , update = update
@@ -74,70 +69,105 @@ main =
 ---- Update ----
 
 
-type Msg
+type
+    Msg
+    -- Navigation
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+      -- Client View
     | ZoneReceived Time.Zone
+    | ScrolledTo String
+      -- Volatile Data
+    | AccordionMessageReceived Accordion.Msg
+      -- Persistent Data
     | ActionGenerated Accordion.Action
     | ActionsReceived (List Accordion.Action)
-    | AccordionMessageReceived Accordion.Msg
-    | ScrolledTo String
+
+
+type Route
+    = Home
+    | Segment String
+
+
+route : Parser (Route -> a) a
+route =
+    UrlParser.oneOf
+        [ UrlParser.map Home UrlParser.top
+        , UrlParser.map Segment UrlParser.string
+        ]
+
+
+destination : Url -> String
+destination url =
+    case UrlParser.parse route url of
+        Just Home ->
+            ""
+
+        Just (Segment s) ->
+            s
+
+        _ ->
+            ""
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
-        ActionsReceived actions ->
-            ( { model | accordion = Accordion.create actions |> Accordion.goToParentId model.url.fragment }, Cmd.none )
-
-        ActionGenerated action ->
-            ( { model | backlog = model.backlog |> (\( count, _ ) -> ( count + 1, [ Accordion.Find (Accordion.focusId model.accordion), action ] )) }, Cmd.none )
-
-        AccordionMessageReceived accMsg ->
-            ( { model | accordion = Accordion.update accMsg model.accordion }, Cmd.none )
-
-        -- Send action via port to js!
-        ZoneReceived zone ->
-            ( { model | zone = Just zone }, Cmd.none )
-
+        ---- Navigation
         LinkClicked (Browser.Internal url) ->
-            let
-                ( newUrl, newAccordion ) =
-                    if Debug.log "Internal url clicked" url == model.url then
-                        Accordion.exit model.accordion |> (\acc -> ( Accordion.parentId acc, acc ))
+            (\x -> Debug.log ("in Internal LinkClicked; path went from " ++ destination model.url ++ " to ") (destination url) |> (\_ -> x)) <|
+                -- TODO: handle query and fragment
+                if destination url == Accordion.parentId model.accordion && url.query == Nothing then
+                    ( { model | accordion = Accordion.exit model.accordion }, Cmd.none )
 
-                    else
-                        ( Url.toString url |> Debug.log "chosen new url", model.accordion )
-            in
-            ( { model | accordion = newAccordion }
-            , if Accordion.isRoot model.accordion && newUrl == "" then
-                Debug.log "is already root" Cmd.none
-
-              else
-                Nav.pushUrl model.key <| Debug.log "Need to change Url!" newUrl
-            )
+                else
+                    ( model, Url.toString url |> Nav.pushUrl model.key )
 
         LinkClicked (Browser.External href) ->
             ( model, Nav.load href )
 
         UrlChanged url ->
-            let
-                newModel =
-                    if Debug.log "Url changed to" url /= Debug.log "Url was previously" model.url then
-                        { model | accordion = Accordion.goToParentId url.fragment model.accordion, url = url }
+            -- TODO: handle query and fragment
+            (\x -> Debug.log ("in UrlChanged; path went from " ++ destination model.url ++ " to ") (destination url) |> (\_ -> x)) <|
+                if destination url == Accordion.parentId model.accordion then
+                    (\x -> Debug.log "New destination equals current parentId" (destination url) |> (\_ -> x)) <|
+                        ( { model | url = url }, Cmd.none )
 
-                    else
-                        model
-            in
-            ( newModel
-            , Cmd.batch
-                [ Accordion.focusId newModel.accordion |> pleaseCenter
-                , Accordion.parentId newModel.accordion |> pleaseConfirm
-                ]
-            )
+                else
+                    (\x -> Debug.log ("New destination" ++ destination url ++ "/=") (Accordion.parentId model.accordion) |> (\_ -> x)) <|
+                        let
+                            newAccordion =
+                                Accordion.goToParentId (destination url) model.accordion
+                        in
+                        ( { model | url = url, accordion = newAccordion }
+                        , Cmd.batch
+                            [ Accordion.focusId newAccordion |> pleaseCenter
+                            , Accordion.parentId newAccordion |> pleaseConfirm
+                            ]
+                        )
+
+        ---- Client View
+        ZoneReceived zone ->
+            ( { model | zone = Just zone }, Cmd.none )
 
         ScrolledTo id ->
             ( { model | accordion = Accordion.goToId id model.accordion }, Cmd.none )
+
+        ---- Volatile Data
+        AccordionMessageReceived accMsg ->
+            ( { model | accordion = Accordion.update accMsg model.accordion }, Cmd.none )
+
+        ---- Persistent Data
+        ActionsReceived actions ->
+            ( { model | accordion = Accordion.create actions |> Accordion.goToParentId (destination model.url) }, Cmd.none )
+
+        ActionGenerated action ->
+            let
+                ordinal =
+                    Maybe.map (\( o, _, _ ) -> o) model.backlog
+                        |> Maybe.withDefault 0
+            in
+            ( { model | backlog = Just ( ordinal + 1, Accordion.focusId model.accordion, action ) }, Cmd.none )
 
 
 {-| -}
@@ -155,10 +185,13 @@ view model =
             ]
             |> Html.toUnstyled
         , Unstyled.div []
-            [ Unstyled.node "append-log" [ encodeBacklog model.backlog |> Encode.encode 0 |> UnstyledAttributes.attribute "backlog" ] []
+            [ model.backlog
+                |> Maybe.map (encodeBacklog >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
+                |> Maybe.withDefault []
+                |> Unstyled.node "append-log"
+                |> (|>) []
             , Unstyled.node "closest-aisle"
-                [ Events.on "scrolledToA" (Decode.map ScrolledTo (Decode.at [ "detail" ] Decode.string))
-                ]
+                [ Decode.at [ "detail" ] Decode.string |> Decode.map ScrolledTo |> Events.on "scrolledToA" ]
                 []
             ]
         ]
@@ -167,19 +200,21 @@ view model =
 
 decodeBacklog : Decoder Backlog
 decodeBacklog =
-    Decode.map2
-        (\a1 a2 -> ( a1, a2 ))
-        (Decode.field "A1" Decode.int)
-        (Decode.field "A2" (Decode.list Accordion.decodeAction))
+    Decode.map3
+        (\a1 a2 a3 -> ( a1, a2, a3 ))
+        (Decode.field "Ordinal" Decode.int)
+        (Decode.field "Location" Decode.string)
+        (Decode.field "Action" Accordion.decodeAction)
 
 
 encodeBacklog : Backlog -> Value
-encodeBacklog ( a1, a2 ) =
+encodeBacklog ( ordinal, location, action ) =
     Encode.object
-        [ ( "A1", Encode.int a1 )
-        , ( "A2", Encode.list Accordion.encodeAction a2 )
+        [ ( "Ordinal", Encode.int ordinal )
+        , ( "Location", Encode.string location )
+        , ( "Action", Accordion.encodeAction action )
         ]
 
 
 type alias Backlog =
-    ( Int, List Accordion.Action )
+    ( Int, String, Accordion.Action )

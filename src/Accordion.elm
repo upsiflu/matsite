@@ -136,28 +136,6 @@ root (Accordion config) =
 
 
 
----- ids
-
-
-{-| Parent id; if is root, then !!
--}
-parentId : Accordion msg -> String
-parentId (Accordion config) =
-    if Tree.isRoot config.tree then
-        "" |> Debug.log ("Location: Root / " ++ .id (Tree.focus config.tree))
-
-    else
-        config.tree |> Tree.up |> Tree.focus |> .id |> (++) "#" |> Debug.log ("Location: / " ++ .id (Tree.focus config.tree) ++ " \\")
-
-
-{-| Focus id
--}
-focusId : Accordion msg -> String
-focusId (Accordion config) =
-    config.tree |> Tree.focus |> .id
-
-
-
 ---- A C T I O N S ----
 
 
@@ -166,7 +144,7 @@ focusId (Accordion config) =
 type Action
     = Name String
     | Modify Segment.Action
-    | Find String
+    | GoTo String
     | Go Direction
     | Insert Direction
 
@@ -191,7 +169,7 @@ decodeAction =
 
                     "Find" ->
                         Decode.map
-                            Find
+                            GoTo
                             (Decode.field "A1" Decode.string)
 
                     "Go" ->
@@ -225,7 +203,7 @@ encodeAction a =
                 , ( "A1", Segment.encodeAction a1 )
                 ]
 
-        Find a1 ->
+        GoTo a1 ->
             Encode.object
                 [ ( "Constructor", Encode.string "Find" )
                 , ( "A1", Encode.string a1 )
@@ -257,17 +235,16 @@ create =
 
                 Modify segmentAction ->
                     Segment.apply segmentAction
-                        |> mapSegment
+                        |> mapFocus
 
-                Find searchString ->
-                    \input ->
-                        goTo (closestId searchString input) input
+                GoTo searchString ->
+                    goToClosestId searchString
 
                 Go direction ->
                     go direction
 
                 Insert direction ->
-                    insert direction
+                    insertEmpty direction
 
         empty : Accordion msg
         empty =
@@ -281,30 +258,37 @@ create =
 ---- Navigate -----
 
 
-{-| The `Url` fragment encodes the parent of the focus!
+{-| finds closest string match via Levinshtain distance;
+if "", go to root, if is leaf, remain on leaf, else go to direct descendant focus
 -}
-goToParentId : Maybe String -> Accordion msg -> Accordion msg
-goToParentId fragment =
-    let
-        debugLocation =
-            \accordion -> parentId accordion |> always accordion
-
-        goToId_ =
-            \str -> .id >> (==) str |> Tree.Find |> Tree.go
-    in
-    case Debug.log "Accordion tries to find" fragment of
-        Nothing ->
+goToParentId : String -> Accordion msg -> Accordion msg
+goToParentId pId =
+    case Debug.log "Accordion tries to find" pId of
+        "" ->
             mapTree Tree.root
 
-        Just parent ->
-            debugLocation
-                >> mapTree (goToId_ parent >> Tree.go (Walk Down (Fail identity)))
+        _ ->
+            goToClosestId pId >> mapTree (Fail identity |> Walk Down |> Tree.go)
 
 
 {-| -}
 goToId : String -> Accordion msg -> Accordion msg
 goToId id =
-    mapTree (.id >> (==) id |> Tree.Find |> Tree.go)
+    .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
+
+
+goToClosestId : String -> Accordion msg -> Accordion msg
+goToClosestId id acc =
+    mapTree (.id >> (==) (closestId id acc) |> Tree.Find |> Tree.go) acc
+
+
+go : Direction -> Accordion msg -> Accordion msg
+go direction =
+    Branch.singleton Segment.empty |> Tree.Insert |> Walk direction |> Tree.go |> mapTree
+
+
+
+---- Map ----
 
 
 {-| -}
@@ -313,21 +297,13 @@ mapTree fu (Accordion config) =
     Accordion { config | tree = fu config.tree }
 
 
-go : Direction -> Accordion msg -> Accordion msg
-go direction =
-    Branch.singleton Segment.empty |> Tree.Insert |> Walk direction |> Tree.go |> mapTree
-
-
-insert : Direction -> Accordion msg -> Accordion msg
-insert direction =
+insertEmpty : Direction -> Accordion msg -> Accordion msg
+insertEmpty direction =
     Tree.insert direction Segment.empty |> mapTree
 
 
-goTo : String -> Accordion msg -> Accordion msg
-goTo id =
-    .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
-
-
+{-| The segment.id is made unique by appending an incrementing suffix if necessary
+-}
 setSegment : Segment -> Accordion msg -> Accordion msg
 setSegment segment ((Accordion { tree }) as accordion) =
     let
@@ -353,10 +329,20 @@ setSegment segment ((Accordion { tree }) as accordion) =
             else
                 id
     in
-    mapTree (Tree.mapFocus (\_ -> { segment | id = uniqueId })) accordion
+    mapFocus (\_ -> { segment | id = uniqueId }) accordion
 
 
-{-| can be used to generate links, for example in Toc or Search
+mapFocus : (Segment -> Segment) -> Accordion msg -> Accordion msg
+mapFocus =
+    Tree.mapFocus >> mapTree
+
+
+
+---- Query ----
+
+
+{-| can be used to generate links, for example in Toc or Search;
+defaults to ""
 -}
 closestId : String -> Accordion msg -> String
 closestId searchString (Accordion { tree }) =
@@ -366,9 +352,42 @@ closestId searchString (Accordion { tree }) =
         |> Maybe.withDefault ""
 
 
-mapSegment : (Segment -> Segment) -> Accordion msg -> Accordion msg
-mapSegment =
-    Tree.mapFocus >> mapTree
+
+---- Decompose ----
+
+
+{-| defaults to "" if root
+-}
+parentId : Accordion msg -> String
+parentId (Accordion config) =
+    if Tree.isRoot config.tree then
+        ""
+
+    else
+        config.tree |> Tree.up |> Tree.focus |> .id
+
+
+{-| -}
+focusId : Accordion msg -> String
+focusId (Accordion config) =
+    config.tree |> Tree.focus |> .id
+
+
+
+---- Update ----
+
+
+{-| -}
+type Msg
+    = TemplatesUpdated (Segment.Templates -> Segment.Templates)
+
+
+{-| -}
+update : Msg -> Accordion msg -> Accordion msg
+update msg (Accordion config) =
+    case msg of
+        TemplatesUpdated fu ->
+            Accordion { config | templates = fu config.templates }
 
 
 
@@ -389,24 +408,11 @@ type alias ViewMode msg =
 
 
 {-| -}
-type Msg
-    = TemplatesUpdated (Segment.Templates -> Segment.Templates)
-
-
-{-| -}
-update : Msg -> Accordion msg -> Accordion msg
-update msg (Accordion config) =
-    case msg of
-        TemplatesUpdated fu ->
-            Accordion { config | templates = fu config.templates }
-
-
-{-| -}
 view : ViewMode msg -> Accordion msg -> Html msg
 view { zone, do, volatile } (Accordion config) =
     let
         viewSegment =
-            Segment.edit { do = Modify >> do, insert = Insert >> do, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
+            Segment.edit { zone = zone, do = Modify >> do, insert = Insert >> do, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
 
         classes : Html.Attribute msg
         classes =
