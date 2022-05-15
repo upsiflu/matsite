@@ -174,7 +174,7 @@ stringToFabType str =
 
 
 {-| -}
-edit : { a | zone : Maybe Time.Zone, save : Maybe Fab -> msg } -> Maybe Fab -> Html msg
+edit : { a | zone : Maybe ( String, Time.Zone ), save : Maybe Fab -> msg } -> Maybe Fab -> Html msg
 edit { zone, save } maybeFab =
     let
         editor =
@@ -184,7 +184,7 @@ edit { zone, save } maybeFab =
 
                 Just (Register ({ link, occurrence } as r)) ->
                     Html.fieldset []
-                        [ Html.input [ type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
+                        [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
                         , case zone of
                             Nothing ->
                                 Html.text "Determining local time zone..."
@@ -195,7 +195,7 @@ edit { zone, save } maybeFab =
 
                 Just (Subscribe { link }) ->
                     Html.fieldset []
-                        [ Html.input [ type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] []
+                        [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] []
                         ]
     in
     [ ( "Register", stringToFabType "Register" |> save )
@@ -209,10 +209,10 @@ edit { zone, save } maybeFab =
 
                 Just fab ->
                     Zipper.findClosest (Tuple.first >> (==) (fabTypeToString fab))
-                        >> Zipper.mapFocus (\( str, _ ) -> ( "⌦ " ++ str, save Nothing ))
+                        >> Zipper.mapFocus (\( str, _ ) -> ( str ++ " ×", save Nothing ))
                         >> Ui.pickOrNot True
            )
-        |> (\picker -> picker :: [ editor ])
+        |> (\picker -> [ picker, editor ])
         |> Html.fieldset []
 
 

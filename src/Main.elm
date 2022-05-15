@@ -15,6 +15,7 @@ import Json.Encode as Encode
 import Layout exposing (..)
 import Task
 import Time
+import TimeZone
 import Url exposing (Url)
 import Url.Parser as UrlParser exposing (Parser)
 
@@ -30,7 +31,7 @@ type alias Model =
     , url : Url
     , accordion : Accordion Msg
     , backlog : Maybe Backlog
-    , zone : Maybe Time.Zone
+    , zone : Maybe ( String, Time.Zone )
     }
 
 
@@ -56,7 +57,7 @@ main =
                 in
                 initialModel
                     |> update (UrlChanged initialUrl)
-                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, Task.perform ZoneReceived Time.here ])
+                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived ])
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -75,13 +76,14 @@ type
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
       -- Client View
-    | ZoneReceived Time.Zone
+    | ZoneReceived (Result TimeZone.Error ( String, Time.Zone ))
     | ScrolledTo String
       -- Volatile Data
     | AccordionMessageReceived Accordion.Msg
       -- Persistent Data
     | ActionGenerated Accordion.Action
-    | ActionsReceived (List Accordion.Action)
+    | LogReceived (List Backlog)
+    | NoteReceived String
 
 
 type Route
@@ -147,8 +149,14 @@ update msg model =
                         )
 
         ---- Client View
-        ZoneReceived zone ->
-            ( { model | zone = Just zone }, Cmd.none )
+        ZoneReceived result ->
+            case result of
+                Ok z ->
+                    ( { model | zone = Just z }, Cmd.none )
+
+                Err error ->
+                    Debug.log "Zone Error" error
+                        |> (\_ -> ( model, Cmd.none ))
 
         ScrolledTo id ->
             ( { model | accordion = Accordion.goToId id model.accordion }, Cmd.none )
@@ -158,7 +166,11 @@ update msg model =
             ( { model | accordion = Accordion.update accMsg model.accordion }, Cmd.none )
 
         ---- Persistent Data
-        ActionsReceived actions ->
+        LogReceived log ->
+            let
+                actions =
+                    List.map (\( _, _, a ) -> a) log
+            in
             ( { model | accordion = Accordion.create actions |> Accordion.goToParentId (destination model.url) }, Cmd.none )
 
         ActionGenerated action ->
@@ -168,6 +180,10 @@ update msg model =
                         |> Maybe.withDefault 0
             in
             ( { model | backlog = Just ( ordinal + 1, Accordion.focusId model.accordion, action ) }, Cmd.none )
+
+        NoteReceived str ->
+            Debug.log "NOTE RECEIVED" str
+                |> (\_ -> ( model, Cmd.none ))
 
 
 {-| -}
@@ -188,11 +204,21 @@ view model =
             [ model.backlog
                 |> Maybe.map (encodeBacklog >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
                 |> Maybe.withDefault []
+                |> (++)
+                    [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
+                |> (++)
+                    [ Decode.at [ "detail" ] (Decode.list decodeBacklog)
+                        |> Decode.map LogReceived
+                        |> Events.on "logReceived"
+                    ]
                 |> Unstyled.node "append-log"
                 |> (|>) []
-            , Unstyled.node "closest-aisle"
-                [ Decode.at [ "detail" ] Decode.string |> Decode.map ScrolledTo |> Events.on "scrolledToA" ]
-                []
+            , [ Decode.at [ "detail" ] Decode.string
+                    |> Decode.map ScrolledTo
+                    |> Events.on "scrolledToA"
+              ]
+                |> Unstyled.node "closest-aisle"
+                |> (|>) []
             ]
         ]
     }

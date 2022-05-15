@@ -88,7 +88,7 @@ import Time
 
 {-| -}
 type alias ViewMode =
-    { zone : Maybe Time.Zone, position : Position, region : Region, offset : Offset }
+    { zone : Maybe ( String, Time.Zone ), position : Position, region : Region, offset : Offset }
 
 
 {-| -}

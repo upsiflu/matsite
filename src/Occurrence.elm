@@ -48,12 +48,13 @@ improved humaneness.
 import DateFormat exposing (format)
 import DateTime exposing (DateTime)
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes exposing (class, type_, value)
+import Html.Styled.Attributes exposing (class, title, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra as List
+import String.Extra as String
 import Time exposing (Month(..), Posix, Zone)
 
 
@@ -474,64 +475,97 @@ occasionToString zone precision ( from, until ) =
 
 replace : Occasion -> Occasion -> Occurrence -> Occurrence
 replace oldOccasion =
-    List.setIf ((==) oldOccasion)
+    List.setIf ((==) oldOccasion >> Debug.log "replace here")
+
+
+replaceAt : Int -> Occasion -> Occurrence -> Occurrence
+replaceAt =
+    List.setAt
 
 
 addDefaultOccasion : Occurrence -> Occurrence
 addDefaultOccasion occurrence =
+    let
+        addWeek : Time.Posix -> Time.Posix
+        addWeek =
+            Time.posixToMillis
+                >> (+) (7 * 24 * 60 * 60 * 1000)
+                >> Time.millisToPosix
+
+        oneWeekLater : Occasion -> Occasion
+        oneWeekLater =
+            Tuple.mapBoth addWeek addWeek
+    in
     case List.reverse occurrence of
         [] ->
-            moment Time.utc Time.Aug 1 2022 20 0
+            moment Time.utc Time.Aug 1 2022 18 0
                 |> withDurationMinutes 90
 
         latest :: earlier ->
-            List.reverse (latest :: latest :: earlier)
+            List.reverse (oneWeekLater latest :: latest :: earlier)
 
 
-edit : { zone : Time.Zone, save : Occurrence -> msg } -> Occurrence -> Html msg
+edit : { zone : ( String, Time.Zone ), save : Occurrence -> msg } -> Occurrence -> Html msg
 edit { zone, save } occurrence =
     let
+        ( zoneName, zoneData ) =
+            zone
+
         toPosix : String -> Maybe Time.Posix
         toPosix =
-            Iso8601.toTime
+            (\str -> str ++ ":00.000Z")
+                >> Iso8601.toTime
                 >> Result.toMaybe
+                >> Maybe.map
+                    (\localPosix ->
+                        Time.posixToMillis localPosix
+                            - DateTime.getTimezoneOffset zoneData localPosix
+                            |> Time.millisToPosix
+                    )
 
         fromPosix : Time.Posix -> String
         fromPosix =
-            Iso8601.fromTime
+            (\localPosix ->
+                Time.posixToMillis localPosix
+                    + DateTime.getTimezoneOffset zoneData localPosix
+                    |> Time.millisToPosix
+            )
+                >> Iso8601.fromTime
+                >> String.leftOfBack ":"
 
-        additionalOccurrence =
-            [ Html.details [ class "add" ]
-                [ Html.button [ onClick (save (addDefaultOccasion occurrence)) ] [ Html.text "+" ] ]
-            ]
+        additionalOccasion =
+            [ Html.button [ title "add Occasion", class "add", onClick (save (addDefaultOccasion occurrence)) ] [ Html.text "+" ] ]
 
-        makeEditable ( from, until ) =
+        makeEditable i ( from, until ) =
             [ Html.details [ class "edit" ]
                 [ Html.summary []
-                    [ occasionToString zone Minutes ( from, until ) |> Html.text
-                    , Html.button [ class "remove", onClick (List.remove ( from, until ) occurrence |> save) ] [ Html.text "⌫" ]
+                    [ occasionToString zoneData Minutes ( from, until ) |> Html.text
+                    ]
+                , Html.button [ title "remove Occasion", class "remove", onClick (List.remove ( from, until ) occurrence |> save) ] [ Html.text "⌫" ]
+                , Html.label []
+                    [ " (as shown in your Timezone " ++ zoneName ++ ")" |> Html.text
                     ]
                 , Html.label []
                     [ Html.span [] [ Html.text "from" ]
                     , Html.input
-                        [ type_ "datetime"
+                        [ type_ "datetime-local"
+                        , value (fromPosix from)
                         , onInput
                             (\newFrom ->
-                                replace ( from, until ) ( toPosix newFrom |> Maybe.withDefault from, until ) occurrence |> save
+                                replaceAt i ( toPosix newFrom |> Maybe.withDefault from, until ) occurrence |> save
                             )
-                        , value (fromPosix from)
                         ]
                         []
                     ]
                 , Html.label []
                     [ Html.span [] [ Html.text "until" ]
                     , Html.input
-                        [ type_ "datetime"
+                        [ type_ "datetime-local"
                         , onInput
                             (\newUntil ->
-                                replace ( from, until ) ( from, toPosix newUntil |> Maybe.withDefault until ) occurrence |> save
+                                replaceAt i ( from, toPosix newUntil |> Maybe.withDefault until ) occurrence |> save
                             )
-                        , value (fromPosix until)
+                        , value (fromPosix until |> Debug.log "datetime local")
                         ]
                         []
                     ]
@@ -539,6 +573,6 @@ edit { zone, save } occurrence =
             ]
                 |> Html.li [ class "occasion" ]
     in
-    List.map makeEditable occurrence
-        ++ additionalOccurrence
-        |> Html.ul []
+    List.indexedMap makeEditable occurrence
+        |> Html.ul [ class "occasions" ]
+        |> (\list -> Html.div [ class "dates" ] (list :: additionalOccasion))

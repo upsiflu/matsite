@@ -59,7 +59,7 @@ type Edge
 
 sheet : List (Html msg) -> Html msg
 sheet contents =
-    Html.details [ class "sheet", attribute "open" "True" ] <| contents ++ [ Html.summary [] [ Html.span [] [ Html.text "Properties" ] ] ]
+    Html.details [ class "sheet", attribute "open" "True" ] <| contents ++ [ Html.summary [class "collapseSheet"] [ Html.span [] [ Html.text "Properties" ] ] ]
 
 
 overlay : Edge -> List (Html msg) -> Html msg

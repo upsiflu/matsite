@@ -43,17 +43,32 @@
 
 
 .sheet {
+    fieldset {
+        margin: 0 -1.5px;
+    }
+
+
     summary {
+        &:hover {
+            background: rgba(0, 0, 0, .2);
+        }
+    }
+
+    input.link {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    summary.collapseSheet {
         cursor: pointer;
         position: fixed;
         bottom: 0px;
-        left: calc(50vw - var(--column) / 2);
+        // left: calc(50vw - var(--column) / 2);
+        // text-align: center;
         font-size: 0.7em;
-        text-align: center;
         width: var(--column);
 
         &:hover {
-            background: rgba(0, 0, 0, .2);
 
             >span {
                 max-width: var(--column);
@@ -83,7 +98,85 @@
     padding-bottom: 1rem;
     outline: 2px solid rgba(0, 0, 0, .3);
 
-    .pick {
+
+    fieldset {
+        padding: 0;
+        border: 1.5px groove orangered;
+    }
+
+    .remove {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+    }
+
+    .add {
+        width: 100%;
+    }
+
+    .add,
+    .remove {
+        background: black;
+        color: orangered;
+        border: none;
+
+        &:hover {
+            color: white;
+        }
+    }
+
+    ul.occasions {
+        list-style-type: none;
+        padding: 0;
+
+        .occasion {
+            font-size: 0.7em;
+            position: relative;
+
+
+
+            .edit {
+                label {
+                    display: block;
+
+                    span {
+                        display: inline-block;
+                        min-width: 3rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .dates {
+
+
+        .remove {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+        }
+
+        .add {
+            width: 100%;
+        }
+
+        .add,
+        .remove {
+            background: black;
+            color: orangered;
+            border: none;
+
+            &:hover {
+                color: white;
+            }
+        }
+    }
+
+    .pick,
+    .pickOrNot {
         display: flex;
         padding: 0;
         margin: 0;
@@ -109,8 +202,8 @@
             >input {
                 width: 1rem;
                 height: 1rem;
-                margin: -1rem;
-                opacity: .1;
+                margin: -0.5;
+                opacity: 0;
                 padding: 0;
                 border: 0;
                 position: absolute;

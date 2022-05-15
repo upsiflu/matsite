@@ -541,7 +541,7 @@ singleton caption =
 {-| -}
 empty : Segment
 empty =
-    { id = "_"
+    { id = ""
     , caption = { text = "", showsDate = False }
     , info = Nothing
     , heading = Nothing
@@ -610,7 +610,7 @@ toc =
 {-| In contrast to `view`, we can persist Segment Actions as well as insertions into the Accordion when editing
 -}
 edit :
-    { zone : Maybe Time.Zone
+    { zone : Maybe ( String, Time.Zone )
     , do : Action -> msg
     , insert : Direction -> msg
     , templates : Templates

@@ -401,7 +401,7 @@ type Renderable msg
 
 
 type alias ViewMode msg =
-    { zone : Maybe Time.Zone
+    { zone : Maybe ( String, Time.Zone )
     , do : Action -> msg
     , volatile : Msg -> msg
     }

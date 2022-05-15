@@ -48,29 +48,92 @@
   padding-bottom: 1rem;
   outline: 2px solid rgba(0, 0, 0, 0.3);
 }
-.sheet summary {
-  cursor: pointer;
-  position: fixed;
-  bottom: 0px;
-  left: calc(50vw - var(--column) / 2);
-  font-size: 0.7em;
-  text-align: center;
-  width: var(--column);
+.sheet fieldset {
+  margin: 0 -1.5px;
 }
 .sheet summary:hover {
   background: rgba(0, 0, 0, 0.2);
 }
-.sheet summary:hover > span {
+.sheet input.link {
+  width: 100%;
+  box-sizing: border-box;
+}
+.sheet summary.collapseSheet {
+  cursor: pointer;
+  position: fixed;
+  bottom: 0px;
+  font-size: 0.7em;
+  width: var(--column);
+}
+.sheet summary.collapseSheet:hover > span {
   max-width: var(--column);
 }
-.sheet summary > span {
+.sheet summary.collapseSheet > span {
   max-width: 0px;
   transition: max-width 0.1s;
   overflow: hidden;
   display: inline-block;
   position: absolute;
 }
-.sheet .pick {
+.sheet fieldset {
+  padding: 0;
+  border: 1.5px groove orangered;
+}
+.sheet .remove {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+}
+.sheet .add {
+  width: 100%;
+}
+.sheet .add,
+.sheet .remove {
+  background: black;
+  color: orangered;
+  border: none;
+}
+.sheet .add:hover,
+.sheet .remove:hover {
+  color: white;
+}
+.sheet ul.occasions {
+  list-style-type: none;
+  padding: 0;
+}
+.sheet ul.occasions .occasion {
+  font-size: 0.7em;
+  position: relative;
+}
+.sheet ul.occasions .occasion .edit label {
+  display: block;
+}
+.sheet ul.occasions .occasion .edit label span {
+  display: inline-block;
+  min-width: 3rem;
+}
+.sheet .dates .remove {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+}
+.sheet .dates .add {
+  width: 100%;
+}
+.sheet .dates .add,
+.sheet .dates .remove {
+  background: black;
+  color: orangered;
+  border: none;
+}
+.sheet .dates .add:hover,
+.sheet .dates .remove:hover {
+  color: white;
+}
+.sheet .pick,
+.sheet .pickOrNot {
   display: flex;
   padding: 0;
   margin: 0;
@@ -79,11 +142,13 @@
   border: none;
   position: relative;
 }
-.sheet .pick > label {
+.sheet .pick > label,
+.sheet .pickOrNot > label {
   position: relative;
   transition: all 0.1s;
 }
-.sheet .pick > label > span {
+.sheet .pick > label > span,
+.sheet .pickOrNot > label > span {
   font-weight: bold;
   font-size: 0.75rem;
   display: block;
@@ -91,25 +156,29 @@
   border-radius: 1rem;
   padding: 0.2rem 0.5rem;
 }
-.sheet .pick > label > input {
+.sheet .pick > label > input,
+.sheet .pickOrNot > label > input {
   width: 1rem;
   height: 1rem;
-  margin: -1rem;
-  opacity: 0.1;
+  margin: -0.5;
+  opacity: 0;
   padding: 0;
   border: 0;
   position: absolute;
 }
-.sheet .pick > label > input:checked ~ span {
+.sheet .pick > label > input:checked ~ span,
+.sheet .pickOrNot > label > input:checked ~ span {
   background: black;
   color: orangered;
   letter-spacing: -0.2px;
 }
-.sheet .pick > label > input:not(:checked) ~ span {
+.sheet .pick > label > input:not(:checked) ~ span,
+.sheet .pickOrNot > label > input:not(:checked) ~ span {
   cursor: pointer;
   background: orangered;
 }
-.sheet .pick > label:hover > input:not(:checked) ~ span {
+.sheet .pick > label:hover > input:not(:checked) ~ span,
+.sheet .pickOrNot > label:hover > input:not(:checked) ~ span {
   outline: 0.5px solid black;
   outline-offset: -1px;
 }/*# sourceMappingURL=ui.css.map */
