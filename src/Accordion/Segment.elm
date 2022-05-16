@@ -73,7 +73,7 @@ import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
 import Time
-import Ui
+import Ui exposing (Ui)
 import Zipper
 import Zipper.Branch as Branch
 import Zipper.Mixed as MixedZipper
@@ -624,6 +624,7 @@ heading s =
 edit :
     { zone : Maybe ( String, Time.Zone )
     , do : Action -> msg
+    , delete : msg
     , insert : Direction -> msg
     , templates : Templates
     , updateTemplates : (Templates -> Templates) -> msg
@@ -631,13 +632,22 @@ edit :
     }
     -> ViewMode
     -> Segment
-    -> ( String, Html msg )
-edit { zone, do, insert, templates, updateTemplates, context } ({ position } as mode) s =
+    -> Ui msg
+edit { zone, do, insert, delete, templates, updateTemplates, context } ({ position } as mode) s =
     let
         ( overlay, propertySheet ) =
             let
                 overlaidButton dir hint_ symbol =
                     Html.button [ onClick (insert dir), title hint_ ] [ Html.span [] [ Html.text symbol ] ]
+
+                overlaidDeleteButton =
+                    Html.details [ class "deleteSegment" ]
+                        [ Html.summary [] [ Html.span [] [ Html.text "⌫" ] ]
+                        , Html.div []
+                            [ Html.label [] [ Html.text <| "Delete segment '" ++ s.id ++ "'?" ]
+                            , Html.button [ class "deleteSegment", onClick delete, title "delete this segment" ] [ Html.span [] [ Html.text "Yes" ] ]
+                            ]
+                        ]
             in
             case position.role of
                 Focus ->
@@ -670,37 +680,47 @@ edit { zone, do, insert, templates, updateTemplates, context } ({ position } as 
                                 |> Zipper.findClosest (Tuple.first >> (==) activeOption)
                     in
                     ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                      , Ui.overlay Ui.TopRight [ overlaidDeleteButton ]
                       , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
                       , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
                       , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
                       ]
-                    , [ Ui.sheet
-                            [ Html.div []
-                                [ Ui.pick
-                                    options
-                                ]
-                            , Fab.edit { zone = zone, save = \maybeFab -> do (WithFab maybeFab) } s.fab
-                            ]
-                      ]
+                    , Html.div []
+                        [ Ui.pick
+                            options
+                        ]
                     )
 
                 Parent ->
-                    ( [ Ui.none ], [ Ui.none ] )
+                    ( [], Fab.edit { zone = zone, save = WithFab >> do } s.fab )
 
                 _ ->
-                    ( [ Ui.none ], [ Ui.none ] )
+                    ( [], Ui.none )
+
+        ui =
+            Ui.fromEmpty (\e -> { e | control = propertySheet })
     in
-    view_ { templates = templates, context = context } [] (overlay ++ propertySheet) mode s
+    view_ { templates = templates, context = context } ui overlay mode s
 
 
 {-| -}
-view : { templates : Templates, context : Tree.Split Segment } -> ViewMode -> Segment -> ( String, Html msg )
+view :
+    { templates : Templates, context : Tree.Split Segment }
+    -> ViewMode
+    -> Segment
+    -> Ui msg
 view { templates, context } =
-    view_ { templates = templates, context = context } [] []
+    view_ { templates = templates, context = context } (Ui.fromEmpty identity) []
 
 
-view_ : { templates : Templates, context : Tree.Split Segment } -> List (Html.Attribute msg) -> List (Html msg) -> ViewMode -> Segment -> ( String, Html msg )
-view_ ({ templates, context } as config) attr els mode s =
+view_ :
+    { templates : Templates, context : Tree.Split Segment }
+    -> Ui msg
+    -> List (Html msg)
+    -> ViewMode
+    -> Segment
+    -> Ui msg
+view_ ({ templates, context } as config) ui overlays mode s =
     let
         viewCaption cc =
             header "" s.id cc.text
@@ -817,7 +837,7 @@ view_ ({ templates, context } as config) attr els mode s =
         , orientation s |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
         , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
         ]
-        ++ els
+        ++ overlays
         |> Html.li
             (id s.id
                 :: ViewMode.toClass mode
@@ -827,9 +847,10 @@ view_ ({ templates, context } as config) attr els mode s =
                 :: ViewMode.toCssVariables mode
                 :: css ownWidthAsVars
                 :: additionalAttributes
-                ++ attr
             )
         |> Tuple.pair s.id
+        |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
+        |> Ui.with ui
 
 
 

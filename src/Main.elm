@@ -10,12 +10,14 @@ import Html.Attributes as UnstyledAttributes
 import Html.Events as Events
 import Html.Styled as Html
 import Html.Styled.Attributes as Attributes exposing (href)
+import Html.Styled.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
 import Task
 import Time
 import TimeZone
+import Ui
 import Url exposing (Url)
 import Url.Parser as UrlParser exposing (Parser)
 
@@ -193,17 +195,21 @@ update msg model =
 
 {-| -}
 view model =
+    let
+        accordion =
+            Accordion.view
+                { zone = model.zone, do = ActionGenerated, volatile = AccordionMessageReceived }
+                model.accordion
+                |> Ui.composeScenes
+                    (Keyed.ul [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
+    in
     { title = "Moving across Thresholds"
     , body =
         [ Layout.typography
             |> Html.toUnstyled
 
         -- , Html.hr [] []
-        , Html.div [ Attributes.class "overflow" ]
-            [ Accordion.view
-                { zone = model.zone, do = ActionGenerated, volatile = AccordionMessageReceived }
-                model.accordion
-            ]
+        , Ui.view accordion
             |> Html.toUnstyled
         , Unstyled.div []
             [ model.backlog

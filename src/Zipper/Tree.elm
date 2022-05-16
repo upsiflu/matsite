@@ -28,6 +28,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
+    , deleteIfPossible
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -795,6 +796,17 @@ deleteFocus default tree =
         MixedNonempty.mapHead
             (Zipper.deleteFocus default)
             tree
+
+
+{-| See [Zipper#deleteFocus](Zipper#deleteFocus) for the case handling in the
+left/right dimension.
+
+  - If there is a past, go up instead of using the replacement
+
+-}
+deleteIfPossible : Tree a -> Tree a
+deleteIfPossible tree =
+    deleteFocus (focusedBranch tree) tree
 
 
 deletePresent : Zipper (Branch a) -> Tree a -> Tree a

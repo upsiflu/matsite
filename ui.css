@@ -1,4 +1,30 @@
-.overlay button {
+.overlay .deleteSegment > div {
+  display: flex;
+  flex-direction: column;
+  background: orangered;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  padding: 0.5rem;
+  outline: 1.5px double black;
+}
+.overlay .deleteSegment[open] > summary::marker {
+  content: "cancel";
+}
+.overlay .deleteSegment[open] {
+  background: black;
+}
+.overlay .deleteSegment button {
+  max-width: 50%;
+}
+.overlay details {
+  transform: translate(calc(var(--unit) / 2), calc(0px - var(--unit) / 2));
+  position: absolute;
+  right: 0;
+  bottom: 0rem;
+  text-align: right;
+}
+.overlay > button {
   width: var(--unit);
   height: var(--unit);
   border-radius: 50%;
@@ -14,7 +40,7 @@
   align-items: center;
   justify-content: center;
 }
-.overlay button > span {
+.overlay > button > span {
   height: 2rem;
   width: 2rem;
   line-height: 1.9rem;
@@ -35,7 +61,7 @@
 }
 
 .sheet {
-  font-family: space_monoregular;
+  font-family: "subarumedium";
   position: fixed;
   width: var(--column);
   left: 50vw;
@@ -44,9 +70,10 @@
   background: orangered;
   color: black;
   border: 2px double black;
-  outline-offset: 1px;
-  padding-bottom: 1rem;
-  outline: 2px solid rgba(0, 0, 0, 0.3);
+  padding-bottom: 1.5rem;
+  z-index: 4;
+  outline: 1rem solid rgba(0, 0, 0, 0.3);
+  outline-offset: 0.5px;
 }
 .sheet fieldset {
   margin: 0 -1.5px;
@@ -58,17 +85,24 @@
   width: 100%;
   box-sizing: border-box;
 }
-.sheet summary.collapseSheet {
+.sheet[open] > summary::marker {
+  content: "OK";
+}
+.sheet > summary {
   cursor: pointer;
   position: fixed;
   bottom: 0px;
+  text-align: center;
   font-size: 0.7em;
   width: var(--column);
 }
-.sheet summary.collapseSheet:hover > span {
+.sheet > summary::marker {
+  content: "Segment Properties";
+}
+.sheet > summary:hover > span {
   max-width: var(--column);
 }
-.sheet summary.collapseSheet > span {
+.sheet > summary > span {
   max-width: 0px;
   transition: max-width 0.1s;
   overflow: hidden;

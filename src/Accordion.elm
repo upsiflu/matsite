@@ -80,6 +80,7 @@ import Levenshtein
 import List.Extra as List
 import String exposing (left)
 import Time
+import Ui exposing (Ui)
 import Url exposing (Url)
 import Zipper
 import Zipper.Branch as Branch
@@ -147,6 +148,7 @@ type Action
     | GoTo String
     | Go Direction
     | Insert Direction
+    | Delete
 
 
 {-| -}
@@ -181,6 +183,9 @@ decodeAction =
                         Decode.map
                             Insert
                             (Decode.field "A1" Fold.decodeDirection)
+
+                    "Delete" ->
+                        Decode.succeed Delete
 
                     other ->
                         Decode.fail <| "Unknown constructor for type Action: " ++ other
@@ -221,6 +226,10 @@ encodeAction a =
                 , ( "A1", Fold.encodeDirection a1 )
                 ]
 
+        Delete ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Delete" ) ]
+
 
 {-| -}
 create : List Action -> Accordion msg
@@ -245,6 +254,9 @@ create =
 
                 Insert direction ->
                     insertEmpty direction
+
+                Delete ->
+                    delete
 
         empty : Accordion msg
         empty =
@@ -300,6 +312,11 @@ mapTree fu (Accordion config) =
 insertEmpty : Direction -> Accordion msg -> Accordion msg
 insertEmpty direction =
     Tree.insert direction Segment.empty |> mapTree
+
+
+delete : Accordion msg -> Accordion msg
+delete =
+    mapTree Tree.deleteIfPossible
 
 
 {-| The segment.id is made unique by appending an incrementing suffix if necessary
@@ -395,7 +412,7 @@ update msg (Accordion config) =
 
 
 type Renderable msg
-    = Item ( String, Html msg )
+    = Item (Ui msg)
     | Var ( String, Int )
     | Class String
 
@@ -408,11 +425,11 @@ type alias ViewMode msg =
 
 
 {-| -}
-view : ViewMode msg -> Accordion msg -> Html msg
+view : ViewMode msg -> Accordion msg -> Ui msg
 view { zone, do, volatile } (Accordion config) =
     let
         viewSegment =
-            Segment.edit { zone = zone, do = Modify >> do, insert = Insert >> do, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
+            Segment.edit { zone = zone, do = Modify >> do, insert = Insert >> do, delete = do Delete, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
 
         classes : Html.Attribute msg
         classes =
@@ -501,13 +518,13 @@ view { zone, do, volatile } (Accordion config) =
             , ( "hamburgerMenu", Layout.hamburgerMenu "" )
             ]
 
-        renderAccordion : List (Renderable msg) -> Html msg
+        renderAccordion : List (Renderable msg) -> Ui msg
         renderAccordion =
             List.foldl
                 (\renderable ->
                     case renderable of
-                        Item i ->
-                            Tuple.mapFirst ((::) i)
+                        Item ui ->
+                            Tuple.mapFirst ((::) ui)
 
                         Var v ->
                             Tuple.mapSecond ((::) (css [ Layout.toProperty v ]))
@@ -516,10 +533,16 @@ view { zone, do, volatile } (Accordion config) =
                             Tuple.mapSecond ((::) (class c))
                 )
                 ( [], [] )
-                >> (\( items, vars ) ->
-                        Keyed.ul
-                            (class "Accordion" :: classes :: vars)
-                            (List.sortBy Tuple.first overlays ++ items)
+                >> (\( items, attrs ) ->
+                        Ui.composeScenes
+                            (\scenes ->
+                                ( "Accordion"
+                                , Keyed.ul
+                                    (class "Accordion" :: classes :: attrs)
+                                    (List.sortBy Tuple.first overlays ++ scenes)
+                                )
+                            )
+                            (Ui.concat items)
                    )
     in
     config.tree
