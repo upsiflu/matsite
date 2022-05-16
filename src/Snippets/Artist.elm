@@ -49,12 +49,7 @@ view : Artist -> Segment.BodyTemplate
 view artist =
     Html.div [ class "artist richtext" ]
         [ Html.map never artist.bio ]
-        |> Segment.Content
-
-
-viewHeading : Artist -> Maybe String
-viewHeading =
-    .name >> Just
+        |> Segment.Content (Just artist.name)
 
 
 viewPhoto : Artist -> Segment.BodyTemplate

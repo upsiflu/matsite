@@ -31,6 +31,7 @@ type alias Model =
     , url : Url
     , accordion : Accordion Msg
     , backlog : Maybe Backlog
+    , overwrite : List Backlog
     , zone : Maybe ( String, Time.Zone )
     }
 
@@ -44,11 +45,15 @@ main =
                     initialAccordion =
                         Data.initial
 
+                    actionToBacklog i a =
+                        ( i, "", a )
+
                     initialModel =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
                         , backlog = Nothing
+                        , overwrite = List.indexedMap actionToBacklog Data.initialActions
                         , zone = Nothing
                         }
 
@@ -204,6 +209,8 @@ view model =
             [ model.backlog
                 |> Maybe.map (encodeBacklog >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
                 |> Maybe.withDefault []
+                |> (++)
+                    [ Encode.list encodeBacklog model.overwrite |> Encode.encode 0 |> UnstyledAttributes.attribute "overwrite" ]
                 |> (++)
                     [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
                 |> (++)

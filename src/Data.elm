@@ -1,4 +1,4 @@
-module Data exposing (addTemplates, initial)
+module Data exposing (addTemplates, initial, initialActions)
 
 import Accordion exposing (Accordion, Action(..))
 import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
@@ -48,6 +48,13 @@ addTemplates =
 
 initial : Accordion msg
 initial =
+    initialActions
+        |> Accordion.create
+        |> Accordion.mapTemplates addTemplates
+
+
+initialActions : List Accordion.Action
+initialActions =
     let
         artists : List Accordion.Action
         artists =
@@ -69,7 +76,6 @@ initial =
                         , Go Right
                         , Name name
                         , Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
-                        , Modify (WithHeading (Artist.viewHeading artist))
                         , Modify (WithClasses [ "fg" ])
                         ]
                     )
@@ -174,5 +180,3 @@ initial =
         :: Go Left
         :: Go Left
         :: []
-        |> Accordion.create
-        |> Accordion.mapTemplates addTemplates

@@ -18,4 +18,4 @@ anarchive =
             ]
             []
         ]
-        |> Segment.Content
+        |> Segment.Content Nothing

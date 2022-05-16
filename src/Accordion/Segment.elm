@@ -90,7 +90,6 @@ type alias Segment =
     { id : String
     , caption : { text : String, showsDate : Bool }
     , info : Maybe InfoChoice
-    , heading : Maybe String
     , body : BodyChoice
     , shape : Shape
     , fab : Maybe Fab
@@ -103,7 +102,6 @@ type alias Segment =
 type Action
     = WithCaption { text : String, showsDate : Bool }
     | WithInfo (Maybe InfoChoice)
-    | WithHeading (Maybe String)
     | WithBody BodyChoice
     | WithShape Shape
     | WithFab (Maybe Fab)
@@ -131,11 +129,6 @@ decodeAction =
                             WithInfo
                             (Decode.field "A1" (Decode.maybe decodeInfoChoice))
 
-                    "WithHeading" ->
-                        Decode.map
-                            WithHeading
-                            (Decode.field "A1" (Decode.maybe Decode.string))
-
                     "WithBody" ->
                         Decode.map
                             WithBody
@@ -161,6 +154,15 @@ decodeAction =
             )
 
 
+type alias Heading =
+    Maybe String
+
+
+decodeHeading : Decoder Heading
+decodeHeading =
+    Decode.maybe Decode.string
+
+
 decodeBodyChoice : Decoder BodyChoice
 decodeBodyChoice =
     let
@@ -170,7 +172,9 @@ decodeBodyChoice =
                     Decode.succeed PeekThrough
 
                 "CustomContent" ->
-                    Decode.succeed CustomContent
+                    Decode.map
+                        CustomContent
+                        (Decode.field "A1" decodeHeading)
 
                 "CustomIllustration" ->
                     Decode.succeed CustomIllustration
@@ -224,12 +228,6 @@ encodeAction a =
                 , ( "A1", encodeMaybe encodeInfoChoice a1 )
                 ]
 
-        WithHeading a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithHeading" )
-                , ( "A1", encodeMaybe Encode.string a1 )
-                ]
-
         WithBody a1 ->
             Encode.object
                 [ ( "Constructor", Encode.string "WithBody" )
@@ -257,16 +255,33 @@ encodeAction a =
 
 encodeBodyChoice : BodyChoice -> Value
 encodeBodyChoice a =
-    Encode.string <|
-        case a of
-            PeekThrough ->
-                "PeekThrough"
+    case a of
+        PeekThrough ->
+            Encode.string "PeekThrough"
 
-            CustomContent ->
-                "CustomContent"
+        CustomContent a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "CustomContent" )
+                , ( "A1", encodeHeading a1 )
+                ]
 
-            CustomIllustration ->
-                "CustomIllustration"
+        CustomIllustration ->
+            Encode.string "CustomIllustration"
+
+
+encodeHeading : Heading -> Value
+encodeHeading a =
+    encodeMaybe Encode.string a
+
+
+encodeMaybe : (a -> Value) -> Maybe a -> Value
+encodeMaybe f a =
+    case a of
+        Just b ->
+            f b
+
+        Nothing ->
+            Encode.null
 
 
 encodeInfoChoice : InfoChoice -> Value
@@ -282,15 +297,6 @@ encodeInfoChoice a =
             Encode.object
                 [ ( "Constructor", Encode.string "CustomToc" )
                 ]
-
-
-encodeMaybe f a =
-    case a of
-        Just b ->
-            f b
-
-        Nothing ->
-            Encode.null
 
 
 encodeRecord_text_String_showsDate_Bool_ a =
@@ -383,13 +389,13 @@ type InfoTemplate
 
 type BodyChoice
     = PeekThrough
-    | CustomContent
+    | CustomContent Heading
     | CustomIllustration
 
 
 {-| -}
 type BodyTemplate
-    = Content (Html Never)
+    = Content Heading (Html Never)
     | Illustration (Html Never)
 
 
@@ -400,9 +406,6 @@ apply a s =
     case a of
         WithCaption c ->
             { s | caption = c }
-
-        WithHeading h ->
-            { s | heading = h }
 
         -- Content
         WithBody b ->
@@ -544,7 +547,6 @@ empty =
     { id = ""
     , caption = { text = "", showsDate = False }
     , info = Nothing
-    , heading = Nothing
     , body = PeekThrough
     , shape = Oriented Vertical (Columns 1)
     , fab = Nothing
@@ -587,20 +589,30 @@ toc =
         >> Maybe.map
             (MixedZipper.mapPeriphery Branch.node
                 >> Zipper.mapByPosition
-                    (\pos { heading, id } ->
+                    (\pos segment ->
                         Maybe.map
                             (\entry ->
                                 Html.li
                                     [ classList [ ( "focused", pos.isFocus ) ] ]
-                                    [ Html.a [ Attributes.target "_self", href (Layout.sanitise id) ] [ Html.text entry ] ]
+                                    [ Html.a [ Attributes.target "_self", href (Layout.sanitise segment.id) ] [ Html.text entry ] ]
                             )
-                            heading
+                            (heading segment)
                             |> Maybe.withDefault (Html.text "")
                     )
                 >> Zipper.flat
                 >> Html.ul [ class "toc" ]
             )
         >> Maybe.withDefault (Html.text "Table of Contents -- No Entries")
+
+
+heading : Segment -> Maybe String
+heading s =
+    case s.body of
+        CustomContent (Just str) ->
+            Just str
+
+        _ ->
+            Nothing
 
 
 
@@ -649,7 +661,8 @@ edit { zone, do, insert, templates, updateTemplates, context } ({ position } as 
 
                         options =
                             [ ( bodyTypeToString CustomIllustration, do (WithBody CustomIllustration) )
-                            , ( bodyTypeToString CustomContent, do (WithBody CustomContent) )
+                            , ( bodyTypeToString (CustomContent Nothing), do (WithBody (CustomContent Nothing)) )
+                            , ( bodyTypeToString (CustomContent (Just "Heading")), do (WithBody (CustomContent (Just "Heading"))) )
                             ]
                                 |> Zipper.create
                                     ( bodyTypeToString PeekThrough, do (WithBody PeekThrough) )
@@ -719,14 +732,14 @@ view_ ({ templates, context } as config) attr els mode s =
                                 False
             in
             (if bodyIsVisible then
-                [ case s.heading of
+                [ case heading s of
                     Nothing ->
                         Html.text ""
 
                     Just h ->
                         Html.a [ href (Layout.sanitise s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
                 , case ( template.body, body ) of
-                    ( Just (Content c), _ ) ->
+                    ( Just (Content _ c), _ ) ->
                         c
 
                     ( Just (Illustration i), _ ) ->
@@ -736,10 +749,10 @@ view_ ({ templates, context } as config) attr els mode s =
                         Html.text ""
 
                     ( Nothing, CustomIllustration ) ->
-                        Html.text "need to load custom illustration"
+                        Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
 
-                    ( Nothing, CustomContent ) ->
-                        Html.text "need to load custom content"
+                    ( Nothing, CustomContent _ ) ->
+                        Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
                 ]
 
              else
@@ -882,5 +895,8 @@ bodyTypeToString body =
         CustomIllustration ->
             "Illustration"
 
-        CustomContent ->
+        CustomContent Nothing ->
             "Html"
+
+        CustomContent (Just n) ->
+            "+" ++ n
