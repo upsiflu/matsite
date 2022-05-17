@@ -28,14 +28,23 @@ port pleaseCenter : String -> Cmd msg
 port pleaseConfirm : String -> Cmd msg
 
 
+type alias SessionId =
+    String
+
+
 type alias Model =
     { key : Nav.Key
     , url : Url
     , accordion : Accordion Msg
-    , backlog : Maybe Backlog
-    , overwrite : List Backlog
+    , backlog : Maybe Accordion.Intent
+    , overwrite : Accordion.History
     , zone : Maybe ( String, Time.Zone )
     }
+
+
+overwrite : Bool
+overwrite =
+    True
 
 
 main : Program () Model Msg
@@ -47,24 +56,26 @@ main =
                     initialAccordion =
                         Data.initial
 
-                    actionToBacklog i a =
-                        ( i, "", a )
-
                     initialModel =
                         { key = key
                         , url = initialUrl
                         , accordion = initialAccordion
                         , backlog = Nothing
-                        , overwrite = List.indexedMap actionToBacklog Data.initialActions
+                        , overwrite = Data.initialIntents
                         , zone = Nothing
                         }
 
                     initialUrl =
-                        { url | path = Accordion.parentId initialAccordion |> Debug.log "Initial Model location is" }
+                        case url.path of
+                            "/" ->
+                                { url | path = Accordion.parentId initialAccordion |> Debug.log "Initial Model location is" }
+
+                            _ ->
+                                url
                 in
                 initialModel
                     |> update (UrlChanged initialUrl)
-                    |> Tuple.mapSecond (\cmd -> Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived ])
+                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Accordion.focusId model.accordion |> pleaseCenter ] ))
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -88,8 +99,8 @@ type
       -- Volatile Data
     | AccordionMessageReceived Accordion.Msg
       -- Persistent Data
-    | ActionGenerated Accordion.Action
-    | LogReceived (List Backlog)
+    | IntentGenerated Accordion.Intent
+    | LogReceived Accordion.History
     | NoteReceived String
 
 
@@ -150,8 +161,10 @@ update msg model =
                         in
                         ( { model | url = url, accordion = newAccordion }
                         , Cmd.batch
-                            [ Accordion.focusId newAccordion |> pleaseCenter
-                            , Accordion.parentId newAccordion |> pleaseConfirm
+                            [ {- Accordion.focusId newAccordion |> pleaseCenter
+                                 ,
+                              -}
+                              Accordion.parentId newAccordion |> pleaseConfirm
                             ]
                         )
 
@@ -174,19 +187,10 @@ update msg model =
 
         ---- Persistent Data
         LogReceived log ->
-            let
-                actions =
-                    List.map (\( _, _, a ) -> a) log
-            in
-            ( { model | accordion = Accordion.create actions |> Accordion.goToParentId (destination model.url) }, Cmd.none )
+            ( { model | accordion = Accordion.create Data.initialTemplates log |> Accordion.goToParentId (destination model.url) }, Cmd.none )
 
-        ActionGenerated action ->
-            let
-                ordinal =
-                    Maybe.map (\( o, _, _ ) -> o) model.backlog
-                        |> Maybe.withDefault 0
-            in
-            ( { model | backlog = Just ( ordinal + 1, Accordion.focusId model.accordion, action ) }, Cmd.none )
+        IntentGenerated intent ->
+            ( { model | backlog = Just intent }, Cmd.none )
 
         NoteReceived str ->
             Debug.log "NOTE RECEIVED" str
@@ -198,7 +202,7 @@ view model =
     let
         accordion =
             Accordion.view
-                { zone = model.zone, do = ActionGenerated, volatile = AccordionMessageReceived }
+                { zone = model.zone, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
                 model.accordion
                 |> Ui.composeScenes
                     (Keyed.ul [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
@@ -213,14 +217,19 @@ view model =
             |> Html.toUnstyled
         , Unstyled.div []
             [ model.backlog
-                |> Maybe.map (encodeBacklog >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
+                |> Maybe.map (Accordion.encodeIntent >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
                 |> Maybe.withDefault []
                 |> (++)
-                    [ Encode.list encodeBacklog model.overwrite |> Encode.encode 0 |> UnstyledAttributes.attribute "overwrite" ]
+                    (if overwrite then
+                        [ Encode.list Accordion.encodeIntent model.overwrite |> Encode.encode 0 |> UnstyledAttributes.attribute "overwrite" ]
+
+                     else
+                        []
+                    )
                 |> (++)
                     [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
                 |> (++)
-                    [ Decode.at [ "detail" ] (Decode.list decodeBacklog)
+                    [ Decode.at [ "detail" ] (Decode.list Accordion.decodeIntent)
                         |> Decode.map LogReceived
                         |> Events.on "logReceived"
                     ]
@@ -235,25 +244,3 @@ view model =
             ]
         ]
     }
-
-
-decodeBacklog : Decoder Backlog
-decodeBacklog =
-    Decode.map3
-        (\a1 a2 a3 -> ( a1, a2, a3 ))
-        (Decode.field "Ordinal" Decode.int)
-        (Decode.field "Location" Decode.string)
-        (Decode.field "Action" Accordion.decodeAction)
-
-
-encodeBacklog : Backlog -> Value
-encodeBacklog ( ordinal, location, action ) =
-    Encode.object
-        [ ( "Ordinal", Encode.int ordinal )
-        , ( "Location", Encode.string location )
-        , ( "Action", Accordion.encodeAction action )
-        ]
-
-
-type alias Backlog =
-    ( Int, String, Accordion.Action )

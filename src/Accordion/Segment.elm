@@ -68,7 +68,7 @@ import Dict exposing (Dict)
 import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
@@ -219,7 +219,7 @@ encodeAction a =
         WithCaption a1 ->
             Encode.object
                 [ ( "Constructor", Encode.string "WithCaption" )
-                , ( "A1", encodeRecord_text_String_showsDate_Bool_ a1 )
+                , ( "A1", encodeCaption a1 )
                 ]
 
         WithInfo a1 ->
@@ -299,7 +299,8 @@ encodeInfoChoice a =
                 ]
 
 
-encodeRecord_text_String_showsDate_Bool_ a =
+encodeCaption : Caption -> Value
+encodeCaption a =
     Encode.object
         [ ( "text", Encode.string a.text )
         , ( "showsDate", Encode.bool a.showsDate )
@@ -582,11 +583,11 @@ Occasion : yields the embracing occasion around all occurrences of the `future`
 ClosestFab : yields the Fab that is stored in the `present`ly focused segment or up the focuses of the `past`
 
 -}
-toc : Tree.Split Segment -> Html Never
-toc =
-    .future
-        >> List.head
-        >> Maybe.map
+toc : { c | templates : Templates, context : Tree.Split Segment } -> Html Never
+toc ({ templates, context } as config) =
+    context.future
+        |> List.head
+        |> Maybe.map
             (MixedZipper.mapPeriphery Branch.node
                 >> Zipper.mapByPosition
                     (\pos segment ->
@@ -596,19 +597,23 @@ toc =
                                     [ classList [ ( "focused", pos.isFocus ) ] ]
                                     [ Html.a [ Attributes.target "_self", href (Layout.sanitise segment.id) ] [ Html.text entry ] ]
                             )
-                            (heading segment)
+                            (heading config segment)
                             |> Maybe.withDefault (Html.text "")
                     )
                 >> Zipper.flat
                 >> Html.ul [ class "toc" ]
             )
-        >> Maybe.withDefault (Html.text "Table of Contents -- No Entries")
+        |> Maybe.withDefault (Html.text "Table of Contents -- No Entries")
 
 
-heading : Segment -> Maybe String
-heading s =
-    case s.body of
-        CustomContent (Just str) ->
+{-| -}
+heading : { c | templates : Templates } -> Segment -> Maybe String
+heading { templates } s =
+    case ( s.body, getTemplate .body s templates ) of
+        ( _, Just (Content (Just str) _) ) ->
+            Just str
+
+        ( CustomContent (Just str), Nothing ) ->
             Just str
 
         _ ->
@@ -642,27 +647,27 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
 
                 overlaidDeleteButton =
                     Html.details [ class "deleteSegment" ]
-                        [ Html.summary [] [ Html.span [] [ Html.text "⌫" ] ]
+                        [ Html.summary [] [ Html.span [] [ Html.text (s.id ++ "⌫") ] ]
                         , Html.div []
                             [ Html.label [] [ Html.text <| "Delete segment '" ++ s.id ++ "'?" ]
                             , Html.button [ class "deleteSegment", onClick delete, title "delete this segment" ] [ Html.span [] [ Html.text "Yes" ] ]
                             ]
                         ]
+
+                template =
+                    { body = getTemplate .body s (templates |> Debug.log "all templates") |> Debug.log ("found body template for " ++ s.id)
+                    , info = getTemplate .info s templates
+                    }
             in
             case position.role of
                 Focus ->
                     let
-                        template =
-                            { body = getTemplate .body s templates
-                            , info = getTemplate .info s templates
-                            }
-
                         templateOption =
                             Maybe.map (always [ ( "Preset", toggleBodyTemplate s |> updateTemplates ) ]) template.body
                                 |> Maybe.withDefault []
 
                         activeOption =
-                            case ( getTemplate .body s templates, s.body ) of
+                            case ( template.body, s.body ) of
                                 ( Just _, _ ) ->
                                     "Preset"
 
@@ -686,13 +691,50 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                       , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
                       ]
                     , Html.div []
-                        [ Ui.pick
-                            options
+                        [ Html.label [] [ Html.text s.id ]
+                        , Ui.pick options
                         ]
                     )
 
                 Parent ->
-                    ( [], Fab.edit { zone = zone, save = WithFab >> do } s.fab )
+                    let
+                        templateOption =
+                            Maybe.map (always [ ( "Preset", toggleInfoTemplate s |> updateTemplates ) ]) template.info
+                                |> Maybe.withDefault []
+
+                        activeOption =
+                            case ( template.info, s.info ) of
+                                ( Just _, _ ) ->
+                                    "Preset"
+
+                                ( _, custom ) ->
+                                    infoTypeToString custom
+
+                        options =
+                            [ ( infoTypeToString (Just CustomToc), do (WithInfo (Just CustomToc)) )
+                            , ( infoTypeToString (Just (CustomByline 1)), do (WithInfo <| Just (CustomByline 1)) )
+                            , ( infoTypeToString (Just (CustomByline 2)), do (WithInfo <| Just (CustomByline 2)) )
+                            ]
+                                |> Zipper.create
+                                    ( infoTypeToString Nothing, do (WithInfo Nothing) )
+                                    templateOption
+                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
+
+                        originalCaption =
+                            s.caption
+                    in
+                    ( []
+                    , Html.div []
+                        [ Html.hr [] []
+                        , Html.div [ class "editCaption" ]
+                            [ Html.input [ value s.caption.text, onInput (\txt -> do (WithCaption { originalCaption | text = txt })) ] []
+                            , Ui.pickOrNot s.caption.showsDate (Zipper.singleton ( "📅", do (WithCaption { originalCaption | showsDate = not s.caption.showsDate }) ))
+                            ]
+                        , Ui.pick
+                            options
+                        , Fab.edit { zone = zone, save = WithFab >> do } s.fab
+                        ]
+                    )
 
                 _ ->
                     ( [], Ui.none )
@@ -714,13 +756,13 @@ view { templates, context } =
 
 
 view_ :
-    { templates : Templates, context : Tree.Split Segment }
+    { c | templates : Templates, context : Tree.Split Segment }
     -> Ui msg
     -> List (Html msg)
     -> ViewMode
     -> Segment
     -> Ui msg
-view_ ({ templates, context } as config) ui overlays mode s =
+view_ ({ templates } as config) ui overlays mode s =
     let
         viewCaption cc =
             header "" s.id cc.text
@@ -752,7 +794,7 @@ view_ ({ templates, context } as config) ui overlays mode s =
                                 False
             in
             (if bodyIsVisible then
-                [ case heading s of
+                [ case heading config s of
                     Nothing ->
                         Html.text ""
 
@@ -786,7 +828,7 @@ view_ ({ templates, context } as config) ui overlays mode s =
                     Html.text "Todo: Load Custom Byline from Database"
 
                 ( Just CustomToc, Parent ) ->
-                    toc context
+                    toc config
 
                 _ ->
                     Html.text ""
@@ -819,21 +861,11 @@ view_ ({ templates, context } as config) ui overlays mode s =
                               )
                             ]
                    )
-
-        viewInfo : InfoChoice -> Html Never
-        viewInfo i =
-            Html.div [ class "info" ] <|
-                case i of
-                    CustomByline _ ->
-                        [ Html.text "Custom Byline" ]
-
-                    CustomToc ->
-                        [ toc context ]
     in
     List.map (Html.map never)
         [ s.caption |> viewCaption |> Ui.notIf (hasBody config s && mode.position.isLeaf && not mode.position.isRoot)
         , s.body |> viewBody
-        , s.info |> Ui.ifJust viewInfo
+        , viewByline
         , orientation s |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
         , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
         ]
@@ -921,3 +953,20 @@ bodyTypeToString body =
 
         CustomContent (Just n) ->
             "+" ++ n
+
+
+{-| -}
+infoTypeToString : Maybe InfoChoice -> String
+infoTypeToString info =
+    case info of
+        Nothing ->
+            "No byline"
+
+        Just CustomToc ->
+            "T.o.C."
+
+        Just (CustomByline 1) ->
+            "Custom line"
+
+        Just (CustomByline n) ->
+            String.fromInt n

@@ -9,6 +9,7 @@ module Accordion exposing
     , isRoot
     , closestId
     , view
+    , History, Intent, decodeIntent, encodeIntent
     )
 
 {-|
@@ -72,6 +73,7 @@ import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, classList, css, id)
+import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
@@ -81,7 +83,6 @@ import List.Extra as List
 import String exposing (left)
 import Time
 import Ui exposing (Ui)
-import Url exposing (Url)
 import Zipper
 import Zipper.Branch as Branch
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
@@ -94,61 +95,93 @@ import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..)
 
 -}
 type Accordion msg
-    = Accordion { tree : Tree Segment, templates : Segment.Templates }
+    = Accordion Config
+    | Log LogConfig Config
 
 
-{-| -}
-singleton : Tree Segment -> Accordion msg
-singleton tree =
-    Accordion { tree = tree, templates = Segment.initialTemplates }
+type alias LogConfig =
+    { viewingHistory : Bool, history : History }
+
+
+type alias Config =
+    { tree : Tree Segment, templates : Segment.Templates }
+
+
+mapConfig : (Config -> Config) -> Accordion msg -> Accordion msg
+mapConfig fu accordion =
+    case accordion of
+        Accordion c ->
+            Accordion (fu c)
+
+        Log l c ->
+            Log l (fu c)
+
+
+mapLog : (LogConfig -> LogConfig) -> Accordion msg -> Accordion msg
+mapLog fu accordion =
+    case accordion of
+        Log l c ->
+            Log (fu l) c
+
+        _ ->
+            accordion
+
+
+config : Accordion msg -> Config
+config accordion =
+    case accordion of
+        Accordion c ->
+            c
+
+        Log _ c ->
+            c
 
 
 {-| -}
 mapTemplates : (Segment.Templates -> Segment.Templates) -> Accordion msg -> Accordion msg
-mapTemplates fu (Accordion config) =
-    Accordion { config | templates = fu config.templates }
+mapTemplates fu =
+    mapConfig <| \c -> { c | templates = fu c.templates |> Debug.log "ACCORDION.MARPTEMPLATES" }
 
 
 {-| -}
 exit : Accordion msg -> Accordion msg
 exit =
-    mapTree
-        (\tree ->
-            if Tree.isRoot tree then
-                tree
+    mapTree <|
+        \t ->
+            if Tree.isRoot t then
+                t
 
             else
-                Tree.up tree
-        )
+                Tree.up t
 
 
 {-| The focus is on a root node
 -}
 isRoot : Accordion msg -> Bool
-isRoot (Accordion config) =
-    Tree.isRoot config.tree
+isRoot =
+    config >> .tree >> Tree.isRoot
 
 
 {-| Go upmost
 -}
 root : Accordion msg -> Accordion msg
-root (Accordion config) =
-    Accordion { config | tree = Tree.root config.tree }
+root =
+    mapTree Tree.root
 
 
 
 ---- A C T I O N S ----
 
 
-{-| Serialize the creation of an `Accordion`
+{-| Serialize the creation and modifications of an `Accordion`
 -}
 type Action
     = Name String
     | Modify Segment.Action
-    | GoTo String
     | Go Direction
     | Insert Direction
     | Delete
+    | Undo IntentId
 
 
 {-| -}
@@ -169,11 +202,6 @@ decodeAction =
                             Modify
                             (Decode.field "A1" Segment.decodeAction)
 
-                    "Find" ->
-                        Decode.map
-                            GoTo
-                            (Decode.field "A1" Decode.string)
-
                     "Go" ->
                         Decode.map
                             Go
@@ -187,9 +215,23 @@ decodeAction =
                     "Delete" ->
                         Decode.succeed Delete
 
+                    "Undo" ->
+                        Decode.map
+                            Undo
+                            (Decode.field "A1" decodeIntentId)
+
                     other ->
                         Decode.fail <| "Unknown constructor for type Action: " ++ other
             )
+
+
+{-| -}
+decodeIntentId : Decoder IntentId
+decodeIntentId =
+    Decode.map2
+        IntentId
+        (Decode.field "sessionId" Decode.string)
+        (Decode.field "ordinal" Decode.int)
 
 
 {-| -}
@@ -208,12 +250,6 @@ encodeAction a =
                 , ( "A1", Segment.encodeAction a1 )
                 ]
 
-        GoTo a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Find" )
-                , ( "A1", Encode.string a1 )
-                ]
-
         Go a1 ->
             Encode.object
                 [ ( "Constructor", Encode.string "Go" )
@@ -230,40 +266,126 @@ encodeAction a =
             Encode.object
                 [ ( "Constructor", Encode.string "Delete" ) ]
 
+        Undo a1 ->
+            Encode.object
+                [ ( "Constructor", Encode.string "Undo" )
+                , ( "A1", encodeIntentId a1 )
+                ]
+
+
+encodeIntentId : IntentId -> Value
+encodeIntentId a =
+    Encode.object
+        [ ( "sessionId", Encode.string a.sessionId )
+        , ( "ordinal", Encode.int a.ordinal )
+        ]
+
+
+type alias History =
+    List Intent
+
+
+type alias Intent =
+    { intentId : IntentId, location : Maybe String, action : Action }
+
 
 {-| -}
-create : List Action -> Accordion msg
-create =
+create : Segment.Templates -> History -> Accordion msg
+create templates history =
     let
-        applyAction : Action -> Accordion msg -> Accordion msg
-        applyAction a =
-            case a of
-                Name caption ->
-                    Segment.singleton caption
-                        |> setSegment
+        applyIntent : Intent -> Accordion msg -> Accordion msg
+        applyIntent { location, action } accordion =
+            location
+                |> Maybe.map
+                    (\l ->
+                        if l /= focusId accordion then
+                            goToClosestId l accordion
 
-                Modify segmentAction ->
-                    Segment.apply segmentAction
-                        |> mapFocus
+                        else
+                            accordion
+                    )
+                |> Maybe.withDefault accordion
+                |> (case action of
+                        Name caption ->
+                            Segment.singleton caption
+                                |> setSegment
 
-                GoTo searchString ->
-                    goToClosestId searchString
+                        Modify segmentAction ->
+                            Segment.apply segmentAction
+                                |> mapFocus
 
-                Go direction ->
-                    go direction
+                        Go direction ->
+                            go direction
 
-                Insert direction ->
-                    insertEmpty direction
+                        Insert direction ->
+                            insertEmpty direction
 
-                Delete ->
-                    delete
+                        Delete ->
+                            delete
+
+                        Undo _ ->
+                            identity
+                   )
 
         empty : Accordion msg
         empty =
-            Tree.singleton Segment.empty
-                |> singleton
+            Log { viewingHistory = True, history = history } { tree = Tree.singleton Segment.empty, templates = templates }
     in
-    List.foldl applyAction empty
+    markUndones history
+        |> undoUndones
+        |> List.foldl applyIntent empty
+
+
+type alias IntentId =
+    { sessionId : String, ordinal : Int }
+
+
+{-| Decides, for each action, if it is undone or not:
+
+  - If an Action is undone multiple times, it remains undone
+  - If the Undo is undone, the action it undid is reinstated
+  - If the Undo of an Undo is undone, the action is re-undone, etc.
+
+-}
+markUndones : History -> List ( { isUndone : Bool, by : IntentId }, Intent )
+markUndones history =
+    let
+        -- (undone, who must be undone to undo/redo)
+        whoUndid : IntentId -> { isUndone : Bool, by : IntentId }
+        whoUndid key =
+            history
+                |> List.filterMap
+                    (\intent ->
+                        case intent.action of
+                            Undo targetId ->
+                                Just { origin = intent.intentId, target = targetId }
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.find (.target >> (==) key)
+                |> Maybe.map
+                    (.origin
+                        >> whoUndid
+                        >> (\rootCause ->
+                                { rootCause | isUndone = not rootCause.isUndone }
+                           )
+                    )
+                |> Maybe.withDefault { isUndone = False, by = key }
+    in
+    history
+        |> List.map (\intent -> ( whoUndid intent.intentId, intent ))
+
+
+undoUndones : List ( { isUndone : Bool, by : IntentId }, Intent ) -> List Intent
+undoUndones =
+    List.filterMap <|
+        \( { isUndone }, intent ) ->
+            if isUndone then
+                Nothing
+
+            else
+                Just intent
 
 
 
@@ -305,13 +427,13 @@ go direction =
 
 {-| -}
 mapTree : (Tree Segment -> Tree Segment) -> Accordion msg -> Accordion msg
-mapTree fu (Accordion config) =
-    Accordion { config | tree = fu config.tree }
+mapTree fu =
+    mapConfig <| \c -> { c | tree = fu c.tree }
 
 
 insertEmpty : Direction -> Accordion msg -> Accordion msg
 insertEmpty direction =
-    Tree.insert direction Segment.empty |> mapTree
+    (Tree.insert direction Segment.empty |> mapTree) >> go direction >> setSegment Segment.empty
 
 
 delete : Accordion msg -> Accordion msg
@@ -322,10 +444,13 @@ delete =
 {-| The segment.id is made unique by appending an incrementing suffix if necessary
 -}
 setSegment : Segment -> Accordion msg -> Accordion msg
-setSegment segment ((Accordion { tree }) as accordion) =
+setSegment segment accordion =
     let
         id =
             segment.id
+
+        { tree } =
+            config accordion
 
         autoSuffix : Int -> String
         autoSuffix int =
@@ -362,11 +487,13 @@ mapFocus =
 defaults to ""
 -}
 closestId : String -> Accordion msg -> String
-closestId searchString (Accordion { tree }) =
-    Tree.flatten tree
-        |> List.minimumBy (.id >> Levenshtein.distance searchString)
-        |> Maybe.map .id
-        |> Maybe.withDefault ""
+closestId searchString =
+    config
+        >> .tree
+        >> Tree.flatten
+        >> List.minimumBy (.id >> Levenshtein.distance searchString)
+        >> Maybe.map .id
+        >> Maybe.withDefault ""
 
 
 
@@ -376,18 +503,21 @@ closestId searchString (Accordion { tree }) =
 {-| defaults to "" if root
 -}
 parentId : Accordion msg -> String
-parentId (Accordion config) =
-    if Tree.isRoot config.tree then
-        ""
+parentId =
+    config
+        >> (\{ tree } ->
+                if Tree.isRoot tree then
+                    ""
 
-    else
-        config.tree |> Tree.up |> Tree.focus |> .id
+                else
+                    Tree.up tree |> Tree.focus |> .id
+           )
 
 
 {-| -}
 focusId : Accordion msg -> String
-focusId (Accordion config) =
-    config.tree |> Tree.focus |> .id
+focusId =
+    config >> .tree >> Tree.focus >> .id
 
 
 
@@ -397,14 +527,22 @@ focusId (Accordion config) =
 {-| -}
 type Msg
     = TemplatesUpdated (Segment.Templates -> Segment.Templates)
+    | LogOpened
+    | LogClosed
 
 
 {-| -}
 update : Msg -> Accordion msg -> Accordion msg
-update msg (Accordion config) =
+update msg =
     case msg of
         TemplatesUpdated fu ->
-            Accordion { config | templates = fu config.templates }
+            mapConfig <| \c -> { c | templates = fu c.templates |> Debug.log "TEMPLATES.UPDATE" }
+
+        LogOpened ->
+            mapLog <| \l -> { l | viewingHistory = True }
+
+        LogClosed ->
+            mapLog <| \l -> { l | viewingHistory = True }
 
 
 
@@ -419,26 +557,98 @@ type Renderable msg
 
 type alias ViewMode msg =
     { zone : Maybe ( String, Time.Zone )
-    , do : Action -> msg
+    , do : (String -> Intent) -> msg
     , volatile : Msg -> msg
     }
 
 
 {-| -}
-view : ViewMode msg -> Accordion msg -> Ui msg
-view { zone, do, volatile } (Accordion config) =
+view :
+    ViewMode msg
+    -> Accordion msg
+    -> Ui msg
+view { zone, do, volatile } accordion =
     let
+        c =
+            config accordion
+
+        {- given a history and the id of the current session, the Accordion can generate an `Intent` from location and action. -}
+        generateIntent : String -> Action -> String -> Intent
+        generateIntent location action sessionId =
+            let
+                history =
+                    case accordion of
+                        Accordion _ ->
+                            []
+
+                        Log l _ ->
+                            l.history
+
+                latestOrdinal =
+                    history
+                        |> List.filter (.intentId >> .sessionId >> (==) sessionId)
+                        |> List.map (.intentId >> .ordinal)
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+            in
+            { intentId = { sessionId = sessionId, ordinal = latestOrdinal }, location = Just location, action = action }
+
+        atParent : Action -> msg
+        atParent =
+            generateIntent (parentId accordion) >> do
+
+        atFocus : Action -> msg
+        atFocus =
+            generateIntent (focusId accordion) >> do
+
+        viewLog : Html msg
+        viewLog =
+            let
+                intentIdToString : IntentId -> String
+                intentIdToString iid =
+                    iid.sessionId ++ ":" ++ String.fromInt iid.ordinal
+            in
+            case accordion of
+                Log { history, viewingHistory } _ ->
+                    if viewingHistory then
+                        markUndones history
+                            |> List.indexedMap
+                                (\_ ( { isUndone, by }, intent ) ->
+                                    Html.li []
+                                        [ Html.pre [] [ Html.text (encodeAction intent.action |> Encode.encode 4) ]
+                                        , Html.pre [] [ Maybe.map Html.text intent.location |> Maybe.withDefault (Html.text "*") ]
+                                        , Ui.singlePickOrNot isUndone ( intentIdToString intent.intentId, atFocus (Undo by) )
+                                        ]
+                                )
+                            |> Html.ol [ class "list" ]
+                            |> (\l ->
+                                    Html.fieldset [ id "activityLog" ]
+                                        [ Html.legend []
+                                            [ Html.span [] [ Html.text "Activity Log" ]
+                                            , Html.button [ onClick (volatile LogClosed) ] [ Html.text "close" ]
+                                            ]
+                                        , Html.p [] [ Html.text "You can undo and redo any previous action in this list" ]
+                                        , l
+                                        ]
+                               )
+
+                    else
+                        Html.button [ id "activityLog", onClick (volatile LogOpened) ] [ Html.text "Activity Log..." ]
+
+                Accordion _ ->
+                    Ui.none
+
         viewSegment =
-            Segment.edit { zone = zone, do = Modify >> do, insert = Insert >> do, delete = do Delete, templates = config.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split config.tree }
+            Segment.edit { zone = zone, do = Modify >> atFocus, insert = Insert >> atFocus, delete = atFocus Delete, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
 
         classes : Html.Attribute msg
         classes =
             classList
-                [ ( "\u{1FA97}" ++ Segment.orientationToString (Segment.orientation (Tree.focus config.tree)), True )
-                , ( "aisleHasBody", List.any (Segment.hasBody config) (Tree.getAisleNodes config.tree |> Zipper.flat) )
-                , ( "focusHasBody", Segment.hasBody config (Tree.focus config.tree) )
-                , ( "focusIsRoot", Tree.isRoot config.tree )
-                , ( "focusIsBackground", Segment.isBackground (Tree.focus config.tree) )
+                [ ( "\u{1FA97}" ++ Segment.orientationToString (Segment.orientation (Tree.focus c.tree)), True )
+                , ( "aisleHasBody", List.any (Segment.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
+                , ( "focusHasBody", Segment.hasBody c (Tree.focus c.tree) )
+                , ( "focusIsRoot", Tree.isRoot c.tree )
+                , ( "focusIsBackground", Segment.isBackground (Tree.focus c.tree) )
                 ]
 
         findPeekConfig : Segment -> { targetId : String, hint : String }
@@ -449,7 +659,7 @@ view { zone, do, volatile } (Accordion config) =
                         >> (==) seg.id
                         |> Tree.Find
                         |> Tree.go
-                        |> (|>) config.tree
+                        |> (|>) c.tree
                         |> Tree.up
                         |> Tree.focus
             in
@@ -466,7 +676,7 @@ view { zone, do, volatile } (Accordion config) =
                                     Result.Err ()
 
                                 (( _, seg ) as a) :: rest ->
-                                    if Segment.isIllustration { templates = config.templates } seg then
+                                    if Segment.isIllustration c seg then
                                         Result.Ok ( ( Peek (findPeekConfig seg), [ a ] ), toCache ++ rest )
 
                                     else
@@ -499,7 +709,7 @@ view { zone, do, volatile } (Accordion config) =
                         mode =
                             { zone = zone, position = position, region = region, offset = offset }
                     in
-                    ( ViewSegment.addWidth mode (Segment.hasBody config segment) (Segment.width segment) (Segment.infoLineCount segment) offset
+                    ( ViewSegment.addWidth mode (Segment.hasBody c segment) (Segment.width segment) (Segment.infoLineCount segment) offset
                     , viewSegment mode segment :: newList
                     )
                 )
@@ -516,6 +726,7 @@ view { zone, do, volatile } (Accordion config) =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
             , ( "hamburgerMenu", Layout.hamburgerMenu "" )
+            , ( "logMenu", viewLog )
             ]
 
         renderAccordion : List (Renderable msg) -> Ui msg
@@ -526,11 +737,11 @@ view { zone, do, volatile } (Accordion config) =
                         Item ui ->
                             Tuple.mapFirst ((::) ui)
 
-                        Var v ->
-                            Tuple.mapSecond ((::) (css [ Layout.toProperty v ]))
+                        Var va ->
+                            Tuple.mapSecond ((::) (css [ Layout.toProperty va ]))
 
-                        Class c ->
-                            Tuple.mapSecond ((::) (class c))
+                        Class cl ->
+                            Tuple.mapSecond ((::) (class cl))
                 )
                 ( [], [] )
                 >> (\( items, attrs ) ->
@@ -545,7 +756,7 @@ view { zone, do, volatile } (Accordion config) =
                             (Ui.concat items)
                    )
     in
-    config.tree
+    c.tree
         |> Tree.mapByPosition Tuple.pair
         |> Tree.view
             (Tree.Uniform renderTree
@@ -674,3 +885,31 @@ renderTree =
                        )
         }
     }
+
+
+decodeIntent : Decoder Intent
+decodeIntent =
+    Decode.map3
+        Intent
+        (Decode.field "intentId" decodeIntentId)
+        (Decode.field "location" (Decode.maybe Decode.string))
+        (Decode.field "action" decodeAction)
+
+
+encodeIntent : Intent -> Value
+encodeIntent a =
+    Encode.object
+        [ ( "intentId", encodeIntentId a.intentId )
+        , ( "location", encodeMaybe Encode.string a.location )
+        , ( "action", encodeAction a.action )
+        ]
+
+
+encodeMaybe : (a -> Value) -> Maybe a -> Value
+encodeMaybe f a =
+    case a of
+        Just b ->
+            f b
+
+        Nothing ->
+            Encode.null

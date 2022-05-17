@@ -1,3 +1,10 @@
+.overlay .deleteSegment > summary {
+  background: black;
+  min-width: -webkit-min-content;
+  min-width: -moz-min-content;
+  min-width: min-content;
+  white-space: nowrap;
+}
 .overlay .deleteSegment > div {
   display: flex;
   flex-direction: column;
@@ -9,7 +16,7 @@
   outline: 1.5px double black;
 }
 .overlay .deleteSegment[open] > summary::marker {
-  content: "cancel";
+  content: "cancel deletion: ";
 }
 .overlay .deleteSegment[open] {
   background: black;
@@ -60,6 +67,16 @@
   color: black;
 }
 
+#activityLog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  max-height: 100vh;
+  overflow: scroll;
+  background: grey;
+  opacity: 0.9;
+}
+
 .sheet {
   font-family: "subarumedium";
   position: fixed;
@@ -71,9 +88,21 @@
   color: black;
   border: 2px double black;
   padding-bottom: 1.5rem;
-  z-index: 4;
+  z-index: 9;
   outline: 1rem solid rgba(0, 0, 0, 0.3);
   outline-offset: 0.5px;
+}
+.sheet .editCaption {
+  display: flex;
+  width: 100%;
+}
+.sheet .editCaption > input {
+  flex-grow: 1;
+}
+.sheet .editCaption > fieldset {
+  width: -webkit-min-content;
+  width: -moz-min-content;
+  width: min-content;
 }
 .sheet fieldset {
   margin: 0 -1.5px;

@@ -265,6 +265,11 @@ pickOrNot isActive =
         >> fieldset [ class "pickOrNot" ]
 
 
+singlePickOrNot : Bool -> ( String, msg ) -> Html msg
+singlePickOrNot isActive =
+    Zipper.singleton >> pickOrNot isActive
+
+
 radio : ( Bool, ( String, msg ) ) -> Html msg
 radio ( isOn, ( name, msg ) ) =
     label []

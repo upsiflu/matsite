@@ -1,4 +1,10 @@
 .overlay {
+    .deleteSegment>summary {
+        background: black;
+        min-width: min-content;
+        white-space: nowrap;
+    }
+
     .deleteSegment>div {
         display: flex;
         flex-direction: column;
@@ -9,7 +15,7 @@
     }
 
     .deleteSegment[open]>summary::marker {
-        content: "cancel";
+        content: "cancel deletion: ";
     }
 
     .deleteSegment[open] {
@@ -69,9 +75,30 @@
     }
 }
 
-
+#activityLog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    max-height: 100vh;
+    overflow: scroll;
+    background: grey;
+    opacity: 0.9;
+}
 
 .sheet {
+    .editCaption {
+        display: flex;
+        width: 100%;
+
+        >input {
+            flex-grow: 1;
+        }
+
+        >fieldset {
+            width: min-content;
+        }
+    }
+
     fieldset {
         margin: 0 -1.5px;
     }
@@ -132,7 +159,7 @@
     color: black;
     border: 2px double black;
     padding-bottom: 1.5rem;
-    z-index:4;
+    z-index:9;
     outline: 1rem solid rgba(0, 0, 0, .3);
     outline-offset: 0.5px;
 

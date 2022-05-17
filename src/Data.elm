@@ -1,4 +1,4 @@
-module Data exposing (addTemplates, initial, initialActions)
+module Data exposing (addTemplates, initial, initialActions, initialIntents, initialTemplates)
 
 import Accordion exposing (Accordion, Action(..))
 import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
@@ -28,8 +28,12 @@ addTemplates =
             Artist.artists
                 |> List.map
                     (\artist ->
-                        presetBody (artist.name ++ "(photo)") (Artist.viewPhoto artist)
-                            >> presetBody artist.name (Artist.view artist)
+                        let
+                            uid =
+                                Layout.sanitise artist.name |> Debug.log "adding artist template"
+                        in
+                        presetBody (uid ++ "(photo)") (Artist.viewPhoto artist)
+                            >> presetBody uid (Artist.view artist)
                     )
                 |> List.foldl (<|) t
 
@@ -48,9 +52,20 @@ addTemplates =
 
 initial : Accordion msg
 initial =
+    Accordion.create initialTemplates initialIntents
+
+
+initialIntents : Accordion.History
+initialIntents =
     initialActions
-        |> Accordion.create
-        |> Accordion.mapTemplates addTemplates
+        |> List.indexedMap (\i a -> { intentId = { sessionId = "Initialization", ordinal = i }, location = Nothing, action = a })
+
+
+{-| These should only be used while editing
+-}
+initialTemplates : Segment.Templates
+initialTemplates =
+    addTemplates Segment.initialTemplates
 
 
 initialActions : List Accordion.Action
