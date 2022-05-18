@@ -36,7 +36,7 @@ type alias SessionId =
 type alias Model =
     { key : Nav.Key
     , url : Url
-    , accordion : Accordion Msg
+    , accordion : Accordion
     , backlog : Maybe Accordion.Intent
     , overwrite : Accordion.History
     , zone : Maybe ( String, Time.Zone )
@@ -188,7 +188,7 @@ update msg model =
 
         ---- Persistent Data
         LogReceived log ->
-            ( { model | accordion = Accordion.create Data.initialTemplates log |> Accordion.goToParentId (destination model.url) }, Cmd.none )
+            ( { model | accordion = Accordion.reviseHistory log model.accordion }, Cmd.none )
 
         IntentGenerated intent ->
             ( { model | backlog = Just intent }, Cmd.none )

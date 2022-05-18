@@ -82,12 +82,27 @@
     max-height: 100vh;
     overflow: scroll;
     background: rgb(142, 54, 10);
-    opacity: 0.9;
-    z-index: 8;
+    opacity: 0.95;
+    z-index: 10;
 
     >ol {
         padding-bottom: 6rem;
+
+
+        >li {
+
+
+            >pre {
+                font-size: 0.7em;
+                line-height: 1em;
+            }
+        }
     }
+
+}
+
+input[type="radio"]:focus+span {
+    outline: 2px solid yellow;
 }
 
 .sheet {

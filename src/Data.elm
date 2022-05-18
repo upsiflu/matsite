@@ -50,7 +50,7 @@ addTemplates =
     addArtistTemplates >> addOtherTemplates
 
 
-initial : Accordion msg
+initial : Accordion
 initial =
     Accordion.create initialTemplates initialIntents
 

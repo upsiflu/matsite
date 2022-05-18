@@ -213,20 +213,20 @@ customElements.define(
         doc => {
           requestAnimationFrame(() => {
             var content = doc.get(editor.getAttribute("data-id"));
-            console.log("ON SNAPSHOT -- syncHypertext", doc, editor.getAttribute("data-id"));
+            console.log("hypertext -- snapshot received for:", editor.getAttribute("data-id"));
             this.reflectState(content);
           });
         },
-        error => console.log("SNAPSHOT ERROR in Hypertext:", error)
+        error => console.log("hypertext -- snapshot error:", error)
       );
       getDoc(hypertext)
         .then(docSnap => {
           if (docSnap.exists()) {
-            console.log("Document data:", docSnap.get(editor.getAttribute("data-id")));
+            console.log("initial hypertext read on", docSnap.get(editor.getAttribute("data-id")));
             this.initialize(docSnap.get(editor.getAttribute("data-id")));
           } else {
             // doc.data() will be undefined in this case
-            console.log("No such document!");
+            console.log("hypertext not found");
           }
         })
         .catch(e => console.log(e));
