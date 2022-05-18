@@ -141,7 +141,7 @@ config accordion =
 {-| -}
 mapTemplates : (Segment.Templates -> Segment.Templates) -> Accordion msg -> Accordion msg
 mapTemplates fu =
-    mapConfig <| \c -> { c | templates = fu c.templates |> Debug.log "ACCORDION.MARPTEMPLATES" }
+    mapConfig <| \c -> { c | templates = fu c.templates }
 
 
 {-| -}
@@ -356,7 +356,7 @@ if "", go to root, if is leaf, remain on leaf, else go to direct descendant focu
 -}
 goToParentId : String -> Accordion msg -> Accordion msg
 goToParentId pId =
-    case Debug.log "Accordion tries to find" pId of
+    case pId of
         "" ->
             mapTree Tree.root
 
@@ -495,7 +495,7 @@ update : Msg -> Accordion msg -> Accordion msg
 update msg =
     case msg of
         TemplatesUpdated fu ->
-            mapConfig <| \c -> { c | templates = fu c.templates |> Debug.log "TEMPLATES.UPDATE" }
+            mapConfig <| \c -> { c | templates = fu c.templates }
 
         LogOpened ->
             mapLog <| \l -> { l | viewingHistory = True }

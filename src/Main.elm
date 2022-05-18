@@ -69,7 +69,7 @@ main =
                     initialUrl =
                         case url.path of
                             "/" ->
-                                { url | path = Accordion.parentId initialAccordion |> Debug.log "Initial Model location is" }
+                                { url | path = Accordion.parentId initialAccordion }
 
                             _ ->
                                 url

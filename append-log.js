@@ -39,10 +39,16 @@ const db = getFirestore(app);
 // Enable Offline Cache
 enableIndexedDbPersistence(db).catch(err => {
   if (err.code == "failed-precondition") {
+    console.log(
+      "Edits are not persisted while you are offline. The most probablie reason is that you have this site open in multiple tabs."
+    );
     // Multiple tabs open, persistence can only be enabled
     // in one tab at a a time.
     // ...
   } else if (err.code == "unimplemented") {
+    console.log(
+      "Edits are not persisted while you are offline. Use a different browser to enable this feature or make sure to remain online."
+    );
     // The current browser does not support all of the
     // features required to enable persistence
     // ...
@@ -92,15 +98,21 @@ var query = async function () {
 const log = doc(db, "log", "entries");
 
 const append = async function (data) {
-  console.log("append", data);
-  await updateDoc(log, {
-    actions: arrayUnion(data),
-  });
+  console.log("append");
+  try {
+    await updateDoc(log, { actions: arrayUnion(data) });
+  } catch (error) {
+    console.log("error in append", error);
+  }
 };
 
 const overwrite = async function (data) {
-  console.log("overwrite", data);
-  await updateDoc(log, { actions: data });
+  console.log("overwrite");
+  try {
+    await updateDoc(log, { actions: data });
+  } catch (error) {
+    console.log("error in overwrite", error);
+  }
 };
 
 customElements.define(
@@ -116,7 +128,7 @@ customElements.define(
         log,
         doc => {
           requestAnimationFrame(() => {
-            console.log("On Snapshot", doc.data().actions);
+            console.log("onSnapshot");
             appendLog.dispatchEvent(
               new CustomEvent("logReceived", {
                 detail: doc.data().actions,
@@ -132,7 +144,7 @@ customElements.define(
     }
     attributeChangedCallback(name, oldValue, newValue) {
       /**/
-      console.log(name, oldValue, "------------->", newValue);
+      console.log("attribute changed:", name);
       if (name == "backlog") {
         append(JSON.parse(newValue));
       } else if (name == "overwrite") {
@@ -152,8 +164,12 @@ customElements.define(
 const hypertext = doc(db, "hypertext", "entries");
 
 const save = async function (id, content) {
-  console.log("saving...", id, content);
-  await updateDoc(hypertext, id, content);
+  console.log("save", id);
+  try {
+    await updateDoc(hypertext, id, content);
+  } catch (e) {
+    console.error("Error saving", id, e);
+  }
 };
 
 // var load = async function (id) {
@@ -203,15 +219,17 @@ customElements.define(
         },
         error => console.log("SNAPSHOT ERROR in Hypertext:", error)
       );
-      getDoc(hypertext).then(docSnap => {
-        if (docSnap.exists()) {
-          console.log("Document data:", docSnap.get(editor.getAttribute("data-id")));
-          this.initialize(docSnap.get(editor.getAttribute("data-id")));
-        } else {
-          // doc.data() will be undefined in this case
-          console.log("No such document!");
-        }
-      });
+      getDoc(hypertext)
+        .then(docSnap => {
+          if (docSnap.exists()) {
+            console.log("Document data:", docSnap.get(editor.getAttribute("data-id")));
+            this.initialize(docSnap.get(editor.getAttribute("data-id")));
+          } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+          }
+        })
+        .catch(e => console.log(e));
     }
     disconnectedCallback() {}
     attributeChangedCallback(name, oldValue, newValue) {}

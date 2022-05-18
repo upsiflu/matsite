@@ -144,7 +144,7 @@ actionCodec =
         |> Codec.variant1 "WithBody" WithBody bodyCodec
         |> Codec.variant1 "WithShape" WithShape shapeCodec
         |> Codec.variant1 "WithFab" WithFab (Fab.codec |> Codec.maybe)
-        |> Codec.variant1 "WithClasses" WithClasses (Codec.list string)
+        |> Codec.variant1 "WithClasses" WithClasses (Codec.map (String.split " ") (String.join " ") Codec.string)
         |> Codec.buildCustom
 
 
@@ -419,7 +419,7 @@ singleton : String -> Segment
 singleton caption =
     { empty
         | caption = { text = caption, showsDate = False }
-        , id = String.replace " " "-" caption
+        , id = Layout.sanitise caption
     }
 
 
@@ -539,7 +539,7 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                         ]
 
                 template =
-                    { body = getTemplate .body s (templates |> Debug.log "all templates") |> Debug.log ("found body template for " ++ s.id)
+                    { body = getTemplate .body s templates
                     , info = getTemplate .info s templates
                     }
             in

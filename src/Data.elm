@@ -30,7 +30,7 @@ addTemplates =
                     (\artist ->
                         let
                             uid =
-                                Layout.sanitise artist.name |> Debug.log "adding artist template"
+                                Layout.sanitise artist.name
                         in
                         presetBody (uid ++ "(photo)") (Artist.viewPhoto artist)
                             >> presetBody uid (Artist.view artist)

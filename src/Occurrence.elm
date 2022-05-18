@@ -81,7 +81,7 @@ moment zone month day year hour minute =
     DateTime.fromRawParts { day = day, month = month, year = year } { hours = hour, minutes = minute, seconds = 0, milliseconds = 0 }
         |> Maybe.map
             (localToGlobal zone
-                >> (\posix -> [ ( posix, posix ) ])
+                >> (\posix -> [ { from = posix, until = posix } ])
             )
         |> Maybe.withDefault []
 
@@ -90,20 +90,18 @@ moment zone month day year hour minute =
 -}
 withDurationMinutes : Int -> Occurrence -> Occurrence
 withDurationMinutes duration =
-    List.map
-        (\( from, _ ) ->
-            ( from, Time.millisToPosix (Time.posixToMillis from + duration * 60 * 1000) )
-        )
+    List.map <|
+        \occurrence ->
+            { occurrence | until = Time.millisToPosix (Time.posixToMillis occurrence.from + duration * 60 * 1000) }
 
 
 {-| Discards the end dates in all `Occasion`s
 -}
 withDurationDays : Int -> Occurrence -> Occurrence
 withDurationDays duration =
-    List.map
-        (\( from, _ ) ->
-            ( from, Time.millisToPosix (Time.posixToMillis from + duration * 24 * 60 * 60 * 1000) )
-        )
+    List.map <|
+        \occurrence ->
+            { occurrence | until = Time.millisToPosix (Time.posixToMillis occurrence.from + duration * 24 * 60 * 60 * 1000) }
 
 
 {-| Examples:
@@ -114,12 +112,15 @@ withDurationDays duration =
 
 -}
 type alias Occasion =
-    ( Time.Posix, Time.Posix )
+    { from : Time.Posix, until : Time.Posix }
 
 
 occasionCodec : Codec Occasion
 occasionCodec =
-    Codec.tuple posixCodec posixCodec
+    Codec.object Occasion
+        |> Codec.field "from" .from posixCodec
+        |> Codec.field "until" .until posixCodec
+        |> Codec.buildObject
 
 
 posixCodec : Codec Time.Posix
@@ -179,14 +180,23 @@ merge =
 -}
 bounds : Occurrence -> Occasion
 bounds =
-    let
-        sortTime listSort =
-            List.map Time.posixToMillis >> listSort >> Maybe.withDefault 0 >> Time.millisToPosix
-    in
-    List.unzip
-        >> Tuple.mapBoth
-            (sortTime List.minimum)
-            (sortTime List.maximum)
+    List.foldl1
+        (\{ from, until } acc ->
+            { from =
+                if Time.posixToMillis from < Time.posixToMillis acc.from then
+                    from
+
+                else
+                    acc.from
+            , until =
+                if Time.posixToMillis until > Time.posixToMillis acc.until then
+                    until
+
+                else
+                    acc.until
+            }
+        )
+        >> Maybe.withDefault { from = Time.millisToPosix 0, until = Time.millisToPosix 0 }
 
 
 {-| -}
@@ -206,32 +216,17 @@ view mode =
         Short zone precision ->
             \occurrence ->
                 case occurrence of
-                    _ :: _ ->
-                        let
-                            beginning =
-                                occurrence
-                                    |> List.map (Tuple.first >> Time.posixToMillis)
-                                    |> List.minimum
-                                    |> Maybe.withDefault 0
-                                    |> Time.millisToPosix
-
-                            ending =
-                                occurrence
-                                    |> List.map (Tuple.second >> Time.posixToMillis)
-                                    |> List.maximum
-                                    |> Maybe.withDefault 0
-                                    |> Time.millisToPosix
-                        in
-                        ( beginning, ending )
-                            |> occasionToString zone precision
-                            |> Html.text
-
                     [] ->
                         Html.text "--"
 
+                    _ :: _ ->
+                        bounds occurrence
+                            |> occasionToString zone precision
+                            |> Html.text
+
 
 occasionToString : Zone -> Precision -> Occasion -> String
-occasionToString zone precision ( from, until ) =
+occasionToString zone precision { from, until } =
     let
         ( localFrom, localUntil ) =
             ( localDateTime zone from, localDateTime zone until )
@@ -452,11 +447,6 @@ occasionToString zone precision ( from, until ) =
                         until
 
 
-replace : Occasion -> Occasion -> Occurrence -> Occurrence
-replace oldOccasion =
-    List.setIf ((==) oldOccasion >> Debug.log "replace here")
-
-
 replaceAt : Int -> Occasion -> Occurrence -> Occurrence
 replaceAt =
     List.setAt
@@ -472,8 +462,8 @@ addDefaultOccasion occurrence =
                 >> Time.millisToPosix
 
         oneWeekLater : Occasion -> Occasion
-        oneWeekLater =
-            Tuple.mapBoth addWeek addWeek
+        oneWeekLater { from, until } =
+            { from = addWeek from, until = addWeek until }
     in
     case List.reverse occurrence of
         [] ->
@@ -515,12 +505,12 @@ edit { zone, save } occurrence =
         additionalOccasion =
             [ Html.button [ title "add Occasion", class "add", onClick (save (addDefaultOccasion occurrence)) ] [ Html.text "+" ] ]
 
-        makeEditable i ( from, until ) =
+        makeEditable i ({ from, until } as occasion) =
             [ Html.details [ class "edit" ]
                 [ Html.summary []
-                    [ occasionToString zoneData Minutes ( from, until ) |> Html.text
+                    [ occasionToString zoneData Minutes occasion |> Html.text
                     ]
-                , Html.button [ title "remove Occasion", class "remove", onClick (List.remove ( from, until ) occurrence |> save) ] [ Html.text "⌫" ]
+                , Html.button [ title "remove Occasion", class "remove", onClick (List.remove occasion occurrence |> save) ] [ Html.text "⌫" ]
                 , Html.label []
                     [ " (as shown in your Timezone " ++ zoneName ++ ")" |> Html.text
                     ]
@@ -531,7 +521,7 @@ edit { zone, save } occurrence =
                         , value (fromPosix from)
                         , onInput
                             (\newFrom ->
-                                replaceAt i ( toPosix newFrom |> Maybe.withDefault from, until ) occurrence |> save
+                                replaceAt i { occasion | from = toPosix newFrom |> Maybe.withDefault from } occurrence |> save
                             )
                         ]
                         []
@@ -542,9 +532,9 @@ edit { zone, save } occurrence =
                         [ type_ "datetime-local"
                         , onInput
                             (\newUntil ->
-                                replaceAt i ( from, toPosix newUntil |> Maybe.withDefault until ) occurrence |> save
+                                replaceAt i { occasion | until = toPosix newUntil |> Maybe.withDefault until } occurrence |> save
                             )
-                        , value (fromPosix until |> Debug.log "datetime local")
+                        , value (fromPosix until)
                         ]
                         []
                     ]
