@@ -108,7 +108,7 @@ view : Ui msg -> Html msg
 view (Ui items) =
     let
         viewItem i =
-            div [] (Keyed.ul [] i.scenes :: i.handles ++ i.infos ++ [ details [ class "sheet" ] <| summary [] [] :: List.map (List.singleton >> section []) i.controls ])
+            div [] (Keyed.ul [] i.scenes :: i.handles ++ i.infos ++ [ details [ class "sheet", attribute "open" "true" ] <| summary [] [] :: List.map (List.singleton >> section []) i.controls ])
     in
     items
         |> List.foldl

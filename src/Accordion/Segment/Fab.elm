@@ -1,6 +1,6 @@
 module Accordion.Segment.Fab exposing
     ( Fab(..)
-    , decode, encode
+    , codec
     , merge
     , view, edit
     , default
@@ -10,7 +10,7 @@ module Accordion.Segment.Fab exposing
 that manages its own data and can be queried but is stateless
 
 @docs Fab
-@docs decode, encode
+@docs codec
 
 
 # Combine
@@ -24,6 +24,7 @@ that manages its own data and can be queried but is stateless
 
 -}
 
+import Codec exposing (Codec, bool, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (onInput)
@@ -41,6 +42,34 @@ type Fab
     | Subscribe { link : String }
 
 
+{-| -}
+codec : Codec Fab
+codec =
+    Codec.custom
+        (\reg sub value ->
+            case value of
+                Register r ->
+                    reg r
+
+                Subscribe s ->
+                    sub s
+        )
+        |> Codec.variant1 "Register"
+            Register
+            (Codec.object (\l o -> { link = l, occurrence = o })
+                |> Codec.field "link" .link string
+                |> Codec.field "occurrence" .occurrence Occurrence.codec
+                |> Codec.buildObject
+            )
+        |> Codec.variant1 "Subscribe"
+            Subscribe
+            (Codec.object (\l -> { link = l })
+                |> Codec.field "link" .link string
+                |> Codec.buildObject
+            )
+        |> Codec.buildCustom
+
+
 type alias Record_link_String_occurrence_Occurrence_ =
     { link : String, occurrence : Occurrence }
 
@@ -50,73 +79,8 @@ default =
     stringToFabType >> Maybe.withDefault (Subscribe { link = "https://" })
 
 
-{-| -}
-decode : Decoder Fab
-decode =
-    Decode.field "Constructor" Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "Register" ->
-                        Decode.map
-                            Register
-                            (Decode.field "A1" decodeRecord_link_String_occurrence_Occurrence_)
-
-                    "Subscribe" ->
-                        Decode.map
-                            Subscribe
-                            (Decode.field "A1" decodeRecord_link_String_)
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type Fab: " ++ other
-            )
-
-
-decodeRecord_link_String_ =
-    Decode.map
-        Record_link_String_
-        (Decode.field "link" Decode.string)
-
-
-decodeRecord_link_String_occurrence_Occurrence_ =
-    Decode.map2
-        Record_link_String_occurrence_Occurrence_
-        (Decode.field "link" Decode.string)
-        (Decode.field "occurrence" Occurrence.decode)
-
-
 type alias Record_link_String_ =
     { link : String }
-
-
-{-| -}
-encode : Fab -> Value
-encode a =
-    case a of
-        Register a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Register" )
-                , ( "A1", encodeRecord_link_String_occurrence_Occurrence_ a1 )
-                ]
-
-        Subscribe a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Subscribe" )
-                , ( "A1", encodeRecord_link_String_ a1 )
-                ]
-
-
-encodeRecord_link_String_ a =
-    Encode.object
-        [ ( "link", Encode.string a.link )
-        ]
-
-
-encodeRecord_link_String_occurrence_Occurrence_ a =
-    Encode.object
-        [ ( "link", Encode.string a.link )
-        , ( "occurrence", Occurrence.encode a.occurrence )
-        ]
 
 
 

@@ -1,6 +1,6 @@
 module Occurrence exposing
     ( Occurrence
-    , encode, decode
+    , codec
     , moment
     , withDurationDays, withDurationMinutes
     , merge
@@ -16,7 +16,7 @@ We are storing all dates as POSIX for interoperability, and add precision marker
 improved humaneness.
 
 @docs Occurrence
-@docs encode, decode
+@docs codec
 
 
 # Create
@@ -45,6 +45,7 @@ improved humaneness.
 
 -}
 
+import Codec exposing (Codec)
 import DateFormat exposing (format)
 import DateTime exposing (DateTime)
 import Html.Styled as Html exposing (Html)
@@ -65,6 +66,12 @@ Note that all dates are stored in UTC and will be converted to the local timezon
 -}
 type alias Occurrence =
     List Occasion
+
+
+{-| -}
+codec : Codec Occurrence
+codec =
+    Codec.list occasionCodec
 
 
 {-| Zero-duration occurrence
@@ -110,42 +117,14 @@ type alias Occasion =
     ( Time.Posix, Time.Posix )
 
 
-decodeOccasion : Decoder Occasion
-decodeOccasion =
-    Decode.map2
-        (\a1 a2 -> ( a1, a2 ))
-        (Decode.field "A1" decodePosix)
-        (Decode.field "A2" decodePosix)
+occasionCodec : Codec Occasion
+occasionCodec =
+    Codec.tuple posixCodec posixCodec
 
 
-{-| -}
-decode : Decoder Occurrence
-decode =
-    Decode.list decodeOccasion
-
-
-encodeOccasion : Occasion -> Value
-encodeOccasion ( a1, a2 ) =
-    Encode.object
-        [ ( "A1", encodePosix a1 )
-        , ( "A2", encodePosix a2 )
-        ]
-
-
-encodePosix : Posix -> Value
-encodePosix =
-    Time.posixToMillis >> toFloat >> (\x -> x / 1000) >> Encode.float
-
-
-decodePosix : Decoder Posix
-decodePosix =
-    Decode.map (truncate >> (*) 1000 >> Time.millisToPosix) Decode.float
-
-
-{-| -}
-encode : Occurrence -> Value
-encode a =
-    Encode.list encodeOccasion a
+posixCodec : Codec Time.Posix
+posixCodec =
+    Codec.map Time.millisToPosix Time.posixToMillis Codec.int
 
 
 type Precision

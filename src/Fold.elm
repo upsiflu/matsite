@@ -10,6 +10,7 @@ module Fold exposing
     , positionToString
     , fataMorganaPosition
     , list
+    , directionCodec
     )
 
 {-| Folding over (nonempty) Lists and Zippers
@@ -50,6 +51,7 @@ module Fold exposing
 
 -}
 
+import Codec exposing (Codec, bool, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 
@@ -251,21 +253,47 @@ directionFromString str =
 {-| -}
 decodeDirection : Decoder Direction
 decodeDirection =
-    Decode.string
-        |> Decode.andThen
-            (directionFromString
-                >> Maybe.map Decode.succeed
-                >> Maybe.withDefault (Decode.fail "Unknown Constructor for Fold.Direction")
-            )
+    Codec.decoder directionCodec
 
 
 {-| -}
 encodeDirection : Direction -> Value
 encodeDirection =
-    directionToString >> Encode.string
+    Codec.encoder directionCodec
+
+
+{-| -}
+directionCodec : Codec Direction
+directionCodec =
+    Codec.map (directionFromString >> Maybe.withDefault Here) directionToString Codec.string
 
 
 
+{- Codec.custom
+   (\up left down right here value ->
+       case value of
+           Up ->
+               up
+
+           Left ->
+               left
+
+           Down ->
+               down
+
+           Right ->
+               right
+
+           Here ->
+               here
+   )
+   |> Codec.variant0 "⩚" Up
+   |> Codec.variant0 "⪪" Left
+   |> Codec.variant0 "⩛" Down
+   |> Codec.variant0 "⪫" Right
+   |> Codec.variant0 "⚬" Here
+   |> Codec.buildCustom
+-}
 ---- Helpers
 
 

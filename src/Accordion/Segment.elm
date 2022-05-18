@@ -3,7 +3,7 @@ module Accordion.Segment exposing
     , defaultIllustration
     , empty, singleton
     , Action(..)
-    , encodeAction, decodeAction
+    , actionCodec
     , apply
     , Orientation(..), Shape(..)
     , initialTemplates
@@ -33,7 +33,7 @@ _To render Segments differently based on their position in the tree, use
 ## Actions
 
 @docs Action
-@docs encodeAction, decodeAction
+@docs actionCodec
 @docs apply
 
 
@@ -63,6 +63,7 @@ _To render Segments differently based on their position in the tree, use
 import Accordion.Segment.Fab as Fab exposing (Fab(..))
 import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode, Width(..))
 import Bool.Extra exposing (ifElse)
+import Codec exposing (Codec, bool, decoder, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Css exposing (..)
 import Dict exposing (Dict)
 import Fold exposing (Direction(..), Role(..))
@@ -108,209 +109,80 @@ type Action
     | WithClasses (List String)
 
 
+{-| -}
+actionCodec : Codec Action
+actionCodec =
+    Codec.custom
+        (\cap inf bod sha fab cla value ->
+            case value of
+                WithCaption c ->
+                    cap c
+
+                WithInfo i ->
+                    inf i
+
+                WithBody b ->
+                    bod b
+
+                WithShape s ->
+                    sha s
+
+                WithFab f ->
+                    fab f
+
+                WithClasses c ->
+                    cla c
+        )
+        |> Codec.variant1 "WithCaption"
+            WithCaption
+            (Codec.object Caption
+                |> field "text" .text string
+                |> field "showsDate" .showsDate bool
+                |> Codec.buildObject
+            )
+        |> Codec.variant1 "WithInfo" WithInfo (infoCodec |> Codec.maybe)
+        |> Codec.variant1 "WithBody" WithBody bodyCodec
+        |> Codec.variant1 "WithShape" WithShape shapeCodec
+        |> Codec.variant1 "WithFab" WithFab (Fab.codec |> Codec.maybe)
+        |> Codec.variant1 "WithClasses" WithClasses (Codec.list string)
+        |> Codec.buildCustom
+
+
 type alias Caption =
     { text : String, showsDate : Bool }
-
-
-{-| -}
-decodeAction : Decoder Action
-decodeAction =
-    Decode.field "Constructor" Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "WithCaption" ->
-                        Decode.map
-                            WithCaption
-                            (Decode.field "A1" decodeCaption)
-
-                    "WithInfo" ->
-                        Decode.map
-                            WithInfo
-                            (Decode.field "A1" (Decode.maybe decodeInfoChoice))
-
-                    "WithBody" ->
-                        Decode.map
-                            WithBody
-                            (Decode.field "A1" decodeBodyChoice)
-
-                    "WithShape" ->
-                        Decode.map
-                            WithShape
-                            (Decode.field "A1" decodeShape)
-
-                    "WithFab" ->
-                        Decode.map
-                            WithFab
-                            (Decode.field "A1" (Decode.maybe Fab.decode))
-
-                    "WithClasses" ->
-                        Decode.map
-                            WithClasses
-                            (Decode.field "A1" (Decode.list Decode.string))
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type Action: " ++ other
-            )
 
 
 type alias Heading =
     Maybe String
 
 
-decodeHeading : Decoder Heading
-decodeHeading =
-    Decode.maybe Decode.string
-
-
-decodeBodyChoice : Decoder BodyChoice
-decodeBodyChoice =
-    let
-        recover x =
-            case x of
-                "PeekThrough" ->
-                    Decode.succeed PeekThrough
-
-                "CustomContent" ->
-                    Decode.map
-                        CustomContent
-                        (Decode.field "A1" decodeHeading)
-
-                "CustomIllustration" ->
-                    Decode.succeed CustomIllustration
-
-                other ->
-                    Decode.fail <| "Unknown constructor for type BodyChoice: " ++ other
-    in
-    Decode.string |> Decode.andThen recover
-
-
-decodeInfoChoice : Decoder InfoChoice
-decodeInfoChoice =
-    Decode.field "Constructor" Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "CustomByline" ->
-                        Decode.map
-                            CustomByline
-                            (Decode.field "A1" Decode.int)
-
-                    "CustomToc" ->
-                        Decode.succeed CustomToc
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type InfoChoice: " ++ other
-            )
-
-
-decodeCaption : Decoder Caption
-decodeCaption =
-    Decode.map2
-        Caption
-        (Decode.field "text" Decode.string)
-        (Decode.field "showsDate" Decode.bool)
-
-
-{-| -}
-encodeAction : Action -> Value
-encodeAction a =
-    case a of
-        WithCaption a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithCaption" )
-                , ( "A1", encodeCaption a1 )
-                ]
-
-        WithInfo a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithInfo" )
-                , ( "A1", encodeMaybe encodeInfoChoice a1 )
-                ]
-
-        WithBody a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithBody" )
-                , ( "A1", encodeBodyChoice a1 )
-                ]
-
-        WithShape a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithShape" )
-                , ( "A1", encodeShape a1 )
-                ]
-
-        WithFab a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithFab" )
-                , ( "A1", encodeMaybe Fab.encode a1 )
-                ]
-
-        WithClasses a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "WithClasses" )
-                , ( "A1", Encode.list Encode.string a1 )
-                ]
-
-
-encodeBodyChoice : BodyChoice -> Value
-encodeBodyChoice a =
-    case a of
-        PeekThrough ->
-            Encode.string "PeekThrough"
-
-        CustomContent a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "CustomContent" )
-                , ( "A1", encodeHeading a1 )
-                ]
-
-        CustomIllustration ->
-            Encode.string "CustomIllustration"
-
-
-encodeHeading : Heading -> Value
-encodeHeading a =
-    encodeMaybe Encode.string a
-
-
-encodeMaybe : (a -> Value) -> Maybe a -> Value
-encodeMaybe f a =
-    case a of
-        Just b ->
-            f b
-
-        Nothing ->
-            Encode.null
-
-
-encodeInfoChoice : InfoChoice -> Value
-encodeInfoChoice a =
-    case a of
-        CustomByline lineCount ->
-            Encode.object
-                [ ( "Constructor", Encode.string "CustomByline" )
-                , ( "A1", Encode.int lineCount )
-                ]
-
-        CustomToc ->
-            Encode.object
-                [ ( "Constructor", Encode.string "CustomToc" )
-                ]
-
-
-encodeCaption : Caption -> Value
-encodeCaption a =
-    Encode.object
-        [ ( "text", Encode.string a.text )
-        , ( "showsDate", Encode.bool a.showsDate )
-        ]
-
-
 {-| -}
 type Shape
     = Oriented Orientation Width
     | Background
+
+
+{-| -}
+shapeCodec : Codec Shape
+shapeCodec =
+    Codec.custom
+        (\oriented background value ->
+            case value of
+                Oriented o w ->
+                    oriented o w
+
+                Background ->
+                    background
+        )
+        |> Codec.variant2 "Oriented" Oriented orientationCodec ViewMode.widthCodec
+        |> Codec.variant0 "Background" Background
+        |> Codec.buildCustom
+
+
+{-| -}
+orientationCodec : Codec Orientation
+orientationCodec =
+    Codec.map (orientationFromString >> Maybe.withDefault Vertical) orientationToString Codec.string
 
 
 decodeOrientation : Decoder Orientation
@@ -340,7 +212,7 @@ decodeShape =
                         Decode.map2
                             Oriented
                             (Decode.field "A1" decodeOrientation)
-                            (Decode.field "A2" ViewMode.decodeWidth)
+                            (Decode.field "A2" (decoder ViewMode.widthCodec))
 
                     "Background" ->
                         Decode.succeed Background
@@ -368,6 +240,22 @@ type InfoChoice
     | CustomToc
 
 
+infoCodec : Codec InfoChoice
+infoCodec =
+    Codec.custom
+        (\cbyl ctoc value ->
+            case value of
+                CustomByline i ->
+                    cbyl i
+
+                CustomToc ->
+                    ctoc
+        )
+        |> Codec.variant1 "CustomByline" CustomByline Codec.int
+        |> Codec.variant0 "CustomToc" CustomToc
+        |> Codec.buildCustom
+
+
 {-| -}
 infoLineCount : Segment -> Int
 infoLineCount s =
@@ -392,6 +280,26 @@ type BodyChoice
     = PeekThrough
     | CustomContent Heading
     | CustomIllustration
+
+
+bodyCodec : Codec BodyChoice
+bodyCodec =
+    Codec.custom
+        (\pee con ill value ->
+            case value of
+                PeekThrough ->
+                    pee
+
+                CustomContent h ->
+                    con h
+
+                CustomIllustration ->
+                    ill
+        )
+        |> Codec.variant0 "PeekThrough" PeekThrough
+        |> Codec.variant1 "CustomContent" CustomContent (Codec.maybe string)
+        |> Codec.variant0 "CustomIllustration" CustomIllustration
+        |> Codec.buildCustom
 
 
 {-| -}
@@ -492,33 +400,6 @@ isBackground s =
 type Orientation
     = Vertical
     | Horizontal
-
-
-encodeOrientation : Orientation -> Value
-encodeOrientation a =
-    Encode.string <|
-        case a of
-            Vertical ->
-                "Vertical"
-
-            Horizontal ->
-                "Horizontal"
-
-
-encodeShape : Shape -> Value
-encodeShape a =
-    case a of
-        Oriented a1 a2 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Oriented" )
-                , ( "A1", encodeOrientation a1 )
-                , ( "A2", ViewMode.encodeWidth a2 )
-                ]
-
-        Background ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Background" )
-                ]
 
 
 {-| -}
@@ -628,7 +509,7 @@ heading { templates } s =
 -}
 edit :
     { zone : Maybe ( String, Time.Zone )
-    , do : Action -> msg
+    , do : String -> Action -> msg
     , delete : msg
     , insert : Direction -> msg
     , templates : Templates
@@ -640,6 +521,9 @@ edit :
     -> Ui msg
 edit { zone, do, insert, delete, templates, updateTemplates, context } ({ position } as mode) s =
     let
+        intend =
+            do s.id
+
         ( overlay, propertySheet ) =
             let
                 overlaidButton dir hint_ symbol =
@@ -675,12 +559,12 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                                     bodyTypeToString custom
 
                         options =
-                            [ ( bodyTypeToString CustomIllustration, do (WithBody CustomIllustration) )
-                            , ( bodyTypeToString (CustomContent Nothing), do (WithBody (CustomContent Nothing)) )
-                            , ( bodyTypeToString (CustomContent (Just "Heading")), do (WithBody (CustomContent (Just "Heading"))) )
+                            [ ( bodyTypeToString CustomIllustration, intend (WithBody CustomIllustration) )
+                            , ( bodyTypeToString (CustomContent Nothing), intend (WithBody (CustomContent Nothing)) )
+                            , ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) )
                             ]
                                 |> Zipper.create
-                                    ( bodyTypeToString PeekThrough, do (WithBody PeekThrough) )
+                                    ( bodyTypeToString PeekThrough, intend (WithBody PeekThrough) )
                                     templateOption
                                 |> Zipper.findClosest (Tuple.first >> (==) activeOption)
                     in
@@ -711,12 +595,12 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                                     infoTypeToString custom
 
                         options =
-                            [ ( infoTypeToString (Just CustomToc), do (WithInfo (Just CustomToc)) )
-                            , ( infoTypeToString (Just (CustomByline 1)), do (WithInfo <| Just (CustomByline 1)) )
-                            , ( infoTypeToString (Just (CustomByline 2)), do (WithInfo <| Just (CustomByline 2)) )
+                            [ ( infoTypeToString (Just CustomToc), intend (WithInfo (Just CustomToc)) )
+                            , ( infoTypeToString (Just (CustomByline 1)), intend (WithInfo <| Just (CustomByline 1)) )
+                            , ( infoTypeToString (Just (CustomByline 2)), intend (WithInfo <| Just (CustomByline 2)) )
                             ]
                                 |> Zipper.create
-                                    ( infoTypeToString Nothing, do (WithInfo Nothing) )
+                                    ( infoTypeToString Nothing, intend (WithInfo Nothing) )
                                     templateOption
                                 |> Zipper.findClosest (Tuple.first >> (==) activeOption)
 
@@ -727,12 +611,12 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                     , Html.div []
                         [ Html.hr [] []
                         , Html.div [ class "editCaption" ]
-                            [ Html.input [ value s.caption.text, onInput (\txt -> do (WithCaption { originalCaption | text = txt })) ] []
-                            , Ui.pickOrNot s.caption.showsDate (Zipper.singleton ( "📅", do (WithCaption { originalCaption | showsDate = not s.caption.showsDate }) ))
+                            [ Html.input [ value s.caption.text, onInput (\txt -> intend (WithCaption { originalCaption | text = txt })) ] []
+                            , Ui.pickOrNot s.caption.showsDate (Zipper.singleton ( "📅", intend (WithCaption { originalCaption | showsDate = not s.caption.showsDate }) ))
                             ]
                         , Ui.pick
                             options
-                        , Fab.edit { zone = zone, save = WithFab >> do } s.fab
+                        , Fab.edit { zone = zone, save = WithFab >> intend } s.fab
                         ]
                     )
 
@@ -925,6 +809,20 @@ isIllustration { templates } s =
 
 
 ---- Helpers
+
+
+{-| -}
+orientationFromString : String -> Maybe Orientation
+orientationFromString o =
+    case o of
+        "🀱" ->
+            Just Horizontal
+
+        "🁣" ->
+            Just Vertical
+
+        _ ->
+            Nothing
 
 
 {-| -}

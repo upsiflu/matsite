@@ -81,8 +81,13 @@
     left: 0;
     max-height: 100vh;
     overflow: scroll;
-    background: grey;
+    background: rgb(142, 54, 10);
     opacity: 0.9;
+    z-index: 8;
+
+    >ol {
+        padding-bottom: 6rem;
+    }
 }
 
 .sheet {
@@ -240,58 +245,60 @@
         }
     }
 
-    .pick,
-    .pickOrNot {
-        display: flex;
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-        width: 100%;
-        border: none;
+
+
+}
+
+.pick,
+.pickOrNot {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    width: 100%;
+    border: none;
+    position: relative;
+
+    // justify-content: center;
+
+    >label {
         position: relative;
+        cursor: pointer;
 
-        // justify-content: center;
+        >span {
+            font-weight: bold;
+            font-size: 0.75rem;
+            display: block;
+            transition: all .2s;
+            border-radius: 1rem;
+            padding: .2rem .5rem;
+        }
 
-        >label {
-            position: relative;
+        >input {
+            width: 1rem;
+            height: 1rem;
+            margin: -0.5;
+            opacity: 0;
+            padding: 0;
+            border: 0;
+            position: absolute;
+        }
 
-            >span {
-                font-weight: bold;
-                font-size: 0.75rem;
-                display: block;
-                transition: all .2s;
-                border-radius: 1rem;
-                padding: .2rem .5rem;
-            }
+        >input:checked~span {
+            background: black;
+            color: orangered;
+            letter-spacing: -.2px;
+        }
 
-            >input {
-                width: 1rem;
-                height: 1rem;
-                margin: -0.5;
-                opacity: 0;
-                padding: 0;
-                border: 0;
-                position: absolute;
-            }
+        >input:not(:checked)~span {
+            background: orangered;
+        }
 
-            >input:checked~span {
-                background: black;
-                color: orangered;
-                letter-spacing: -.2px;
-            }
+        transition:all .1s;
 
-            >input:not(:checked)~span {
-                cursor: pointer;
-                background: orangered;
-            }
-
-            transition:all .1s;
-
-            &:hover>input:not(:checked)~span {
-                outline: 0.5px solid black;
-                outline-offset: -1px;
-            }
+        &:hover>input:not(:checked)~span {
+            outline: 0.5px solid black;
+            outline-offset: -1px;
         }
     }
-
 }

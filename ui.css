@@ -73,8 +73,12 @@
   left: 0;
   max-height: 100vh;
   overflow: scroll;
-  background: grey;
+  background: rgb(142, 54, 10);
   opacity: 0.9;
+  z-index: 8;
+}
+#activityLog > ol {
+  padding-bottom: 6rem;
 }
 
 .sheet {
@@ -195,8 +199,9 @@
 .sheet .dates .remove:hover {
   color: white;
 }
-.sheet .pick,
-.sheet .pickOrNot {
+
+.pick,
+.pickOrNot {
   display: flex;
   padding: 0;
   margin: 0;
@@ -205,13 +210,14 @@
   border: none;
   position: relative;
 }
-.sheet .pick > label,
-.sheet .pickOrNot > label {
+.pick > label,
+.pickOrNot > label {
   position: relative;
+  cursor: pointer;
   transition: all 0.1s;
 }
-.sheet .pick > label > span,
-.sheet .pickOrNot > label > span {
+.pick > label > span,
+.pickOrNot > label > span {
   font-weight: bold;
   font-size: 0.75rem;
   display: block;
@@ -219,8 +225,8 @@
   border-radius: 1rem;
   padding: 0.2rem 0.5rem;
 }
-.sheet .pick > label > input,
-.sheet .pickOrNot > label > input {
+.pick > label > input,
+.pickOrNot > label > input {
   width: 1rem;
   height: 1rem;
   margin: -0.5;
@@ -229,19 +235,18 @@
   border: 0;
   position: absolute;
 }
-.sheet .pick > label > input:checked ~ span,
-.sheet .pickOrNot > label > input:checked ~ span {
+.pick > label > input:checked ~ span,
+.pickOrNot > label > input:checked ~ span {
   background: black;
   color: orangered;
   letter-spacing: -0.2px;
 }
-.sheet .pick > label > input:not(:checked) ~ span,
-.sheet .pickOrNot > label > input:not(:checked) ~ span {
-  cursor: pointer;
+.pick > label > input:not(:checked) ~ span,
+.pickOrNot > label > input:not(:checked) ~ span {
   background: orangered;
 }
-.sheet .pick > label:hover > input:not(:checked) ~ span,
-.sheet .pickOrNot > label:hover > input:not(:checked) ~ span {
+.pick > label:hover > input:not(:checked) ~ span,
+.pickOrNot > label:hover > input:not(:checked) ~ span {
   outline: 0.5px solid black;
   outline-offset: -1px;
 }/*# sourceMappingURL=ui.css.map */

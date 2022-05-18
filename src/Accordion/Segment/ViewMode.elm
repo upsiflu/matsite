@@ -4,42 +4,16 @@ module Accordion.Segment.ViewMode exposing
     , Region(..)
     , regionToString
     , Width(..), addWidth, widthToString, Offset, cumulativeOffset
-    , decodeWidth, encodeWidth
     , offsetToCssVariables, zeroOffset
     , path
     , toCssVariables
     , toClass
+    , widthCodec
     )
 
 {-| reflects a Segment's position within the Tree
 
 ![Accordion Structure](../asset/22-03-17-Accordion.svg)
-
-
-## To Do
-
-  - [x] Push the `Role` type into `Tree` and name it `Position`
-
-  - [x] Add a `Width` type
-
-        type Width
-            = Columns Int
-            | Screen
-
-  - [x] Add a `Region` type
-
-        type Region
-            = North
-            | South
-            | West
-            | East
-            | NearWest
-            | NearEast
-            | Here
-
-  - [x] Remove `Placeholder` and `Collapsed`; instead, use
-
-        { position = Tree.Position, region = Region, offset = List Width }
 
 
 # Create
@@ -59,7 +33,6 @@ module Accordion.Segment.ViewMode exposing
 ### Width
 
 @docs Width, addWidth, widthToString, Offset, cumulativeOffset
-@docs decodeWidth, encodeWidth
 @docs offsetToCssVariables, zeroOffset
 
 
@@ -75,6 +48,7 @@ module Accordion.Segment.ViewMode exposing
 
 -}
 
+import Codec exposing (Codec, bool, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html
@@ -117,39 +91,20 @@ type Width
 
 
 {-| -}
-encodeWidth : Width -> Value
-encodeWidth a =
-    case a of
-        Columns a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Columns" )
-                , ( "A1", Encode.int a1 )
-                ]
+widthCodec : Codec Width
+widthCodec =
+    Codec.custom
+        (\col scr value ->
+            case value of
+                Columns i ->
+                    col i
 
-        Screen ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Screen" )
-                ]
-
-
-{-| -}
-decodeWidth : Decoder Width
-decodeWidth =
-    Decode.field "Constructor" Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "Columns" ->
-                        Decode.map
-                            Columns
-                            (Decode.field "A1" Decode.int)
-
-                    "Screen" ->
-                        Decode.succeed Screen
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type Width: " ++ other
-            )
+                Screen ->
+                    scr
+        )
+        |> Codec.variant1 "Columns" Columns Codec.int
+        |> Codec.variant0 "Screen" Screen
+        |> Codec.buildCustom
 
 
 {-| -}

@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
+import Codec exposing (Codec, decoder, encoder)
 import Css exposing (..)
 import Data
 import Html as Unstyled
@@ -217,11 +218,19 @@ view model =
             |> Html.toUnstyled
         , Unstyled.div []
             [ model.backlog
-                |> Maybe.map (Accordion.encodeIntent >> Encode.encode 0 >> UnstyledAttributes.attribute "backlog" >> List.singleton)
+                |> Maybe.map
+                    (encoder Accordion.intentCodec
+                        >> Encode.encode 0
+                        >> UnstyledAttributes.attribute "backlog"
+                        >> List.singleton
+                    )
                 |> Maybe.withDefault []
                 |> (++)
                     (if overwrite then
-                        [ Encode.list Accordion.encodeIntent model.overwrite |> Encode.encode 0 |> UnstyledAttributes.attribute "overwrite" ]
+                        [ encoder Accordion.historyCodec model.overwrite
+                            |> Encode.encode 0
+                            |> UnstyledAttributes.attribute "overwrite"
+                        ]
 
                      else
                         []
@@ -229,7 +238,7 @@ view model =
                 |> (++)
                     [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
                 |> (++)
-                    [ Decode.at [ "detail" ] (Decode.list Accordion.decodeIntent)
+                    [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
                         |> Decode.map LogReceived
                         |> Events.on "logReceived"
                     ]

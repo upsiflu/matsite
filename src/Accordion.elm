@@ -3,13 +3,13 @@ module Accordion exposing
     , create
     , exit, mapTemplates
     , Msg, update
-    , Action(..), decodeAction, encodeAction
+    , Action(..), actionCodec
     , goToId, goToParentId
     , parentId, focusId
     , isRoot
     , closestId
     , view
-    , History, Intent, decodeIntent, encodeIntent
+    , History, Intent, historyCodec, intentCodec
     )
 
 {-|
@@ -41,7 +41,7 @@ module Accordion exposing
 
 # Persist
 
-@docs Action, decodeAction, encodeAction
+@docs Action, actionCodec
 
 
 # Navigate
@@ -69,6 +69,7 @@ module Accordion exposing
 
 import Accordion.Segment as Segment exposing (Orientation(..), Segment)
 import Accordion.Segment.ViewMode as ViewSegment exposing (Region(..), ViewMode, Width(..))
+import Codec exposing (Codec, bool, decoder, encoder, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (Html)
@@ -185,108 +186,58 @@ type Action
 
 
 {-| -}
-decodeAction : Decoder Action
-decodeAction =
-    Decode.field "Constructor"
-        Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "Name" ->
-                        Decode.map
-                            Name
-                            (Decode.field "A1" Decode.string)
+actionCodec : Codec Action
+actionCodec =
+    Codec.custom
+        (\name modify go_ insert delete_ undo value ->
+            case value of
+                Name s ->
+                    name s
 
-                    "Modify" ->
-                        Decode.map
-                            Modify
-                            (Decode.field "A1" Segment.decodeAction)
+                Modify a ->
+                    modify a
 
-                    "Go" ->
-                        Decode.map
-                            Go
-                            (Decode.field "A1" Fold.decodeDirection)
+                Go d ->
+                    go_ d
 
-                    "Insert" ->
-                        Decode.map
-                            Insert
-                            (Decode.field "A1" Fold.decodeDirection)
+                Insert d ->
+                    insert d
 
-                    "Delete" ->
-                        Decode.succeed Delete
+                Delete ->
+                    delete_
 
-                    "Undo" ->
-                        Decode.map
-                            Undo
-                            (Decode.field "A1" decodeIntentId)
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type Action: " ++ other
-            )
-
-
-{-| -}
-decodeIntentId : Decoder IntentId
-decodeIntentId =
-    Decode.map2
-        IntentId
-        (Decode.field "sessionId" Decode.string)
-        (Decode.field "ordinal" Decode.int)
-
-
-{-| -}
-encodeAction : Action -> Value
-encodeAction a =
-    case a of
-        Name a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Name" )
-                , ( "A1", Encode.string a1 )
-                ]
-
-        Modify a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Modify" )
-                , ( "A1", Segment.encodeAction a1 )
-                ]
-
-        Go a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Go" )
-                , ( "A1", Fold.encodeDirection a1 )
-                ]
-
-        Insert a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Insert" )
-                , ( "A1", Fold.encodeDirection a1 )
-                ]
-
-        Delete ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Delete" ) ]
-
-        Undo a1 ->
-            Encode.object
-                [ ( "Constructor", Encode.string "Undo" )
-                , ( "A1", encodeIntentId a1 )
-                ]
-
-
-encodeIntentId : IntentId -> Value
-encodeIntentId a =
-    Encode.object
-        [ ( "sessionId", Encode.string a.sessionId )
-        , ( "ordinal", Encode.int a.ordinal )
-        ]
+                Undo i ->
+                    undo i
+        )
+        |> variant1 "Name" Name string
+        |> variant1 "Modify" Modify Segment.actionCodec
+        |> variant1 "Go" Go Fold.directionCodec
+        |> variant1 "Insert" Insert Fold.directionCodec
+        |> variant0 "Delete" Delete
+        |> variant1 "Undo" Undo intentIdCodec
+        |> Codec.buildCustom
 
 
 type alias History =
     List Intent
 
 
+historyCodec : Codec History
+historyCodec =
+    Codec.list intentCodec
+
+
 type alias Intent =
     { intentId : IntentId, location : Maybe String, action : Action }
+
+
+intentCodec : Codec Intent
+intentCodec =
+    Codec.object Intent
+        |> Codec.field "intentId" .intentId intentIdCodec
+        |> Codec.maybeField "location" .location string
+        |> Codec.field "action" .action actionCodec
+        |> Codec.buildObject
 
 
 {-| -}
@@ -338,6 +289,14 @@ create templates history =
 
 type alias IntentId =
     { sessionId : String, ordinal : Int }
+
+
+intentIdCodec : Codec IntentId
+intentIdCodec =
+    Codec.object IntentId
+        |> Codec.field "sessionId" .sessionId string
+        |> Codec.field "ordinal" .ordinal Codec.int
+        |> Codec.buildObject
 
 
 {-| Decides, for each action, if it is undone or not:
@@ -542,7 +501,7 @@ update msg =
             mapLog <| \l -> { l | viewingHistory = True }
 
         LogClosed ->
-            mapLog <| \l -> { l | viewingHistory = True }
+            mapLog <| \l -> { l | viewingHistory = False }
 
 
 
@@ -591,11 +550,7 @@ view { zone, do, volatile } accordion =
                         |> List.maximum
                         |> Maybe.withDefault 0
             in
-            { intentId = { sessionId = sessionId, ordinal = latestOrdinal }, location = Just location, action = action }
-
-        atParent : Action -> msg
-        atParent =
-            generateIntent (parentId accordion) >> do
+            { intentId = { sessionId = sessionId, ordinal = latestOrdinal + 1 }, location = Just location, action = action }
 
         atFocus : Action -> msg
         atFocus =
@@ -615,7 +570,7 @@ view { zone, do, volatile } accordion =
                             |> List.indexedMap
                                 (\_ ( { isUndone, by }, intent ) ->
                                     Html.li []
-                                        [ Html.pre [] [ Html.text (encodeAction intent.action |> Encode.encode 4) ]
+                                        [ Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
                                         , Html.pre [] [ Maybe.map Html.text intent.location |> Maybe.withDefault (Html.text "*") ]
                                         , Ui.singlePickOrNot isUndone ( intentIdToString intent.intentId, atFocus (Undo by) )
                                         ]
@@ -624,7 +579,7 @@ view { zone, do, volatile } accordion =
                             |> (\l ->
                                     Html.fieldset [ id "activityLog" ]
                                         [ Html.legend []
-                                            [ Html.span [] [ Html.text "Activity Log" ]
+                                            [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
                                             , Html.button [ onClick (volatile LogClosed) ] [ Html.text "close" ]
                                             ]
                                         , Html.p [] [ Html.text "You can undo and redo any previous action in this list" ]
@@ -639,7 +594,7 @@ view { zone, do, volatile } accordion =
                     Ui.none
 
         viewSegment =
-            Segment.edit { zone = zone, do = Modify >> atFocus, insert = Insert >> atFocus, delete = atFocus Delete, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
+            Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, delete = Delete |> atFocus, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
 
         classes : Html.Attribute msg
         classes =
@@ -885,31 +840,3 @@ renderTree =
                        )
         }
     }
-
-
-decodeIntent : Decoder Intent
-decodeIntent =
-    Decode.map3
-        Intent
-        (Decode.field "intentId" decodeIntentId)
-        (Decode.field "location" (Decode.maybe Decode.string))
-        (Decode.field "action" decodeAction)
-
-
-encodeIntent : Intent -> Value
-encodeIntent a =
-    Encode.object
-        [ ( "intentId", encodeIntentId a.intentId )
-        , ( "location", encodeMaybe Encode.string a.location )
-        , ( "action", encodeAction a.action )
-        ]
-
-
-encodeMaybe : (a -> Value) -> Maybe a -> Value
-encodeMaybe f a =
-    case a of
-        Just b ->
-            f b
-
-        Nothing ->
-            Encode.null
