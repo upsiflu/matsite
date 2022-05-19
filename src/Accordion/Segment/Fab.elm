@@ -147,7 +147,7 @@ edit { zone, save } maybeFab =
                     Html.text ""
 
                 Just (Register ({ link, occurrence } as r)) ->
-                    Html.fieldset []
+                    Html.fieldset [ class "ui" ]
                         [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
                         , case zone of
                             Nothing ->
@@ -158,7 +158,7 @@ edit { zone, save } maybeFab =
                         ]
 
                 Just (Subscribe { link }) ->
-                    Html.fieldset []
+                    Html.fieldset [ class "ui" ]
                         [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] []
                         ]
     in
@@ -177,7 +177,7 @@ edit { zone, save } maybeFab =
                         >> Ui.pickOrNot True
            )
         |> (\picker -> [ picker, editor ])
-        |> Html.fieldset []
+        |> Html.fieldset [ class "ui" ]
 
 
 

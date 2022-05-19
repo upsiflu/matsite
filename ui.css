@@ -99,7 +99,6 @@ input[type=radio]:focus + span {
   background: orangered;
   color: black;
   border: 2px double black;
-  padding-bottom: 1.5rem;
   z-index: 9;
   outline: 1rem solid rgba(0, 0, 0, 0.3);
   outline-offset: 0.5px;
@@ -119,39 +118,11 @@ input[type=radio]:focus + span {
 .sheet fieldset {
   margin: 0 -1.5px;
 }
-.sheet summary:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
 .sheet input.link {
   width: 100%;
   box-sizing: border-box;
 }
-.sheet[open] > summary::marker {
-  content: "OK";
-}
-.sheet > summary {
-  cursor: pointer;
-  position: fixed;
-  bottom: 0px;
-  text-align: center;
-  font-size: 0.7em;
-  width: var(--column);
-}
-.sheet > summary::marker {
-  content: "Segment Properties";
-}
-.sheet > summary:hover > span {
-  max-width: var(--column);
-}
-.sheet > summary > span {
-  max-width: 0px;
-  transition: max-width 0.1s;
-  overflow: hidden;
-  display: inline-block;
-  position: absolute;
-}
 .sheet fieldset {
-  padding: 0;
   border: 1.5px groove orangered;
 }
 .sheet .remove {
@@ -257,4 +228,135 @@ input[type=radio]:focus + span {
 .pickOrNot > label:hover > input:not(:checked) ~ span {
   outline: 0.5px solid black;
   outline-offset: -1px;
+}
+
+.deleteSegment > summary::marker {
+  content: "...";
+}
+
+.deleteSegment[open] > summary::marker {
+  content: "Cancel";
+}
+
+summary,
+button:enabled,
+a:link[href] {
+  cursor: pointer;
+}
+
+summary:disabled,
+button:disabled,
+a:link:not[href] {
+  cursor: not-allowed;
+}
+
+.fill-h {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stretch-h {
+  width: 100%;
+  display: flex;
+}
+
+.ui {
+  --background: #CCC;
+  --bevel: #DDD;
+  --active-background: #075;
+  --active-bevel: #186;
+  --active-foreground: #efc;
+  --mode-background: #BBB;
+  --mode-bevel: #CCC;
+  --mode-active-background: #999;
+  --mode-active-bevel: #888;
+  font-family: "subarumedium";
+}
+
+button.ui {
+  border: 2px solid transparent;
+  background: transparent;
+  box-sizing: border-box;
+  min-height: 2rem;
+}
+
+button.ui:enabled:hover {
+  border: 2px groove var(--bevel);
+}
+
+button.ui:enabled:active {
+  border: 2px inset var(--active-bevel);
+  background: var(--active-background);
+}
+
+button.ui.square {
+  width: 2rem;
+  flex-grow: 0;
+}
+
+button.ui.stretching {
+  flex-grow: 1;
+}
+
+button.ui[aria-checked=true] {
+  border: 2px groove var(--active-bevel);
+  background: var(--active-background);
+  color: var(--active-foreground);
+}
+
+button.ui.mode[aria-checked=true] {
+  border: 2px solid var(--background);
+  background: var(--mode-background);
+  color: var(--foreground);
+}
+
+button.ui.mode[aria-checked=true]:enabled:hover {
+  border: 2px groove var(--mode-bevel);
+}
+
+button.ui.mode:active {
+  background: var(--mode-active-background);
+  border: 2px inset var(--mode-active-bevel);
+}
+
+button.ui.mode[aria-checked=true]:enabled:active {
+  background: var(--mode-active-background);
+  border: 2px inset var(--mode-active-bevel);
+}
+
+.sheet.ui {
+  background: var(--background);
+  border: 2px outset var(--bevel);
+  color: black;
+  border-bottom-width: 0;
+}
+
+.control.ui {
+  background: var(--background);
+  border: 2px outset var(--bevel);
+  color: black;
+  border-top-width: 0;
+}
+
+fieldset.ui {
+  border-color: var(--bevel);
+}
+
+button.ui:first-child {
+  margin-left: -2px;
+  border-left-color: transparent;
+}
+
+button.ui:last-child {
+  margin-right: -2px;
+  border-right-color: transparent;
+}
+
+button.ui:first-child:hover {
+  border-left-color: transparent;
+}
+
+button.ui:last-child:hover {
+  border-right-color: transparent;
 }/*# sourceMappingURL=ui.css.map */

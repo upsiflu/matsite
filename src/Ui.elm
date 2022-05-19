@@ -3,11 +3,11 @@ module Ui exposing (..)
 {-| Gui Helpers
 -}
 
-import Bool.Extra exposing (ifElse)
+import Bool.Extra as Bool exposing (ifElse)
 import Css exposing (..)
-import Html.Styled as Html exposing (Html, details, div, fieldset, input, label, section, span, summary, text)
+import Html.Styled as Html exposing (Attribute, Html, details, div, fieldset, input, label, section, span, summary, text)
 import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Events exposing (onClick, onInput)
 import Html.Styled.Keyed as Keyed
 import Occurrence exposing (Occurrence)
 import Zipper exposing (Zipper)
@@ -93,6 +93,15 @@ composeScenes fu (Ui l) =
         |> Ui
 
 
+{-| encloses all controls within the Ui into a single scene
+-}
+composeControls : (List (Html msg) -> Html msg) -> Ui msg -> Ui msg
+composeControls fu (Ui l) =
+    Item none ( "", none ) none (fu (List.map .control l))
+        :: List.map (\item -> { item | control = none }) l
+        |> Ui
+
+
 
 ---- VIEW ----
 
@@ -108,7 +117,7 @@ view : Ui msg -> Html msg
 view (Ui items) =
     let
         viewItem i =
-            div [] (Keyed.ul [] i.scenes :: i.handles ++ i.infos ++ [ details [ class "sheet", attribute "open" "true" ] <| summary [] [] :: List.map (List.singleton >> section []) i.controls ])
+            div [] (Keyed.ul [] i.scenes :: i.handles ++ i.infos ++ i.controls)
     in
     items
         |> List.foldl
@@ -218,10 +227,6 @@ type alias ViewModel msg =
     List (Field msg)
 
 
-type alias Face =
-    Html Never
-
-
 {-| Examples:
 
     OneOf "Yes or no?" (Zipper.create ( Html.text "Yes", Answer True ) [] [ ( Html.text "No", Answer False ) ])
@@ -230,8 +235,8 @@ type alias Face =
 
 -}
 type Field msg
-    = OneOf String (Zipper ( Face, msg ))
-    | ZeroOrOneOf String Bool msg (Zipper ( Face, msg ))
+    = OneOf String (Zipper ( Html msg, msg ))
+    | ZeroOrOneOf String Bool msg (Zipper ( Html msg, msg ))
     | ManyOccurrences
         String
         { data : List Occurrence
@@ -248,7 +253,7 @@ pick =
         >> Zipper.mapFocus (Tuple.mapFirst not)
         >> Zipper.flat
         >> List.map radio
-        >> fieldset [ class "pick" ]
+        >> fieldset [ class "ui pick" ]
 
 
 pickOrNot : Bool -> Zipper ( String, msg ) -> Html msg
@@ -262,7 +267,7 @@ pickOrNot isActive =
            )
         >> Zipper.flat
         >> List.map radio
-        >> fieldset [ class "pickOrNot" ]
+        >> fieldset [ class "ui pickOrNot" ]
 
 
 singlePickOrNot : Bool -> ( String, msg ) -> Html msg
@@ -276,3 +281,92 @@ radio ( isOn, ( name, msg ) ) =
         [ input [ type_ "radio", Attributes.checked isOn, onClick msg ] []
         , span [] [ text name ]
         ]
+
+
+type alias Face =
+    { front : List (Html Never), title : String }
+
+
+check : Face -> msg -> Maybe Bool -> Html msg
+check face toggle isChecked =
+    Html.label
+        [ title face.title, triState isChecked, onClick toggle ]
+        [ Html.input [ type_ "checkbox", triState isChecked ] [], Html.span [] face.front |> Html.map never ]
+
+
+textInput : String -> Maybe (String -> msg) -> Html msg
+textInput val send =
+    Html.input [ send |> Maybe.map onInput |> Maybe.withDefault (Attributes.disabled True), value val ] []
+
+
+triState : Maybe Bool -> Attribute msg
+triState isChecked =
+    case isChecked of
+        Nothing ->
+            Attributes.disabled True
+
+        Just True ->
+            Attributes.checked True
+
+        Just False ->
+            Attributes.checked False
+
+
+quadState : Bool -> Maybe a -> List (Attribute msg)
+quadState isChecked activate =
+    Maybe.map (\_ -> [ Attributes.disabled False ]) activate
+        |> Maybe.withDefault [ Attributes.disabled True ]
+        |> (++)
+            [ Attributes.attribute "aria-checked"
+                (if isChecked then
+                    "true"
+
+                 else
+                    "false"
+                )
+            ]
+
+
+toggleModeButton : Face -> Bool -> Maybe msg -> Html msg
+toggleModeButton face isChecked toggle =
+    let
+        attr =
+            toggle
+                |> Maybe.map
+                    (onClick >> List.singleton)
+                |> Maybe.withDefault []
+                |> (++) (quadState isChecked toggle)
+                |> (++) [ title face.title, class "ui mode stretching" ]
+    in
+    List.map (Html.map never) face.front
+        |> Html.button attr
+
+
+toggleButton : Face -> Bool -> Maybe msg -> Html msg
+toggleButton face isChecked toggle =
+    let
+        attr =
+            toggle
+                |> Maybe.map
+                    (onClick >> List.singleton)
+                |> Maybe.withDefault []
+                |> (++) (quadState isChecked toggle)
+                |> (++) [ title face.title, class "ui stretching" ]
+    in
+    List.map (Html.map never) face.front
+        |> Html.button attr
+
+
+squareToggleButton : Face -> Bool -> Maybe msg -> Html msg
+squareToggleButton face isChecked toggle =
+    let
+        attr =
+            toggle
+                |> Maybe.map
+                    (onClick >> List.singleton)
+                |> Maybe.withDefault []
+                |> (++) (quadState isChecked (Maybe.map (\_ -> ()) toggle))
+                |> (++) [ title face.title, class "ui square" ]
+    in
+    List.map (Html.map never) face.front
+        |> Html.button attr

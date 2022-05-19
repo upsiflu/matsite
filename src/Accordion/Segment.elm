@@ -11,6 +11,7 @@ module Accordion.Segment exposing
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
     , infoLineCount
     , view, edit
+    , templatesAreOn, toggleTemplates
     )
 
 {-| contain the immutable site content
@@ -511,6 +512,7 @@ edit :
     { zone : Maybe ( String, Time.Zone )
     , do : String -> Action -> msg
     , delete : msg
+    , rename : String -> msg
     , insert : Direction -> msg
     , templates : Templates
     , updateTemplates : (Templates -> Templates) -> msg
@@ -519,7 +521,7 @@ edit :
     -> ViewMode
     -> Segment
     -> Ui msg
-edit { zone, do, insert, delete, templates, updateTemplates, context } ({ position } as mode) s =
+edit { zone, do, insert, delete, rename, templates, updateTemplates, context } ({ position } as mode) s =
     let
         intend =
             do s.id
@@ -531,10 +533,9 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
 
                 overlaidDeleteButton =
                     Html.details [ class "deleteSegment" ]
-                        [ Html.summary [] [ Html.span [] [ Html.text (s.id ++ "⌫") ] ]
+                        [ Html.summary [] [ Html.span [] [ Html.text "⌫" ] ]
                         , Html.div []
-                            [ Html.label [] [ Html.text <| "Delete segment '" ++ s.id ++ "'?" ]
-                            , Html.button [ class "deleteSegment", onClick delete, title "delete this segment" ] [ Html.span [] [ Html.text "Yes" ] ]
+                            [ Html.button [ class "deleteSegment", onClick delete, title "delete this segment" ] [ Html.span [] [ Html.text "Delete this segment" ] ]
                             ]
                         ]
 
@@ -546,10 +547,6 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
             case position.role of
                 Focus ->
                     let
-                        templateOption =
-                            Maybe.map (always [ ( "Preset", toggleBodyTemplate s |> updateTemplates ) ]) template.body
-                                |> Maybe.withDefault []
-
                         activeOption =
                             case ( template.body, s.body ) of
                                 ( Just _, _ ) ->
@@ -561,21 +558,20 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                         options =
                             [ ( bodyTypeToString CustomIllustration, intend (WithBody CustomIllustration) )
                             , ( bodyTypeToString (CustomContent Nothing), intend (WithBody (CustomContent Nothing)) )
-                            , ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) )
                             ]
                                 |> Zipper.create
                                     ( bodyTypeToString PeekThrough, intend (WithBody PeekThrough) )
-                                    templateOption
+                                    [ ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) ) ]
                                 |> Zipper.findClosest (Tuple.first >> (==) activeOption)
                     in
                     ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                      , Ui.overlay Ui.TopRight [ overlaidDeleteButton ]
                       , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
                       , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
                       , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
                       ]
-                    , Html.div []
-                        [ Html.label [] [ Html.text s.id ]
+                    , Html.fieldset [ class "ui" ]
+                        [ Html.legend [ class "fill-h" ]
+                            [ Ui.textInput s.id (Just <| \newName -> rename newName), overlaidDeleteButton ]
                         , Ui.pick options
                         ]
                     )
@@ -608,14 +604,12 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                             s.caption
                     in
                     ( []
-                    , Html.div []
-                        [ Html.hr [] []
-                        , Html.div [ class "editCaption" ]
-                            [ Html.input [ value s.caption.text, onInput (\txt -> intend (WithCaption { originalCaption | text = txt })) ] []
+                    , Html.fieldset [ class "ui" ]
+                        [ Html.legend [ class "fill-h editCaption" ]
+                            [ Ui.textInput s.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
                             , Ui.pickOrNot s.caption.showsDate (Zipper.singleton ( "📅", intend (WithCaption { originalCaption | showsDate = not s.caption.showsDate }) ))
                             ]
-                        , Ui.pick
-                            options
+                        , Ui.pick options
                         , Fab.edit { zone = zone, save = WithFab >> intend } s.fab
                         ]
                     )
@@ -624,7 +618,7 @@ edit { zone, do, insert, delete, templates, updateTemplates, context } ({ positi
                     ( [], Ui.none )
 
         ui =
-            Ui.fromEmpty (\e -> { e | control = propertySheet })
+            Ui.fromEmpty <| \e -> { e | control = propertySheet }
     in
     view_ { templates = templates, context = context } ui overlay mode s
 
@@ -868,3 +862,18 @@ infoTypeToString info =
 
         Just (CustomByline n) ->
             String.fromInt n
+
+
+toggleTemplates : Templates -> Templates
+toggleTemplates t =
+    { body = Dict.map (\_ ( b, x ) -> ( not b, x )) t.body
+    , info = Dict.map (\_ ( b, x ) -> ( not b, x )) t.info
+    }
+
+
+templatesAreOn : Templates -> Maybe Bool
+templatesAreOn =
+    .body
+        >> Dict.values
+        >> List.head
+        >> Maybe.map Tuple.first

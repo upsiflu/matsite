@@ -72,6 +72,7 @@ import Accordion.Segment.ViewMode as ViewSegment exposing (Region(..), ViewMode,
 import Codec exposing (Codec, bool, decoder, encoder, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
+import Html.Attributes
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, classList, css, id)
 import Html.Styled.Events exposing (onClick)
@@ -105,7 +106,7 @@ type alias Config =
 
 
 type alias LogConfig =
-    { viewingHistory : Bool, history : History }
+    { viewingHistory : Bool, editing : Bool, history : History }
 
 
 mapConfig : (Config -> Config) -> Accordion -> Accordion
@@ -189,7 +190,7 @@ type Action
 actionCodec : Codec Action
 actionCodec =
     Codec.custom
-        (\name modify go_ insert delete_ undo value ->
+        (\name modify go_ insert delete_ undo_ value ->
             case value of
                 Name s ->
                     name s
@@ -207,7 +208,7 @@ actionCodec =
                     delete_
 
                 Undo i ->
-                    undo i
+                    undo_ i
         )
         |> variant1 "Name" Name string
         |> variant1 "Modify" Modify Segment.actionCodec
@@ -294,7 +295,7 @@ reviseHistory history accordion =
 {-| -}
 create : Segment.Templates -> History -> Accordion
 create templates history =
-    Log { viewingHistory = True, history = history } { tree = Tree.singleton Segment.empty, templates = templates }
+    Log { viewingHistory = False, editing = True, history = history } { tree = Tree.singleton Segment.empty, templates = templates }
         |> reviseHistory history
 
 
@@ -356,6 +357,56 @@ undoUndones =
 
             else
                 Just intent
+
+
+undo : History -> Maybe Action
+undo =
+    markUndones
+        >> List.reverse
+        >> List.find
+            (Tuple.second
+                >> .action
+                >> (\a ->
+                        case a of
+                            Undo _ ->
+                                False
+
+                            _ ->
+                                True
+                   )
+            )
+        >> Maybe.andThen
+            (\( { isUndone }, intent ) ->
+                if isUndone then
+                    Nothing
+
+                else
+                    Just (Undo intent.intentId)
+            )
+
+
+
+{- find the last non-Undo action.
+   If it is undone, undo its undoer.
+-}
+
+
+redo : History -> Maybe Action
+redo =
+    markUndones
+        >> List.reverse
+        >> List.findMap
+            (\( { isUndone, by }, intent ) ->
+                case ( isUndone, by, intent.action ) of
+                    ( _, _, Undo _ ) ->
+                        Nothing
+
+                    ( True, undoer, _ ) ->
+                        Just (Undo undoer)
+
+                    _ ->
+                        Nothing
+            )
 
 
 
@@ -497,8 +548,8 @@ focusId =
 {-| -}
 type Msg
     = TemplatesUpdated (Segment.Templates -> Segment.Templates)
-    | LogOpened
-    | LogClosed
+    | LogToggled
+    | EditingToggled
 
 
 {-| -}
@@ -508,11 +559,11 @@ update msg =
         TemplatesUpdated fu ->
             mapConfig <| \c -> { c | templates = fu c.templates }
 
-        LogOpened ->
-            mapLog <| \l -> { l | viewingHistory = True }
+        LogToggled ->
+            mapLog <| \l -> { l | viewingHistory = not l.viewingHistory }
 
-        LogClosed ->
-            mapLog <| \l -> { l | viewingHistory = False }
+        EditingToggled ->
+            mapLog <| \l -> { l | editing = not l.editing }
 
 
 
@@ -574,39 +625,66 @@ view { zone, do, volatile } accordion =
                 intentIdToString iid =
                     iid.sessionId ++ ":" ++ String.fromInt iid.ordinal
             in
-            case accordion of
-                Log { history, viewingHistory } _ ->
-                    if viewingHistory then
-                        markUndones history
-                            |> List.indexedMap
-                                (\_ ( { isUndone, by }, intent ) ->
-                                    Html.li []
-                                        [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
-                                        , Ui.singlePickOrNot isUndone ( intentIdToString intent.intentId, atFocus (Undo by) )
-                                        , "undone by " ++ intentIdToString by |> Html.text |> Ui.notIf (not isUndone)
-                                        , Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
-                                        ]
-                                )
-                            |> Html.ol [ class "list" ]
-                            |> (\l ->
-                                    Html.fieldset [ id "activityLog" ]
-                                        [ Html.legend []
-                                            [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
-                                            , Html.button [ onClick (volatile LogClosed) ] [ Html.text "close" ]
+            Html.div [ id "activityLog" ]
+                [ case accordion of
+                    Log { history, viewingHistory } _ ->
+                        if viewingHistory then
+                            markUndones history
+                                |> List.indexedMap
+                                    (\_ ( { isUndone, by }, intent ) ->
+                                        Html.li []
+                                            [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
+                                            , Ui.singlePickOrNot isUndone ( intentIdToString intent.intentId, atFocus (Undo by) )
+                                            , "undone by " ++ intentIdToString by |> Html.text |> Ui.notIf (not isUndone)
+                                            , Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
                                             ]
-                                        , Html.p [] [ Html.text "You can undo and redo any previous action in this list" ]
-                                        , l
-                                        ]
-                               )
+                                    )
+                                |> Html.ol [ class "list" ]
+                                |> (\l ->
+                                        Html.fieldset []
+                                            [ Html.legend []
+                                                [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
+                                                , Html.button [ onClick (volatile LogToggled) ] [ Html.text "close" ]
+                                                ]
+                                            , Html.p [] [ Html.text "You can undo and redo any previous action in this list" ]
+                                            , l
+                                            ]
+                                   )
 
-                    else
-                        Html.button [ id "activityLog", onClick (volatile LogOpened) ] [ Html.text "Activity Log..." ]
+                        else
+                            Html.section [ class "ui control" ]
+                                [ Html.button [ class "ui", onClick (volatile LogToggled) ] [ Html.text "Activity Log..." ] ]
 
-                Accordion _ ->
-                    Ui.none
+                    Accordion _ ->
+                        Ui.none
+                ]
 
         viewSegment =
-            Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, delete = Delete |> atFocus, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
+            Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
+
+        editAccordion sheets =
+            case accordion of
+                Log { history, editing } _ ->
+                    if editing then
+                        sheets
+                            ++ [ Html.div [ class "stretch-h" ]
+                                    [ Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
+                                    , Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
+                                    , Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
+                                    ]
+                               ]
+
+                    else
+                        [ Html.div [ class "stretch-h" ]
+                            [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Segments" } False (Just (volatile EditingToggled))
+                            ]
+                        ]
+
+                _ ->
+                    [ Html.div [ class "stretch-h" ]
+                        [ Html.text ""
+                        ]
+                    ]
 
         classes : Html.Attribute msg
         classes =
@@ -696,6 +774,17 @@ view { zone, do, volatile } accordion =
             , ( "logMenu", viewLog )
             ]
 
+        propertySheet : Ui msg
+        propertySheet =
+            Ui.fromEmpty <|
+                \e ->
+                    { e
+                        | control =
+                            Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
+                                (volatile (TemplatesUpdated Segment.toggleTemplates))
+                                (Segment.templatesAreOn (accordion |> config |> .templates))
+                    }
+
         renderAccordion : List (Renderable msg) -> Ui msg
         renderAccordion =
             List.foldl
@@ -720,7 +809,11 @@ view { zone, do, volatile } accordion =
                                     (List.sortBy Tuple.first overlays ++ scenes)
                                 )
                             )
-                            (Ui.concat items)
+                            (Ui.concat items |> Ui.with propertySheet)
+                            |> Ui.composeControls
+                                (editAccordion
+                                    >> Html.section [ class "ui sheet" ]
+                                )
                    )
     in
     c.tree
