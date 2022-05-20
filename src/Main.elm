@@ -33,19 +33,25 @@ type alias SessionId =
     String
 
 
-type alias Model =
-    { key : Nav.Key
-    , url : Url
-    , accordion : Accordion
-    , backlog : Maybe Accordion.Intent
-    , overwrite : Accordion.History
-    , zone : Maybe ( String, Time.Zone )
-    }
+type Model
+    = Loading
+        { key : Nav.Key
+        , url : Url
+        , overwrite : Accordion.History
+        }
+    | Model
+        { key : Nav.Key
+        , url : Url
+        , accordion : Accordion
+        , backlog : Maybe Accordion.Intent
+        , overwrite : Accordion.History
+        , zone : ( String, Time.Zone )
+        }
 
 
 overwrite : Bool
 overwrite =
-    True
+    False
 
 
 main : Program () Model Msg
@@ -54,29 +60,16 @@ main =
         { init =
             \_ url key ->
                 let
-                    initialAccordion =
-                        Data.initial
-
                     initialModel =
-                        { key = key
-                        , url = initialUrl
-                        , accordion = initialAccordion
-                        , backlog = Nothing
-                        , overwrite = Data.initialIntents
-                        , zone = Nothing
-                        }
-
-                    initialUrl =
-                        case url.path of
-                            "/" ->
-                                { url | path = Accordion.parentId initialAccordion }
-
-                            _ ->
-                                url
+                        Loading
+                            { key = key
+                            , url = url
+                            , overwrite = Data.initialIntents
+                            }
                 in
                 initialModel
-                    |> update (UrlChanged initialUrl)
-                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Accordion.focusId model.accordion |> pleaseCenter ] ))
+                    |> update (UrlChanged url)
+                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived ] ))
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -133,78 +126,111 @@ destination url =
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
-    case msg of
+    case ( msg, model ) of
         ---- Navigation
-        LinkClicked (Browser.Internal url) ->
-            (\x -> Debug.log ("in Internal LinkClicked; path went from " ++ destination model.url ++ " to ") (destination url) |> (\_ -> x)) <|
+        ( LinkClicked (Browser.Internal url), Model m ) ->
+            (\x ->
+                {- Debug.log ("in Internal LinkClicked; path went from `" ++ destination m.url ++ "` to ") -}
+                destination url |> (\_ -> x)
+            )
+            <|
                 -- TODO: handle query and fragment
-                if destination url == Accordion.parentId model.accordion && url.query == Nothing then
-                    ( { model | accordion = Accordion.exit model.accordion }, Cmd.none )
+                if destination url == Accordion.parentId m.accordion && url.query == Nothing then
+                    ( Model { m | accordion = Accordion.exit m.accordion }, Cmd.none )
 
                 else
-                    ( model, Url.toString url |> Nav.pushUrl model.key )
+                    ( Model m, Url.toString url |> Nav.pushUrl m.key )
 
-        LinkClicked (Browser.External href) ->
-            ( model, Nav.load href )
+        ( LinkClicked (Browser.External href), Model m ) ->
+            ( Model m, Nav.load href )
 
-        UrlChanged url ->
+        ( UrlChanged url, Model m ) ->
             -- TODO: handle query and fragment
-            (\x -> Debug.log ("in UrlChanged; path went from " ++ destination model.url ++ " to ") (destination url) |> (\_ -> x)) <|
-                if destination url == Accordion.parentId model.accordion then
-                    (\x -> Debug.log "New destination equals current parentId" (destination url) |> (\_ -> x)) <|
-                        ( { model | url = url }, Cmd.none )
+            (\x ->
+                {- Debug.log ("in UrlChanged; path went from " ++ destination m.url ++ " to ") -}
+                destination url |> (\_ -> x)
+            )
+            <|
+                if destination url == Accordion.parentId m.accordion then
+                    (\x ->
+                        {- Debug.log "New destination equals current parentId" -}
+                        destination url |> (\_ -> x)
+                    )
+                    <|
+                        ( Model { m | url = url }, Cmd.none )
 
                 else
-                    (\x -> Debug.log ("New destination" ++ destination url ++ "/=") (Accordion.parentId model.accordion) |> (\_ -> x)) <|
+                    (\x ->
+                        {- Debug.log ("New destination" ++ destination url ++ "/=") -}
+                        Accordion.parentId m.accordion |> (\_ -> x)
+                    )
+                    <|
                         let
                             newAccordion =
-                                Accordion.goToParentId (destination url) model.accordion
+                                Accordion.goToParentId (destination url) m.accordion
                         in
-                        ( { model | url = url, accordion = newAccordion }
+                        ( Model { m | url = url, accordion = newAccordion }
                         , Cmd.batch
-                            [ {- Accordion.focusId newAccordion |> pleaseCenter
-                                 ,
-                              -}
-                              Accordion.parentId newAccordion |> pleaseConfirm
+                            [ Accordion.focusId newAccordion |> pleaseCenter
+                            , Accordion.parentId newAccordion |> pleaseConfirm
                             ]
                         )
 
         ---- Client View
-        ZoneReceived result ->
+        ( ZoneReceived result, Loading o ) ->
             case result of
-                Ok z ->
-                    ( { model | zone = Just z }, Cmd.none )
+                Ok ( str, z ) ->
+                    let
+                        initialAccordion =
+                            Data.initial z
+
+                        newModel =
+                            Model
+                                { key = o.key
+                                , url = o.url
+                                , accordion = initialAccordion
+                                , backlog = Nothing
+                                , overwrite = o.overwrite
+                                , zone = ( str, z )
+                                }
+                    in
+                    ( newModel, Accordion.focusId initialAccordion |> pleaseCenter )
 
                 Err error ->
-                    Debug.log "Zone Error" error
+                    {- Debug.log "Zone Error" -}
+                    error
                         |> (\_ -> ( model, Cmd.none ))
 
-        ScrolledTo id ->
-            ( { model | accordion = Accordion.goToId id model.accordion }, Cmd.none )
+        ( ScrolledTo id, Model m ) ->
+            ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
 
         ---- Volatile Data
-        AccordionMessageReceived accMsg ->
-            ( { model | accordion = Accordion.update accMsg model.accordion }, Cmd.none )
+        ( AccordionMessageReceived accMsg, Model m ) ->
+            ( Model { m | accordion = Accordion.update accMsg m.accordion }, Cmd.none )
 
         ---- Persistent Data
-        LogReceived log ->
-            ( { model | accordion = Accordion.reviseHistory log model.accordion }, Cmd.none )
+        ( LogReceived log, Model m ) ->
+            ( Model { m | accordion = Accordion.reviseHistory log m.accordion }, Cmd.none )
 
-        IntentGenerated intent ->
-            ( { model | backlog = Just intent }, Cmd.none )
+        ( IntentGenerated intent, Model m ) ->
+            ( Model { m | backlog = Just intent }, Cmd.none )
 
-        NoteReceived str ->
-            Debug.log "NOTE RECEIVED" str
+        ( NoteReceived str, Model m ) ->
+            {- Debug.log "NOTE RECEIVED" -}
+            str
                 |> (\_ -> ( model, Cmd.none ))
+
+        _ ->
+            ( model, Cmd.none )
 
 
 {-| -}
 view model =
     let
-        accordion =
+        viewAccordion m =
             Accordion.view
-                { zone = model.zone, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
-                model.accordion
+                { zone = Just m.zone, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
+                m.accordion
                 |> Ui.composeScenes
                     (Keyed.ul [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
     in
@@ -214,42 +240,51 @@ view model =
             |> Html.toUnstyled
 
         -- , Html.hr [] []
-        , Ui.view accordion
-            |> Html.toUnstyled
-        , Unstyled.div []
-            [ model.backlog
-                |> Maybe.map
-                    (encoder Accordion.intentCodec
-                        >> Encode.encode 0
-                        >> UnstyledAttributes.attribute "backlog"
-                        >> List.singleton
-                    )
-                |> Maybe.withDefault []
-                |> (++)
-                    (if overwrite then
-                        [ encoder Accordion.historyCodec model.overwrite
-                            |> Encode.encode 0
-                            |> UnstyledAttributes.attribute "overwrite"
-                        ]
+        , case model of
+            Loading _ ->
+                Html.text "Loading" |> Html.toUnstyled
 
-                     else
-                        []
-                    )
-                |> (++)
-                    [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
-                |> (++)
-                    [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
-                        |> Decode.map LogReceived
-                        |> Events.on "logReceived"
+            Model m ->
+                Ui.view (viewAccordion m) |> Html.toUnstyled
+        , Unstyled.div [] <|
+            case model of
+                Loading _ ->
+                    []
+
+                Model m ->
+                    [ m.backlog
+                        |> Maybe.map
+                            (encoder Accordion.intentCodec
+                                >> Encode.encode 0
+                                >> UnstyledAttributes.attribute "backlog"
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+                        |> (++)
+                            (if overwrite then
+                                [ encoder Accordion.historyCodec m.overwrite
+                                    |> Encode.encode 0
+                                    |> UnstyledAttributes.attribute "overwrite"
+                                ]
+
+                             else
+                                []
+                            )
+                        |> (++)
+                            [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
+                        |> (++)
+                            [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
+                                |> Decode.map LogReceived
+                                |> Events.on "logReceived"
+                            ]
+                        |> Unstyled.node "append-log"
+                        |> (|>) []
+                    , [ Decode.at [ "detail" ] Decode.string
+                            |> Decode.map ScrolledTo
+                            |> Events.on "scrolledToA"
+                      ]
+                        |> Unstyled.node "closest-aisle"
+                        |> (|>) []
                     ]
-                |> Unstyled.node "append-log"
-                |> (|>) []
-            , [ Decode.at [ "detail" ] Decode.string
-                    |> Decode.map ScrolledTo
-                    |> Events.on "scrolledToA"
-              ]
-                |> Unstyled.node "closest-aisle"
-                |> (|>) []
-            ]
         ]
     }

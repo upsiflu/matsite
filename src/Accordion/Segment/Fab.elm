@@ -144,23 +144,20 @@ edit { zone, save } maybeFab =
         editor =
             case maybeFab of
                 Nothing ->
-                    Html.text ""
+                    []
 
                 Just (Register ({ link, occurrence } as r)) ->
-                    Html.fieldset [ class "ui" ]
-                        [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
-                        , case zone of
-                            Nothing ->
-                                Html.text "Determining local time zone..."
+                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
+                    , case zone of
+                        Nothing ->
+                            Html.text "Determining local time zone..."
 
-                            Just z ->
-                                Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } occurrence
-                        ]
+                        Just z ->
+                            Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } occurrence
+                    ]
 
                 Just (Subscribe { link }) ->
-                    Html.fieldset [ class "ui" ]
-                        [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] []
-                        ]
+                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] [] ]
     in
     [ ( "Register", stringToFabType "Register" |> save )
     ]
@@ -169,14 +166,24 @@ edit { zone, save } maybeFab =
             []
         |> (case maybeFab of
                 Nothing ->
-                    Ui.pickOrNot False
+                    Tuple.pair False
 
                 Just fab ->
                     Zipper.findClosest (Tuple.first >> (==) (fabTypeToString fab))
                         >> Zipper.mapFocus (\( str, _ ) -> ( str ++ " ×", save Nothing ))
-                        >> Ui.pickOrNot True
+                        >> Tuple.pair True
            )
-        |> (\picker -> [ picker, editor ])
+        |> (\( active, options ) ->
+                Zipper.map
+                    (\( str, msg ) ->
+                        ( { front = [ Html.text str ], title = "Select a Body type for this Segment" }
+                        , Just msg
+                        )
+                    )
+                    options
+                    |> Ui.pickOrNot active
+           )
+        |> (\picker -> Html.legend [ class "no-break" ] [ Html.label [ class "ui" ] [ Html.text "Interactivity:\u{00A0}" ], picker ] :: editor)
         |> Html.fieldset [ class "ui" ]
 
 

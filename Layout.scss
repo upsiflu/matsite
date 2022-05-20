@@ -55,9 +55,8 @@
         --nearEast-height: calc(var(--nearEast-units) * var(--unit));
     }
 
-    /* Total extents */
-    width: calc(var(--width) + 100vw);
-    margin-left:50vw;
+    /* Total extents plus 50vw empty room to select outmost segments by scrolling */
+    width: calc(var(--width) + 50vw);
     position:relative;
     left:50vw;
     height: var(--height);
@@ -73,6 +72,9 @@
         /* Aisles are collapsed to their headers */
         --nearWest-width: calc(var(--nearWest-units) * var(--unit));
         --nearEast-width: calc(var(--nearEast-units) * var(--unit));
+
+        left: 0;
+        width: var(--width);
     }
 
     &:not(.focusIsBackground) {
@@ -242,6 +244,7 @@
             z-index: 0;
             overflow: visible;
             bottom: 0px;
+            left: 0;
             position: fixed;
             min-width: 100vw;
             min-height: 100vh;
@@ -391,7 +394,14 @@
 .body {
     /* crop and provide scrollbars */
     max-height: var(--here-height);
-    overflow: auto;
+
+    &:not(.illustrative) {
+        overflow: auto;
+    }
+
+    &.waiting {
+        background: grey;
+    }
 }
 
 
@@ -422,10 +432,18 @@
     border-top-right-radius: 0;
 }
 
-.focusIsRoot>.hamburgerMenu {
-    opacity: 0;
-    transform: scale(5);
-    pointer-events: none;
+.focusIsRoot {
+
+    >.hamburgerMenu {
+        opacity: 0;
+        transform: scale(5);
+        pointer-events: none;
+
+    }
+
+    >.aisleBackground {
+        opacity: 0;
+    }
 }
 
 

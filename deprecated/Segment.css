@@ -199,27 +199,33 @@ img {
   padding-block: 1.125rem;
   color: silver;
   transition: opacity 0.5s;
+  font-size: 0.85em;
 }
 
-.info .toc li {
+.info.toc li {
   display: inline-block;
 }
-.info .toc {
+.info.toc {
   margin: -0.75rem;
-  margin-top: -1.5rem;
+  margin-top: -0.5rem;
   display: block;
-  background: white;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
 }
-.P .info .toc li a {
-  background: white;
+.P .info.toc li a {
   padding: 0.25rem;
 }
-.P .info .toc li a:hover {
+.P .info.toc li a:hover {
   text-decoration: underline;
 }
-.P .info .toc li a:active {
+.P .info.toc li a:active {
   background: black;
+}
+
+.P .info.toc li.focused {
+  background: white;
+}
+.P .info.toc li:not(.focused) {
+  background: rgb(255, 255, 255, 0.1);
 }
 /*
 *  ==============================================================
@@ -232,13 +238,12 @@ img {
 .🀱,
 .🁣 {
   position: absolute;
-  transition: opacity 0.2s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
-  outline-offset: -1.5px;
+  transition: opacity 0s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
 }
 .cache {
   visibility: hidden;
   opacity: 0;
-  transition: height 0.3s, width 0.3s, left 0.2s, top 0.7s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
+  transition: height 0.3s, width 0.3s, left 0.2s, top 0.7s, opacity 0.1s linear 0.4s, visibility 0s linear 0.5s;
 }
 .cache.🀱 {
   width: var(--unit);
@@ -316,4 +321,59 @@ img {
   padding-right: 0;
   padding-top: 1.5rem;
   letter-spacing: -0.5px;
+}
+
+#Archive > .body {
+  height: var(--here-height);
+  overflow: visible;
+}
+
+#Archive body,
+#Archive #root,
+#Archive #root > div {
+  border: none;
+  background: transparent;
+}
+
+.role + a.person {
+  margin-left: 0.5rem;
+  transition: all 0.2s;
+}
+.role + a.person:hover,
+a.medium:hover {
+  letter-spacing: 0.5px;
+}
+
+ul.stretch-horizontally {
+  display: flex;
+  width: 100%;
+}
+ul.stretch-horizontally > li {
+  flex-grow: 1;
+}
+ul.video-carousel {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+ul.video-carousel li {
+  display: inline-block;
+  width: var(--column);
+  padding: 0;
+  margin: 0;
+}
+.traces-container {
+  position: absolute;
+  left: calc(var(--column) / 2);
+  top: 0;
+  height: 100%;
+  width: 100%;
+  margin-left: -50%;
+}
+iframe.traces {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  border: none;
 }

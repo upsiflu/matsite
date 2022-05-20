@@ -247,17 +247,18 @@ type Field msg
     | StringInput String { data : String, save : String -> msg }
 
 
-pick : Zipper ( String, msg ) -> Html msg
+pick : Zipper ( Face, Maybe msg ) -> Html msg
 pick =
-    Zipper.map (Tuple.pair False)
-        >> Zipper.mapFocus (Tuple.mapFirst not)
-        >> Zipper.flat
-        >> List.map radio
-        >> fieldset [ class "ui pick" ]
+    pickHelp "pick" True
 
 
-pickOrNot : Bool -> Zipper ( String, msg ) -> Html msg
-pickOrNot isActive =
+pickOrNot : Bool -> Zipper ( Face, Maybe msg ) -> Html msg
+pickOrNot =
+    pickHelp "pickOrNot"
+
+
+pickHelp : String -> Bool -> Zipper ( Face, Maybe msg ) -> Html msg
+pickHelp className isActive =
     Zipper.map (Tuple.pair False)
         >> (if isActive then
                 Zipper.mapFocus (Tuple.mapFirst not)
@@ -266,20 +267,21 @@ pickOrNot isActive =
                 identity
            )
         >> Zipper.flat
-        >> List.map radio
-        >> fieldset [ class "ui pickOrNot" ]
+        >> List.map
+            (\( isChecked, ( face, toggle ) ) -> radio face toggle isChecked)
+        >> div [ class "ui", class className ]
 
 
-singlePickOrNot : Bool -> ( String, msg ) -> Html msg
+singlePickOrNot : Bool -> ( Face, Maybe msg ) -> Html msg
 singlePickOrNot isActive =
     Zipper.singleton >> pickOrNot isActive
 
 
-radio : ( Bool, ( String, msg ) ) -> Html msg
-radio ( isOn, ( name, msg ) ) =
-    label []
-        [ input [ type_ "radio", Attributes.checked isOn, onClick msg ] []
-        , span [] [ text name ]
+radio : Face -> Maybe msg -> Bool -> Html msg
+radio face toggle isChecked =
+    label [ class "ui" ]
+        [ input (quadState isChecked toggle ++ [ type_ "radio", Attributes.checked isChecked ]) []
+        , span [] face.front |> Html.map never
         ]
 
 
@@ -290,13 +292,13 @@ type alias Face =
 check : Face -> msg -> Maybe Bool -> Html msg
 check face toggle isChecked =
     Html.label
-        [ title face.title, triState isChecked, onClick toggle ]
+        [ class "ui", title face.title, triState isChecked, onClick toggle ]
         [ Html.input [ type_ "checkbox", triState isChecked ] [], Html.span [] face.front |> Html.map never ]
 
 
-textInput : String -> Maybe (String -> msg) -> Html msg
-textInput val send =
-    Html.input [ send |> Maybe.map onInput |> Maybe.withDefault (Attributes.disabled True), value val ] []
+textInput : String -> String -> Maybe (String -> msg) -> Html msg
+textInput hint val send =
+    label [ class "ui" ] [ Html.input [ title hint, type_ "text", send |> Maybe.map onInput |> Maybe.withDefault (Attributes.disabled True), value val ] [] ]
 
 
 triState : Maybe Bool -> Attribute msg
@@ -312,9 +314,9 @@ triState isChecked =
             Attributes.checked False
 
 
-quadState : Bool -> Maybe a -> List (Attribute msg)
+quadState : Bool -> Maybe msg -> List (Attribute msg)
 quadState isChecked activate =
-    Maybe.map (\_ -> [ Attributes.disabled False ]) activate
+    Maybe.map (\msg -> [ Attributes.disabled False, onClick msg ]) activate
         |> Maybe.withDefault [ Attributes.disabled True ]
         |> (++)
             [ Attributes.attribute "aria-checked"
@@ -359,14 +361,10 @@ toggleButton face isChecked toggle =
 
 squareToggleButton : Face -> Bool -> Maybe msg -> Html msg
 squareToggleButton face isChecked toggle =
-    let
-        attr =
-            toggle
-                |> Maybe.map
-                    (onClick >> List.singleton)
-                |> Maybe.withDefault []
-                |> (++) (quadState isChecked (Maybe.map (\_ -> ()) toggle))
-                |> (++) [ title face.title, class "ui square" ]
-    in
     List.map (Html.map never) face.front
-        |> Html.button attr
+        |> Html.button (quadState isChecked toggle ++ [ title face.title, class "ui square" ])
+
+
+distanceHolder : Html msg
+distanceHolder =
+    Html.div [ class "distance-holder" ] []

@@ -4,8 +4,8 @@ import Css exposing (..)
 import Date
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (css)
-import Time exposing (Month(..))
 import Occurrence exposing (Occurrence)
+import Time exposing (Month(..))
 
 
 type alias Lab =

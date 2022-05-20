@@ -102,14 +102,24 @@
 }
 
 input[type="radio"]:focus+span {
-    outline: 2px solid yellow;
+    outline: 2px solid rgba(0 0 255 0.5);
+    outline-offset: 0.5px;
+}
+
+input[type="checkbox"]:focus+span {
+    outline: 2px solid rgba(0 0 255 0.5);
+    outline-offset: 0.5px;
+}
+
+button.ui:focus {
+    outline: 2px solid rgba(0 0 255 0.5);
+    outline-offset: 0.5px;
 }
 
 .sheet {
 
     .editCaption {
         display: flex;
-        width: 100%;
 
         >input {
             flex-grow: 1;
@@ -121,7 +131,7 @@ input[type="radio"]:focus+span {
     }
 
     fieldset {
-        margin: 0 -1.5px;
+        margin: 0 2px;
     }
 
     input.link {
@@ -142,11 +152,6 @@ input[type="radio"]:focus+span {
     outline: 1rem solid rgba(0, 0, 0, .3);
     outline-offset: 0.5px;
 
-
-    fieldset {
-        //padding: 0;
-        border: 1.5px groove orangered;
-    }
 
     .remove {
         position: absolute;
@@ -175,7 +180,6 @@ input[type="radio"]:focus+span {
         padding: 0;
 
         .occasion {
-            font-size: 0.7em;
             position: relative;
 
 
@@ -238,14 +242,15 @@ input[type="radio"]:focus+span {
     >label {
         position: relative;
         cursor: pointer;
+        text-align: center;
+        min-width: 2rem;
 
         >span {
             font-weight: bold;
-            font-size: 0.75rem;
             display: block;
             transition: all .2s;
             border-radius: 1rem;
-            padding: .2rem .5rem;
+            padding: 0 .5rem;
         }
 
         >input {
@@ -259,19 +264,19 @@ input[type="radio"]:focus+span {
         }
 
         >input:checked~span {
-            background: black;
-            color: orangered;
-            letter-spacing: -.2px;
+            background: var(--active-background);
+            color: var(--active-foreground);
         }
 
         >input:not(:checked)~span {
-            background: orangered;
+            background: var(--background);
+            color: var(--foreground);
         }
 
         transition:all .1s;
 
         &:hover>input:not(:checked)~span {
-            outline: 0.5px solid black;
+            outline: 1px dashed var(--active-background);
             outline-offset: -1px;
         }
     }
@@ -314,6 +319,14 @@ a:link:not[href] {
     display: flex;
 }
 
+.no-break {
+    >* {
+        width: max-content
+    }
+
+    display:flex;
+}
+
 .ui {
     --background: #CCC;
     --bevel: #DDD;
@@ -323,8 +336,14 @@ a:link:not[href] {
     --mode-background: #BBB;
     --mode-bevel: #CCC;
     --mode-active-background: #999;
-    --mode-active-bevel: #888;
+    --mode-active-bevel: #aaa;
+    --foreground: black;
+}
+
+.ui,
+.ui input {
     font-family: 'subarumedium';
+    font-size: 0.8rem;
 }
 
 button.ui {
@@ -339,7 +358,7 @@ button.ui:enabled:hover {
     border: 2px groove var(--bevel);
 }
 
-button.ui:enabled:active {
+button.ui:enabled:active:hover {
     border: 2px inset var(--active-bevel);
     background: var(--active-background);
 }
@@ -383,22 +402,37 @@ button.ui.mode[aria-checked="true"]:enabled:active {
 }
 
 .sheet.ui {
-    background: var(--background);
-    border: 2px outset var(--bevel);
-    color: black;
     border-bottom-width: 0;
 }
 
 .control.ui {
-    background: var(--background);
-    border: 2px outset var(--bevel);
-    color: black;
+
     border-top-width: 0;
 }
 
+.flying.ui,
+.control.ui,
+.sheet.ui {
+    background: var(--background);
+    border: 2px outset var(--bevel);
+    color: black;
+}
+
+
 
 fieldset.ui {
-    border-color: var(--bevel);
+    padding-top: 0;
+    border: 2px groove var(--bevel);
+
+    >legend {
+        margin-bottom: -0.5rem;
+    }
+}
+
+.sheet.ui>fieldset {
+    border-right: 2px groove grey;
+    border-left: 2px groove white;
+
 }
 
 button.ui:first-child {
@@ -417,4 +451,69 @@ button.ui:first-child:hover {
 
 button.ui:last-child:hover {
     border-right-color: transparent;
+}
+
+.ui input[type="checkbox"] {
+    position: relative;
+    top: 2px;
+}
+
+label.ui {
+    padding: 0.3rem 0;
+    display: block;
+
+    >input[type="text"] {
+        background: rgba(255, 255, 255, .1);
+        border: none;
+        border: 0.5px dotted white;
+        height: fit-content;
+        transition: all .2s;
+        padding: 0;
+        margin: 0;
+
+        &:hover {
+            background: white;
+            margin: 0;
+            padding: 0.3rem 0;
+            margin: -0.3rem 0;
+        }
+    }
+}
+
+.flying {
+    position: absolute;
+
+    width: max-content;
+    z-index: 11;
+    outline: 1.5px double black;
+
+    &.right-aligned {
+        right: -1rem;
+    }
+
+    &.bottom-aligned {
+        bottom: 2rem;
+    }
+}
+
+.fly-orientation {
+    position: relative;
+    text-align: center;
+    min-width: 2rem;
+}
+
+.fly-orientation>summary:hover {
+    background: var(--mode-active-bevel);
+}
+
+.fly-orientation[open]>summary:not(:hover) {
+    background: var(--mode-active-background);
+    outline: 2px inset var(--mode-active-bevel);
+}
+
+.distance-holder {
+    margin: auto 0;
+    height: 0px;
+    flex-grow: 1;
+    border-top: 2px groove var(--bevel)
 }

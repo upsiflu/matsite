@@ -11,7 +11,7 @@ app.ports.pleaseCenter.subscribe(function (message) {
   // document.getElementsByClassName("Center")[0]
   // 	?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   // setTimeout(focus, 0);
-  setTimeout(screen, 550);
+  setTimeout(screen, 15);
 });
 app.ports.pleaseConfirm.subscribe(function (message) {
   document.getElementById(message)?.classList.add("blink");

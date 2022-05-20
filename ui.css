@@ -105,7 +105,6 @@ input[type=radio]:focus + span {
 }
 .sheet .editCaption {
   display: flex;
-  width: 100%;
 }
 .sheet .editCaption > input {
   flex-grow: 1;
@@ -121,9 +120,6 @@ input[type=radio]:focus + span {
 .sheet input.link {
   width: 100%;
   box-sizing: border-box;
-}
-.sheet fieldset {
-  border: 1.5px groove orangered;
 }
 .sheet .remove {
   position: absolute;
@@ -149,7 +145,6 @@ input[type=radio]:focus + span {
   padding: 0;
 }
 .sheet ul.occasions .occasion {
-  font-size: 0.7em;
   position: relative;
 }
 .sheet ul.occasions .occasion .edit label {
@@ -193,16 +188,17 @@ input[type=radio]:focus + span {
 .pickOrNot > label {
   position: relative;
   cursor: pointer;
+  text-align: center;
+  min-width: 2rem;
   transition: all 0.1s;
 }
 .pick > label > span,
 .pickOrNot > label > span {
   font-weight: bold;
-  font-size: 0.75rem;
   display: block;
   transition: all 0.2s;
   border-radius: 1rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0 0.5rem;
 }
 .pick > label > input,
 .pickOrNot > label > input {
@@ -216,17 +212,17 @@ input[type=radio]:focus + span {
 }
 .pick > label > input:checked ~ span,
 .pickOrNot > label > input:checked ~ span {
-  background: black;
-  color: orangered;
-  letter-spacing: -0.2px;
+  background: var(--active-background);
+  color: var(--active-foreground);
 }
 .pick > label > input:not(:checked) ~ span,
 .pickOrNot > label > input:not(:checked) ~ span {
-  background: orangered;
+  background: var(--background);
+  color: var(--foreground);
 }
 .pick > label:hover > input:not(:checked) ~ span,
 .pickOrNot > label:hover > input:not(:checked) ~ span {
-  outline: 0.5px solid black;
+  outline: 1px dashed var(--active-background);
   outline-offset: -1px;
 }
 
@@ -261,6 +257,15 @@ a:link:not[href] {
   display: flex;
 }
 
+.no-break {
+  display: flex;
+}
+.no-break > * {
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+}
+
 .ui {
   --background: #CCC;
   --bevel: #DDD;
@@ -270,8 +275,14 @@ a:link:not[href] {
   --mode-background: #BBB;
   --mode-bevel: #CCC;
   --mode-active-background: #999;
-  --mode-active-bevel: #888;
+  --mode-active-bevel: #aaa;
+  --foreground: black;
+}
+
+.ui,
+.ui input {
   font-family: "subarumedium";
+  font-size: 0.8rem;
 }
 
 button.ui {
@@ -285,7 +296,7 @@ button.ui:enabled:hover {
   border: 2px groove var(--bevel);
 }
 
-button.ui:enabled:active {
+button.ui:enabled:active:hover {
   border: 2px inset var(--active-bevel);
   background: var(--active-background);
 }
@@ -326,21 +337,32 @@ button.ui.mode[aria-checked=true]:enabled:active {
 }
 
 .sheet.ui {
-  background: var(--background);
-  border: 2px outset var(--bevel);
-  color: black;
   border-bottom-width: 0;
 }
 
 .control.ui {
-  background: var(--background);
-  border: 2px outset var(--bevel);
-  color: black;
   border-top-width: 0;
 }
 
+.flying.ui,
+.control.ui,
+.sheet.ui {
+  background: var(--background);
+  border: 2px outset var(--bevel);
+  color: black;
+}
+
 fieldset.ui {
-  border-color: var(--bevel);
+  padding-top: 0;
+  border: 2px groove var(--bevel);
+}
+fieldset.ui > legend {
+  margin-bottom: -0.5rem;
+}
+
+.sheet.ui > fieldset {
+  border-right: 2px groove grey;
+  border-left: 2px groove white;
 }
 
 button.ui:first-child {
@@ -359,4 +381,68 @@ button.ui:first-child:hover {
 
 button.ui:last-child:hover {
   border-right-color: transparent;
+}
+
+.ui input[type=checkbox] {
+  position: relative;
+  top: 2px;
+}
+
+label.ui {
+  padding: 0.3rem 0;
+  display: block;
+}
+label.ui > input[type=text] {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border: 0.5px dotted white;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  transition: all 0.2s;
+  padding: 0;
+  margin: 0;
+}
+label.ui > input[type=text]:hover {
+  background: white;
+  margin: 0;
+  padding: 0.3rem 0;
+  margin: -0.3rem 0;
+}
+
+.flying {
+  position: absolute;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  z-index: 11;
+  outline: 1.5px double black;
+}
+.flying.right-aligned {
+  right: -1rem;
+}
+.flying.bottom-aligned {
+  bottom: 2rem;
+}
+
+.fly-orientation {
+  position: relative;
+  text-align: center;
+  min-width: 2rem;
+}
+
+.fly-orientation > summary:hover {
+  background: var(--mode-active-bevel);
+}
+
+.fly-orientation[open] > summary:not(:hover) {
+  background: var(--mode-active-background);
+  outline: 2px inset var(--mode-active-bevel);
+}
+
+.distance-holder {
+  margin: auto 0;
+  height: 0px;
+  flex-grow: 1;
+  border-top: 2px groove var(--bevel);
 }/*# sourceMappingURL=ui.css.map */

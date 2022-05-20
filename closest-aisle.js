@@ -40,7 +40,7 @@ customElements.define(
             }
           }, 380)();
         });
-      }, 400);
+      }, 500);
     }
     static get observedAttributes() {
       return [];

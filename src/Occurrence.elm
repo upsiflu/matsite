@@ -6,7 +6,7 @@ module Occurrence exposing
     , merge
     , bounds
     , ViewMode(..), view
-    , edit
+    , Precision(..), edit
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,

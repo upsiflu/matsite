@@ -7,22 +7,28 @@ import Accordion.Segment.ViewMode as ViewSegment
 import Dict
 import Fold exposing (Direction(..), Role(..))
 import Layout
+import List.Extra as List
 import Occurrence exposing (Occurrence)
+import Snippets.About as About
 import Snippets.Anarchive as Anarchive
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
 import Snippets.Intro as Intro
+import Snippets.Series as Series
+import Snippets.Traces as Traces
+import Snippets.Video as Video
+import String.Extra as String
 import Time exposing (Month(..))
 
 
-addTemplates : Segment.Templates -> Segment.Templates
-addTemplates =
+addTemplates : Time.Zone -> Segment.Templates -> Segment.Templates
+addTemplates zone =
     let
         presetBody key value t =
-            { t | body = Dict.insert key ( True, value ) t.body }
+            { t | body = Dict.insert (Layout.sanitise key) ( True, value ) t.body }
 
         presetInfo key value t =
-            { t | info = Dict.insert key ( True, value ) t.info }
+            { t | info = Dict.insert (Layout.sanitise key) ( True, value ) t.info }
 
         addArtistTemplates t =
             Artist.artists
@@ -37,22 +43,37 @@ addTemplates =
                     )
                 |> List.foldl (<|) t
 
+        addLabsTemplates t =
+            Series.presets zone
+                |> List.map
+                    (\( key, value ) ->
+                        presetBody key value
+                    )
+                |> List.foldl (<|) t
+
         addOtherTemplates =
             presetBody "Collage" Festival.collage
                 >> presetBody "Video" Festival.video
                 >> presetBody "Description" Festival.description
                 >> presetBody "Home" Intro.intro
-                >> presetBody "Library" Anarchive.anarchive
+                >> presetBody "Incipit" Anarchive.incipit
+                >> presetBody "Archive" Anarchive.anarchive
+                >> presetBody "About MaT" About.mat
+                >> presetBody "Team" About.team
+                >> presetBody "Trailers" Video.trailers
+                >> presetBody "Video Channel" Video.videochannel
+                >> presetBody "Collective Docs" Traces.traces
+                >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Segment.Toc
                 >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
                 >> presetInfo "Festivals" (Segment.Byline 1 (Layout.byline "Festivals Byline"))
     in
-    addArtistTemplates >> addOtherTemplates
+    addArtistTemplates >> addLabsTemplates >> addOtherTemplates
 
 
-initial : Accordion
-initial =
-    Accordion.create initialTemplates initialIntents
+initial : Time.Zone -> Accordion
+initial zone =
+    Accordion.create (initialTemplates zone) initialIntents
 
 
 initialIntents : Accordion.History
@@ -63,9 +84,9 @@ initialIntents =
 
 {-| These should only be used while editing
 -}
-initialTemplates : Segment.Templates
-initialTemplates =
-    addTemplates Segment.initialTemplates
+initialTemplates : Time.Zone -> Segment.Templates
+initialTemplates zone =
+    addTemplates zone Segment.initialTemplates
 
 
 initialActions : List Accordion.Action
@@ -74,6 +95,7 @@ initialActions =
         artists : List Accordion.Action
         artists =
             Artist.artists
+                |> List.sortBy (\{ name } -> String.words name |> List.last |> Maybe.withDefault name)
                 |> List.map
                     (\({ name, wide } as artist) ->
                         [ Name (name ++ "(photo)")
@@ -166,6 +188,12 @@ initialActions =
         :: Modify (WithShape Segment.Background)
         :: Go Right
         :: Name "Labs"
+        :: Go Down
+        :: Series.structure
+        ++ Go Left
+        :: Go Left
+        :: Go Left
+        :: Go Up
         :: Go Right
         :: Name "Festivals"
         :: appendSubtree
@@ -181,12 +209,41 @@ initialActions =
         :: Go Up
         :: Go Right
         :: Name "Traces"
+        :: Go Down
+        :: Name "Collective Docs"
+        :: Modify (WithShape (Oriented Vertical ViewSegment.Screen))
+        :: Go Up
         :: Go Right
         :: Name "Videos"
+        :: Go Down
+        :: Name "Video Channel"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 4)))
+        :: Go Right
+        :: Name "Trailers"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 3)))
+        :: Go Up
         :: Go Right
         :: Name "Library"
+        :: Go Down
+        :: Name "Incipit"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Go Right
+        :: Name "Archive"
+        :: Modify (WithShape (Oriented Horizontal ViewSegment.Screen))
+        :: Go Up
         :: Go Right
         :: Name "About"
+        :: Go Down
+        :: Name "Contact"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Go Right
+        :: Name "About MaT"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Go Right
+        :: Name "Team"
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Go Left
+        :: Go Up
         :: Go Right
         :: Name "Newsletter"
         :: Go Left

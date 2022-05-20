@@ -102,7 +102,7 @@ type Accordion
 
 
 type alias Config =
-    { tree : Tree Segment, templates : Segment.Templates }
+    { tree : Tree Segment, templates : Segment.Templates, syncing : Bool }
 
 
 type alias LogConfig =
@@ -249,8 +249,8 @@ withoutHistory =
 
 {-| Use this function to preserve templates and such
 -}
-reviseHistory : History -> Accordion -> Accordion
-reviseHistory history accordion =
+injectHistory : History -> Accordion -> Accordion
+injectHistory history accordion =
     let
         applyIntent : Intent -> Accordion -> Accordion
         applyIntent { location, action } acc =
@@ -290,13 +290,25 @@ reviseHistory history accordion =
         |> undoUndones
         |> List.foldl applyIntent (withoutHistory accordion)
         |> mapLog (\l -> { l | history = history })
+        |> goToId (focusId accordion)
+
+
+{-| Use this function to preserve templates and such
+-}
+reviseHistory : History -> Accordion -> Accordion
+reviseHistory history accordion =
+    if (config accordion).syncing then
+        injectHistory history accordion
+
+    else
+        accordion
 
 
 {-| -}
 create : Segment.Templates -> History -> Accordion
 create templates history =
-    Log { viewingHistory = False, editing = True, history = history } { tree = Tree.singleton Segment.empty, templates = templates }
-        |> reviseHistory history
+    Log { viewingHistory = False, editing = False, history = history } { tree = Tree.singleton Segment.empty, templates = templates, syncing = False }
+        |> injectHistory history
 
 
 type alias IntentId =
@@ -550,6 +562,7 @@ type Msg
     = TemplatesUpdated (Segment.Templates -> Segment.Templates)
     | LogToggled
     | EditingToggled
+    | SyncingToggled
 
 
 {-| -}
@@ -558,6 +571,9 @@ update msg =
     case msg of
         TemplatesUpdated fu ->
             mapConfig <| \c -> { c | templates = fu c.templates }
+
+        SyncingToggled ->
+            mapConfig <| \c -> { c | syncing = not c.syncing }
 
         LogToggled ->
             mapLog <| \l -> { l | viewingHistory = not l.viewingHistory }
@@ -634,7 +650,14 @@ view { zone, do, volatile } accordion =
                                     (\_ ( { isUndone, by }, intent ) ->
                                         Html.li []
                                             [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
-                                            , Ui.singlePickOrNot isUndone ( intentIdToString intent.intentId, atFocus (Undo by) )
+                                            , Ui.singlePickOrNot (not isUndone)
+                                                (( intentIdToString intent.intentId, atFocus (Undo by) )
+                                                    |> (\( str, msg ) ->
+                                                            ( { front = [ Html.text str ], title = "Select a Byline if needed" }
+                                                            , Just msg
+                                                            )
+                                                       )
+                                                )
                                             , "undone by " ++ intentIdToString by |> Html.text |> Ui.notIf (not isUndone)
                                             , Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
                                             ]
@@ -646,7 +669,8 @@ view { zone, do, volatile } accordion =
                                                 [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
                                                 , Html.button [ onClick (volatile LogToggled) ] [ Html.text "close" ]
                                                 ]
-                                            , Html.p [] [ Html.text "You can undo and redo any previous action in this list" ]
+                                            , Ui.check { front = [ Html.text "Synchronize with Databas" ], title = "If you don't connect to the database, the app uses a minimal preset structure" } (volatile SyncingToggled) (Just c.syncing)
+                                            , Html.p [] [ Html.text "You can undo and redo any previous action in this list by clicking on the green buttons." ]
                                             , l
                                             ]
                                    )
@@ -660,7 +684,16 @@ view { zone, do, volatile } accordion =
                 ]
 
         viewSegment =
-            Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, updateTemplates = TemplatesUpdated >> volatile, context = Tree.split c.tree }
+            case accordion of
+                Log { editing } _ ->
+                    if editing then
+                        Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+
+                    else
+                        Segment.view { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+
+                _ ->
+                    Segment.view { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
 
         editAccordion sheets =
             case accordion of
@@ -754,7 +787,7 @@ view { zone, do, volatile } accordion =
                         mode =
                             { zone = zone, position = position, region = region, offset = offset }
                     in
-                    ( ViewSegment.addWidth mode (Segment.hasBody c segment) (Segment.width segment) (Segment.infoLineCount segment) offset
+                    ( ViewSegment.addWidth mode (Segment.hasBody c segment) (Segment.width segment) (Segment.infoLineCount { templates = c.templates, context = Tree.split c.tree } mode segment) offset
                     , viewSegment mode segment :: newList
                     )
                 )
@@ -809,7 +842,7 @@ view { zone, do, volatile } accordion =
                                     (List.sortBy Tuple.first overlays ++ scenes)
                                 )
                             )
-                            (Ui.concat items |> Ui.with propertySheet)
+                            (Ui.concat (propertySheet :: items))
                             |> Ui.composeControls
                                 (editAccordion
                                     >> Html.section [ class "ui sheet" ]
