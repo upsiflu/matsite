@@ -183,6 +183,7 @@ update msg model =
                     let
                         initialAccordion =
                             Data.initial z
+                                |> Accordion.goToParentId (destination o.url)
 
                         newModel =
                             Model

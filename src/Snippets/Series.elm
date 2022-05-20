@@ -1,7 +1,7 @@
 module Snippets.Series exposing (..)
 
 import Accordion exposing (Action(..))
-import Accordion.Segment as Segment exposing (Orientation(..), Shape(..))
+import Accordion.Segment as Segment exposing (InfoTemplate(..), Orientation(..), Shape(..))
 import Accordion.Segment.ViewMode as ViewSegment
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
@@ -87,25 +87,35 @@ presets timezone =
             )
 
 
+presetInfos : List ( String, Segment.InfoTemplate )
+presetInfos =
+    data
+        |> List.map
+            (\series ->
+                Byline 0 (span [ class "motto" ] [ text series.motto ])
+                    |> Tuple.pair ("Series " ++ String.fromInt series.number)
+            )
+
+
 structure : List Action
 structure =
     data
         |> List.map
             (\series ->
-                Name ("Series " ++ String.fromInt series.number ++ "-" ++ series.motto)
+                Name ("Series " ++ String.fromInt series.number)
                     :: Modify (Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
                     :: Go Down
-                    :: (series.events
-                            |> List.map
-                                (\event ->
-                                    [ Name event.title
-                                    , Modify (Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
-                                    ]
-                                )
-                            |> List.intersperse [ Go Right ]
+                    :: (List.map
+                            (\event ->
+                                [ Name event.title
+                                , Modify (Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                                ]
+                            )
+                            series.events
+                            |> List.intersperse [ Go Left ]
                             |> List.concat
                        )
-                    ++ [ Go Left, Go Left, Go Left, Go Left, Go Left, Go Up ]
+                    ++ [ Go Up ]
             )
         |> List.intersperse [ Go Right ]
         |> List.concat

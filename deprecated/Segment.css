@@ -377,3 +377,10 @@ iframe.traces {
   left: 0;
   border: none;
 }
+
+.motto {
+  position: absolute;
+  right: 0.25rem;
+  font-weight: bold;
+  font-family: space_monoregular;
+}

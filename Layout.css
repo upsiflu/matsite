@@ -104,6 +104,7 @@
 .Accordion > .west > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
+  padding: 1.125rem 1rem;
 }
 .Accordion > .east {
   left: calc(var(--width) - var(--east-width) + var(--units) * var(--unit));
@@ -115,6 +116,7 @@
 .Accordion > .east > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
+  padding: 1.125rem 1rem;
 }
 .Accordion.🪗🁣 > .nearWest {
   left: var(--x);
@@ -132,6 +134,7 @@
 .Accordion.🪗🀱 > .nearWest:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
+  padding: 1.125rem 1rem;
 }
 .Accordion.🪗🁣 > .nearEast {
   left: var(--x);
@@ -149,6 +152,7 @@
 .Accordion.🪗🀱 > .nearEast:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
+  padding: 1.125rem 1rem;
 }
 .Accordion > .center {
   left: var(--x);
@@ -218,6 +222,7 @@
 .Accordion:not(.focusHasBody) > .center.🀱 > .segmentLabel {
   -ms-writing-mode: tb-rl;
       writing-mode: vertical-rl;
+  padding: 1.125rem 1rem;
 }
 .Accordion > .peek {
   overflow: hidden;

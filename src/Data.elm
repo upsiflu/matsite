@@ -44,11 +44,18 @@ addTemplates zone =
                 |> List.foldl (<|) t
 
         addLabsTemplates t =
-            Series.presets zone
+            [ Series.presets zone
                 |> List.map
                     (\( key, value ) ->
                         presetBody key value
                     )
+            , Series.presetInfos
+                |> List.map
+                    (\( key, value ) ->
+                        presetInfo key value
+                    )
+            ]
+                |> List.concat
                 |> List.foldl (<|) t
 
         addOtherTemplates =
@@ -204,8 +211,6 @@ initialActions =
         ++ Go Left
         :: Go Left
         :: Go Left
-        :: Go Left
-        :: Go Left
         :: Go Up
         :: Go Right
         :: Name "Traces"
@@ -246,6 +251,8 @@ initialActions =
         :: Go Up
         :: Go Right
         :: Name "Newsletter"
+        :: Go Left
+        :: Go Left
         :: Go Left
         :: Go Left
         :: Go Left
