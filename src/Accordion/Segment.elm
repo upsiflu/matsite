@@ -71,6 +71,7 @@ import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick, onInput)
+import Html.Styled.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
@@ -765,33 +766,35 @@ view_ ({ templates } as config) ui overlays mode s =
                                 False
             in
             (if bodyIsVisible then
-                [ case heading config s of
-                    Nothing ->
-                        Html.text ""
+                [ Tuple.pair "heading" <|
+                    case heading config s of
+                        Nothing ->
+                            Html.text ""
 
-                    Just h ->
-                        Html.a [ href (Layout.sanitise s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
-                , case ( template.body, body ) of
-                    ( Just (Content _ c), _ ) ->
-                        c
+                        Just h ->
+                            Html.a [ href (Layout.sanitise s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+                , Tuple.pair "content" <|
+                    case ( template.body, body ) of
+                        ( Just (Content _ c), _ ) ->
+                            c
 
-                    ( Just (Illustration i), _ ) ->
-                        i
+                        ( Just (Illustration i), _ ) ->
+                            i
 
-                    ( Nothing, PeekThrough ) ->
-                        Html.text ""
+                        ( Nothing, PeekThrough ) ->
+                            Html.text ""
 
-                    ( Nothing, CustomIllustration ) ->
-                        Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
+                        ( Nothing, CustomIllustration ) ->
+                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
 
-                    ( Nothing, CustomContent _ ) ->
-                        Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
+                        ( Nothing, CustomContent _ ) ->
+                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
                 ]
 
              else
                 []
             )
-                |> Html.div [ class "body", classList [ ( "illustrative", isIllustration config s ) ] ]
+                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", isIllustration config s ) ] ]
 
         ( viewByline, bylineHeight ) =
             case ( template.info, s.info, mode.position.role ) of
@@ -840,11 +843,11 @@ view_ ({ templates } as config) ui overlays mode s =
                    )
     in
     if hideBecauseVeryFarAway then
-        List.map (Html.map never)
+        List.indexedMap (\i -> Html.map never >> Tuple.pair (String.fromInt i))
             [ s.caption |> viewCaption
             , Html.div [ class "body waiting" ] []
             ]
-            |> Html.li
+            |> Keyed.node "li"
                 (id s.id
                     :: ViewMode.toClass mode
                     :: class (orientationToString (orientation s))
@@ -868,7 +871,8 @@ view_ ({ templates } as config) ui overlays mode s =
             ]
             ++ overlays
             ++ [ viewFab ]
-            |> Html.li
+            |> List.indexedMap (String.fromInt >> Tuple.pair)
+            |> Keyed.node "li"
                 (id s.id
                     :: ViewMode.toClass mode
                     :: class (orientationToString (orientation s))

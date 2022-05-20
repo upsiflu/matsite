@@ -840,7 +840,7 @@ view { zone, now, do, volatile } accordion =
                                 ( "Accordion"
                                 , Keyed.ul
                                     (class "Accordion" :: classes :: attrs)
-                                    (List.sortBy Tuple.first overlays ++ scenes)
+                                    (List.sortBy Tuple.first (overlays ++ scenes))
                                 )
                             )
                             (Ui.concat (propertySheet :: items))

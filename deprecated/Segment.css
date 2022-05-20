@@ -463,8 +463,8 @@ iframe.traces {
 .peekLink:hover > span {
   opacity: 1;
 }
-.A .body fieldset,
-.F .body fieldset {
+.artist fieldset,
+.artist fieldset {
   animation: scroll 7s linear infinite;
   background-image: linear-gradient(transparent, blue, transparent);
   background-size: 400px 1000px;
@@ -473,7 +473,7 @@ iframe.traces {
   padding-bottom: 1rem;
   border: none;
 }
-.body fieldset .weblink {
+.artist fieldset .weblink {
   margin-top: 0;
 }
 @keyframes scroll {
@@ -481,13 +481,13 @@ iframe.traces {
     background-position: 0px 1000px;
   }
 }
-.A .body fieldset a:hover,
-.F .body fieldset a:hover,
-.body a.internal[href]:hover {
+.artist fieldset a:hover,
+.artist fieldset a:hover,
+.artist a.internal[href]:hover {
   background: blue;
 }
 
-.body a.internal[href] {
+.artist a.internal[href] {
   animation: scroll 7s linear infinite;
   background-image: linear-gradient(transparent, blue, transparent);
   background-size: 400px 1000px;
