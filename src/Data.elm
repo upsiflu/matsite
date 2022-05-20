@@ -80,13 +80,13 @@ addTemplates zone =
 
 initial : Time.Zone -> Accordion
 initial zone =
-    Accordion.create (initialTemplates zone) initialIntents
+    Accordion.create (initialTemplates zone) (initialIntents zone)
 
 
-initialIntents : Accordion.History
+initialIntents : Time.Zone -> Accordion.History
 initialIntents =
     initialActions
-        |> List.indexedMap (\i a -> { intentId = { sessionId = "Initialization", ordinal = i }, location = Nothing, action = a })
+        >> List.indexedMap (\i a -> { intentId = { sessionId = "Initialization", ordinal = i }, location = Nothing, action = a })
 
 
 {-| These should only be used while editing
@@ -96,8 +96,8 @@ initialTemplates zone =
     addTemplates zone Segment.initialTemplates
 
 
-initialActions : List Accordion.Action
-initialActions =
+initialActions : Time.Zone -> List Accordion.Action
+initialActions timezone =
     let
         artists : List Accordion.Action
         artists =
@@ -196,7 +196,7 @@ initialActions =
         :: Go Right
         :: Name "Labs"
         :: Go Down
-        :: Series.structure
+        :: Series.structure timezone
         ++ Go Left
         :: Go Left
         :: Go Left

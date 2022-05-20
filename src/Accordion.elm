@@ -594,6 +594,7 @@ type Renderable msg
 
 type alias ViewMode msg =
     { zone : Maybe ( String, Time.Zone )
+    , now : Time.Posix
     , do : (String -> Intent) -> msg
     , volatile : Msg -> msg
     }
@@ -604,7 +605,7 @@ view :
     ViewMode msg
     -> Accordion
     -> Ui msg
-view { zone, do, volatile } accordion =
+view { zone, now, do, volatile } accordion =
     let
         c =
             config accordion
@@ -687,13 +688,13 @@ view { zone, do, volatile } accordion =
             case accordion of
                 Log { editing } _ ->
                     if editing then
-                        Segment.edit { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                        Segment.edit { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
 
                     else
-                        Segment.view { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                        Segment.view { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
 
                 _ ->
-                    Segment.view { zone = zone, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                    Segment.view { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
 
         editAccordion sheets =
             case accordion of

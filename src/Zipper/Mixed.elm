@@ -19,6 +19,7 @@ module Zipper.Mixed exposing
     , Fold, fold, defold
     , Foldl, foldl, defoldl
     , Foldr, foldr, defoldr
+    , concatMap
     )
 
 {-| A Zipper that requires a reversible function for navigations
@@ -505,3 +506,10 @@ defoldr =
     , join = create
     , init = { left = [], right = [] }
     }
+
+
+{-| `concatMap fbb abb = map fbb abb >> flat >> List.concat`
+-}
+concatMap : (h -> List b) -> (a -> List b) -> MixedZipper h a -> List b
+concatMap fbb abb =
+    map fbb abb >> flat >> List.concat

@@ -6,7 +6,7 @@ module Occurrence exposing
     , merge
     , bounds
     , ViewMode(..), view
-    , Precision(..), edit
+    , Precision(..), beginning, edit, toString
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -155,10 +155,16 @@ localToGlobal zone local =
         |> Time.millisToPosix
 
 
-toString : Zone -> Precision -> Occurrence -> String
-toString zone precision =
+toString : ( String, Zone ) -> Precision -> Occurrence -> String
+toString ( zoneDesc, zone ) precision =
     List.map (occasionToString zone precision)
-        >> String.join ", "
+        >> String.join " + "
+        >> (\str -> str ++ " (in your current timezone, " ++ zoneDesc ++ ")")
+
+
+beginning : Occurrence -> Maybe Time.Posix
+beginning =
+    List.head >> Maybe.map .from
 
 
 

@@ -11,7 +11,7 @@ module Accordion.Segment exposing
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
     , infoLineCount
     , view, edit
-    , templatesAreOn, toggleTemplates
+    , fab, templatesAreOn, toc, toggleTemplates
     )
 
 {-| contain the immutable site content
@@ -74,6 +74,8 @@ import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout exposing (..)
+import List.Extra as List
+import Maybe.Extra as Maybe
 import Time
 import Ui exposing (Ui)
 import Zipper
@@ -114,7 +116,7 @@ type Action
 actionCodec : Codec Action
 actionCodec =
     Codec.custom
-        (\cap inf bod sha fab cla value ->
+        (\cap inf bod sha fab_ cla value ->
             case value of
                 WithCaption c ->
                     cap c
@@ -129,7 +131,7 @@ actionCodec =
                     sha s
 
                 WithFab f ->
-                    fab f
+                    fab_ f
 
                 WithClasses c ->
                     cla c
@@ -444,11 +446,9 @@ hint s =
 
 {-| the key to neighbors; requested lazily in the `P` segment.
 
-TocEntries : yields the zipper of the headings of the `(List.head future)`
+toc : yields the zipper of the headings of the present (a.k.a. the Aisle)
 
-Occasion : yields the embracing occasion around all occurrences of the `future`
-
-ClosestFab : yields the Fab that is stored in the `present`ly focused segment or up the focuses of the `past`
+occ : yields the embracing occasion around all occurrences of the `future`
 
 -}
 toc : { c | templates : Templates, context : Tree.Split Segment } -> ( Html Never, Int )
@@ -471,6 +471,56 @@ toc config =
         |> Zipper.flat
         |> List.filterMap identity
         |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
+
+
+{-|
+
+    1. The Fab in the focus, if any
+    2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
+    3. Otherwise, Going up the breadcrumbs, take the first Fab, if any
+
+-}
+fab : { c | templates : Templates, context : Tree.Split Segment, now : Time.Posix } -> Maybe Fab
+fab config =
+    --1. The Fab in the focus, if any
+    config.context.present.focus.fab
+        --2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
+        |> Maybe.or
+            (config.context.future
+                |> List.concatMap
+                    (MixedZipper.concatMap
+                        List.singleton
+                        Branch.flat
+                    )
+                -- List Segment
+                |> List.filter
+                    (.fab >> Maybe.map (Fab.isActive config) >> Maybe.withDefault False)
+                |> List.minimumBy
+                    (.fab >> Maybe.andThen Fab.beginning >> Maybe.map Time.posixToMillis >> Maybe.withDefault 2147483646)
+                |> Maybe.andThen .fab
+            )
+
+
+
+{-
+   |> MixedZipper.mapPeriphery Branch.node
+   |> (\({ focus } as zipper) ->
+           Zipper.map
+               (\segment ->
+                   heading config segment
+                       |> Maybe.map
+                           (\entry ->
+                               Html.li
+                                   [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
+                                   [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
+                           )
+               )
+               zipper
+      )
+   |> Zipper.flat
+   |> List.filterMap identity
+   |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
+-}
 
 
 {-| -}
@@ -501,11 +551,12 @@ edit :
     , insert : Direction -> msg
     , templates : Templates
     , context : Tree.Split Segment
+    , now : Time.Posix
     }
     -> ViewMode
     -> Segment
     -> Ui msg
-edit { zone, do, insert, delete, rename, templates, context } ({ position } as mode) s =
+edit { zone, do, insert, delete, rename, templates, context, now } ({ position } as mode) s =
     let
         intend =
             do s.id
@@ -626,21 +677,21 @@ edit { zone, do, insert, delete, rename, templates, context } ({ position } as m
         ui =
             Ui.fromEmpty <| \e -> { e | control = propertySheet }
     in
-    view_ { templates = templates, context = context } ui overlay mode s
+    view_ { zone = zone, templates = templates, context = context, now = now } ui overlay mode s
 
 
 {-| -}
 view :
-    { c | templates : Templates, context : Tree.Split Segment }
+    { c | zone : Maybe ( String, Time.Zone ), templates : Templates, context : Tree.Split Segment, now : Time.Posix }
     -> ViewMode
     -> Segment
     -> Ui msg
-view { templates, context } =
-    view_ { templates = templates, context = context } (Ui.fromEmpty identity) []
+view config =
+    view_ config (Ui.fromEmpty identity) []
 
 
 view_ :
-    { c | templates : Templates, context : Tree.Split Segment }
+    { c | templates : Templates, context : Tree.Split Segment, zone : Maybe ( String, Time.Zone ), now : Time.Posix }
     -> Ui msg
     -> List (Html msg)
     -> ViewMode
@@ -659,6 +710,21 @@ view_ ({ templates } as config) ui overlays mode s =
 
                 _ ->
                     False
+
+        viewFab =
+            fab config
+                |> Maybe.map2 Tuple.pair config.zone
+                |> Maybe.map
+                    (\( zone, f ) ->
+                        case mode.position.role of
+                            Parent ->
+                                Fab.view { zone = zone } f
+                                    |> Html.map never
+
+                            _ ->
+                                Ui.none
+                    )
+                |> Maybe.withDefault Ui.none
 
         template =
             { body = getTemplate .body s templates
@@ -791,6 +857,7 @@ view_ ({ templates } as config) ui overlays mode s =
             , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
             ]
             ++ overlays
+            ++ [ viewFab ]
             |> Html.li
                 (id s.id
                     :: ViewMode.toClass mode

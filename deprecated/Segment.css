@@ -136,9 +136,10 @@ img {
   overflow: visible;
   white-space: nowrap;
 }
-.P {
+.Accordion > li.P {
   /* background: #4f8; */
   overflow: visible;
+  z-index: 9;
 }
 .P a.segmentLabel:link,
 .P a.segmentLabel:visited,
@@ -383,4 +384,54 @@ iframe.traces {
   right: 0.25rem;
   font-weight: bold;
   font-family: space_monoregular;
+}
+.P > .fab {
+  position: absolute;
+  top: calc(var(--here-height) - 6rem);
+  right: calc(0px - var(--nearWest-width) - 3rem);
+  transition: right 0.5s, top 0.5s, transform 0.2s;
+  display: block;
+  background: #4f8;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 2rem;
+  color: blue;
+  z-index: 11;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.P.north > .fab {
+  right: calc(var(--column) - 6rem);
+  top: calc(var(--here-height));
+}
+.P > .fab:hover {
+  transform: scale(1.1);
+}
+.P > .fab > span {
+  line-height: 1ex;
+  font-family: "subaruheavy";
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.P.west > a.segmentLabel {
+  position: relative;
+  padding-bottom: 2.75em;
+}
+.P.west > a.segmentLabel::after {
+  content: "↑";
+  font-size: 1.8em;
+  display: block;
+  position: absolute;
+  right: 0.5em;
+  bottom: 0.125em;
+}
+
+.P.north > a.segmentLabel::after {
+  content: "↓";
+  font-size: 1.8em;
+  display: block;
+  position: absolute;
+  right: 0.2em;
+  bottom: 0.275em;
 }

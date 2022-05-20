@@ -10,7 +10,7 @@ module Zipper.Branch exposing
     , growLeaf, growBranch, growLevel, grow
     , uncons, getLeftmostLeaf, getRightmostLeaf
     , node, children, nextGeneration, allGenerations
-    , path
+    , path, flat
     , isLeaf
     , Fold, fold, defold
     , foldl
@@ -45,7 +45,7 @@ module Zipper.Branch exposing
 
 @docs uncons, getLeftmostLeaf, getRightmostLeaf
 @docs node, children, nextGeneration, allGenerations
-@docs path
+@docs path, flat
 @docs isLeaf
 
 
@@ -393,6 +393,13 @@ flatFold =
         , downwards = (::)
         }
     }
+
+
+{-| lists all nodes in the Branch in an implementation-dependent order
+-}
+flat : Branch a -> List a
+flat =
+    fold flatFold
 
 
 {-| -}

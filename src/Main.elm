@@ -37,7 +37,8 @@ type Model
     = Loading
         { key : Nav.Key
         , url : Url
-        , overwrite : Accordion.History
+        , maybeZone : Maybe ( String, Time.Zone )
+        , maybeNow : Maybe Time.Posix
         }
     | Model
         { key : Nav.Key
@@ -46,6 +47,7 @@ type Model
         , backlog : Maybe Accordion.Intent
         , overwrite : Accordion.History
         , zone : ( String, Time.Zone )
+        , now : Time.Posix
         }
 
 
@@ -64,12 +66,13 @@ main =
                         Loading
                             { key = key
                             , url = url
-                            , overwrite = Data.initialIntents
+                            , maybeNow = Nothing
+                            , maybeZone = Nothing
                             }
                 in
                 initialModel
                     |> update (UrlChanged url)
-                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived ] ))
+                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Time.now |> Task.attempt NowReceived ] ))
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -89,6 +92,7 @@ type
     | UrlChanged Url.Url
       -- Client View
     | ZoneReceived (Result TimeZone.Error ( String, Time.Zone ))
+    | NowReceived (Result () Time.Posix)
     | ScrolledTo String
       -- Volatile Data
     | AccordionMessageReceived Accordion.Msg
@@ -179,26 +183,23 @@ update msg model =
         ---- Client View
         ( ZoneReceived result, Loading o ) ->
             case result of
-                Ok ( str, z ) ->
-                    let
-                        initialAccordion =
-                            Data.initial z
-                                |> Accordion.goToParentId (destination o.url)
-
-                        newModel =
-                            Model
-                                { key = o.key
-                                , url = o.url
-                                , accordion = initialAccordion
-                                , backlog = Nothing
-                                , overwrite = o.overwrite
-                                , zone = ( str, z )
-                                }
-                    in
-                    ( newModel, Accordion.focusId initialAccordion |> pleaseCenter )
+                Ok zone ->
+                    Loading { o | maybeZone = Just zone }
+                        |> upgradeIfPossible
 
                 Err error ->
                     {- Debug.log "Zone Error" -}
+                    error
+                        |> (\_ -> ( model, Cmd.none ))
+
+        ( NowReceived result, Loading o ) ->
+            case result of
+                Ok now ->
+                    Loading { o | maybeNow = Just now }
+                        |> upgradeIfPossible
+
+                Err error ->
+                    {- Debug.log "Now Error" -}
                     error
                         |> (\_ -> ( model, Cmd.none ))
 
@@ -225,12 +226,43 @@ update msg model =
             ( model, Cmd.none )
 
 
+upgradeIfPossible : Model -> ( Model, Cmd msg )
+upgradeIfPossible model =
+    Maybe.withDefault ( model, Cmd.none ) <|
+        case model of
+            Loading o ->
+                Maybe.map2
+                    (\(( descr, z ) as zone) now ->
+                        let
+                            initialAccordion =
+                                Data.initial z
+                                    |> Accordion.goToParentId (destination o.url)
+                        in
+                        ( Model
+                            { key = o.key
+                            , url = o.url
+                            , accordion = initialAccordion
+                            , backlog = Nothing
+                            , overwrite = Data.initialIntents z
+                            , zone = zone
+                            , now = now
+                            }
+                        , Accordion.focusId initialAccordion |> pleaseCenter
+                        )
+                    )
+                    o.maybeZone
+                    o.maybeNow
+
+            _ ->
+                Nothing
+
+
 {-| -}
 view model =
     let
         viewAccordion m =
             Accordion.view
-                { zone = Just m.zone, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
+                { zone = Just m.zone, now = m.now, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
                 m.accordion
                 |> Ui.composeScenes
                     (Keyed.ul [ Attributes.class "overflow" ] >> Tuple.pair "overflow")

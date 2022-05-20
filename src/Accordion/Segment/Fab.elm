@@ -3,7 +3,7 @@ module Accordion.Segment.Fab exposing
     , codec
     , merge
     , view, edit
-    , default
+    , beginning, default, isActive
     )
 
 {-| Functionality of a Floating Action Button (Google terminology)
@@ -70,17 +70,9 @@ codec =
         |> Codec.buildCustom
 
 
-type alias Record_link_String_occurrence_Occurrence_ =
-    { link : String, occurrence : Occurrence }
-
-
 default : String -> Fab
 default =
     stringToFabType >> Maybe.withDefault (Subscribe { link = "https://" })
-
-
-type alias Record_link_String_ =
-    { link : String }
 
 
 
@@ -192,11 +184,35 @@ edit { zone, save } maybeFab =
 
 
 {-| -}
-view : Fab -> Html Never
-view fab =
+view : { a | zone : ( String, Time.Zone ) } -> Fab -> Html Never
+view { zone } fab =
     case fab of
-        Register { link } ->
-            Html.a [ class "register fab", href link ] [ Html.span [] [ Html.text "register" ] ]
+        Register { link, occurrence } ->
+            Html.a [ class "register fab", href link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
 
         Subscribe { link } ->
-            Html.a [ class "subscribe fab", href link ] [ Html.span [] [ Html.text "register" ] ]
+            Html.a [ class "subscribe fab", href link ] [ Html.span [] [ Html.text "Subscribe" ] ]
+
+
+{-| -}
+isActive : { c | now : Time.Posix } -> Fab -> Bool
+isActive { now } fab =
+    case fab of
+        Subscribe _ ->
+            True
+
+        Register { occurrence } ->
+            Occurrence.beginning occurrence
+                |> Maybe.map (Time.posixToMillis >> (>=) (Time.posixToMillis now))
+                |> Maybe.withDefault False
+
+
+{-| -}
+beginning : Fab -> Maybe Time.Posix
+beginning fab =
+    case fab of
+        Subscribe _ ->
+            Nothing
+
+        Register { occurrence } ->
+            Occurrence.beginning occurrence

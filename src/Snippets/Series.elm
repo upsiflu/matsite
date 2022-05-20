@@ -2,6 +2,7 @@ module Snippets.Series exposing (..)
 
 import Accordion exposing (Action(..))
 import Accordion.Segment as Segment exposing (InfoTemplate(..), Orientation(..), Shape(..))
+import Accordion.Segment.Fab as Fab exposing (Fab)
 import Accordion.Segment.ViewMode as ViewSegment
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
@@ -75,16 +76,19 @@ presets timezone =
             (\event ->
                 article []
                     [ h2 []
-                        [ Occurrence.moment timezone event.month event.day (2000 + event.year) 20 0
-                            |> Occurrence.withDurationMinutes 90
-                            |> Occurrence.view (Occurrence.Short timezone Minutes)
-                        ]
+                        [ Occurrence.view (Occurrence.Short timezone Minutes) (eventDate timezone event) ]
                     , p [] [ b [] [ text "Facilitated by " ], a [ href (Layout.sanitise event.facilitator) ] [ text event.facilitator ] ]
                     , p [] (Maybe.map (text >> List.singleton) event.country |> Maybe.withDefault [])
                     ]
                     |> Segment.Content (Just event.title)
                     |> Tuple.pair event.title
             )
+
+
+eventDate : Time.Zone -> Event -> Occurrence
+eventDate timezone event =
+    Occurrence.moment timezone event.month event.day (2000 + event.year) 20 0
+        |> Occurrence.withDurationMinutes 90
 
 
 presetInfos : List ( String, Segment.InfoTemplate )
@@ -97,8 +101,8 @@ presetInfos =
             )
 
 
-structure : List Action
-structure =
+structure : Time.Zone -> List Action
+structure timezone =
     data
         |> List.map
             (\series ->
@@ -108,7 +112,8 @@ structure =
                     :: (List.map
                             (\event ->
                                 [ Name event.title
-                                , Modify (Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                                , Modify <| Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1))
+                                , Modify <| Segment.WithFab (Just <| Fab.Register { link = "TODO eventbrite link", occurrence = eventDate timezone event })
                                 ]
                             )
                             series.events
