@@ -5,6 +5,8 @@ import Html.Styled as Html exposing (Html, a, div, p, text)
 import Html.Styled.Attributes exposing (..)
 import Layout
 import List.Extra as List
+import Snippets.Series as Series
+import Ui exposing (cacheImg)
 
 
 type alias Artist =
@@ -22,7 +24,18 @@ artists =
             Html.a [ target "_blank", href destination ] [ Html.text descr ]
 
         event descr fblink =
-            Html.a [ class "weblink", target "_blank", href fblink ] [ Html.text (descr ++ " [fb]") ]
+            let
+                closeEvent =
+                    Series.closeEvent (String.length descr // 4) descr
+                        |> Maybe.map
+                            (\uuid -> Html.a [ href uuid ] [ Html.text "☛ Moving across Thresholds Lab" ])
+                        |> Maybe.withDefault Ui.none
+            in
+            Html.fieldset []
+                [ Html.legend [] [ Html.text (descr++":") ]
+                , closeEvent
+                , Html.a [ class "weblink", target "_blank", href fblink ] [ Html.text " [fb event page]" ]
+                ]
 
         festival descr location outlink =
             Html.a [ class "weblink", target "_blank", href outlink ] [ Html.text (descr ++ " [" ++ location ++ "]") ]
@@ -31,7 +44,7 @@ artists =
             Html.a [ class "weblink", target "_blank", href destination ] [ Html.text descr ]
 
         internal descr =
-            Html.a [ href ("/" ++ Layout.sanitise descr) ] [ Html.text ("☛" ++ descr) ]
+            Html.a [ class "internal", href ("/" ++ Layout.sanitise descr) ] [ Html.text (" ☛" ++ descr ++ " ") ]
     in
     [ { name = "Anna Mayberry"
       , bio = Html.p [] [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” ", Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(www.bauereignis.de)" ], Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life." ]
@@ -220,5 +233,13 @@ view artist =
 
 viewPhoto : Artist -> Segment.BodyTemplate
 viewPhoto artist =
-    Html.img [ class "artist", src artist.photo ] []
+    cacheImg artist.name
+        (if artist.wide then
+            4
+
+         else
+            2
+        )
+        "artist"
+        artist.photo
         |> Segment.Illustration

@@ -368,3 +368,20 @@ squareToggleButton face isChecked toggle =
 distanceHolder : Html msg
 distanceHolder =
     Html.div [ class "distance-holder" ] []
+
+
+cacheImg : String -> Int -> String -> String -> Html msg
+cacheImg description diameter cls location =
+    let
+        columnWidth =
+            21 * 16
+
+        ( w, h ) =
+            ( String.fromInt (Basics.min 2 diameter * columnWidth), "768" )
+    in
+    Html.img
+        [ title description
+        , class cls
+        , src <| "https://images.weserv.nl/?url=" ++ location ++ "&w=" ++ w ++ "&h=" ++ h ++ "&fit=inside&we&filename=" ++ description
+        ]
+        []

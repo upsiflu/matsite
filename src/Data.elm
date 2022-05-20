@@ -265,4 +265,5 @@ initialActions timezone =
         :: Go Left
         :: Go Left
         :: Go Left
+        :: Go Left
         :: []

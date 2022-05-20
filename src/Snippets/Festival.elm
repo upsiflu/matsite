@@ -4,6 +4,7 @@ import Accordion.Segment as Segment exposing (Segment)
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (css)
+import Ui exposing (cacheImg)
 
 
 type alias Festival =
@@ -36,11 +37,7 @@ description =
 
 
 collage =
-    img
-        [ Attr.src "asset/radial(2).jpg"
-        , Attr.alt "Collage"
-        ]
-        []
+    cacheImg "Moving across Thresholds at Radialsystem (Berlin) - Collage: Judith Förster" 2 "" "https://lh4.googleusercontent.com/bDLi5oDfqgi5fEySAi4NJxsjxYSRsf80RQswbdtbAVacYQy-CBQ_7KiR6bq5xKrL7c4lAjVDjzGosYsvIcCIyYnOd0ZVBZEtkkcJAyNHTcmxPp7MCEW5SF8sMqr0ci0RdN9AZbWqbnK_DxMmsA"
         |> Segment.Illustration
 
 

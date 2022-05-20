@@ -135,6 +135,7 @@ aStyle =
 sanitise : String -> String
 sanitise =
     String.replace " " "-"
+        >> String.replace "/" "-"
 
 
 anchoredLabel t =

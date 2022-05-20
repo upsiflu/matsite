@@ -8,7 +8,9 @@ import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Layout
+import Levenshtein
 import List.Extra as List
+import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
 import Snippets.Festival exposing (Festival)
 import Snippets.Lab exposing (Lab)
@@ -56,6 +58,26 @@ type alias Event =
 
 type alias Series =
     { number : Int, motto : String, events : List Event }
+
+
+allCaptions : List String
+allCaptions =
+    data
+        |> List.concatMap
+            (\s ->
+                ("Series " ++ String.fromInt s.number)
+                    :: List.map
+                        .title
+                        s.events
+            )
+
+
+closeEvent : Int -> String -> Maybe String
+closeEvent proximity str =
+    List.map (\caption -> ( Levenshtein.distance str caption, Layout.sanitise caption )) allCaptions
+        |> List.minimumBy Tuple.first
+        |> Maybe.filter (Tuple.first >> (>) proximity)
+        |> Maybe.map Tuple.second
 
 
 data =

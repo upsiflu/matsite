@@ -4,6 +4,7 @@ import Accordion.Segment as Segment
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Layout
+import Ui exposing (cacheImg)
 
 
 mat : Segment.BodyTemplate
@@ -26,7 +27,7 @@ mat =
 team : Segment.BodyTemplate
 team =
     article []
-        [ img [ src "http://renaeshadler.com/wp-content/uploads/2021/06/thresh6.jpg" ] []
+        [ cacheImg "Team" 1 "" "http://renaeshadler.com/wp-content/uploads/2021/06/thresh6.jpg"
         , [ ( "Concept, Curation, Facilitation", "Renae Shadler" )
           , ( "Creative Companion", "Susanne Schmitt" )
           , ( "Collages, Festival Companion", "Judith Förster" )
@@ -48,7 +49,7 @@ team =
 contact : Segment.BodyTemplate
 contact =
     article []
-        [ img [ src "http://renaeshadler.com/wp-content/uploads/2021/07/thresh-1.jpg" ] []
+        [ cacheImg "Contact us" 1 "" "http://renaeshadler.com/wp-content/uploads/2021/07/thresh-1.jpg"
         , [ ( "E-Mail", "mailto:movingAcrossThresholds@gmail.com" )
           , ( "Instagram page", "https://instagram.com/moving_across_thresholds/" )
           , ( "Website", "https://MovingAcrossThresholds.com" )
