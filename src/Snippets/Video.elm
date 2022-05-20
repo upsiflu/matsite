@@ -6,7 +6,8 @@ import Html.Styled.Attributes exposing (..)
 import Layout
 
 
-vimeovideo number =
+vimeoVideo : Int -> Html msg
+vimeoVideo number =
     div [ attribute "style" "padding:56.25% 0 0 0;position:relative;" ]
         [ iframe
             [ attribute "allow" "autoplay; fullscreen; picture-in-picture"
@@ -32,7 +33,7 @@ trailers =
           ]
             |> List.map
                 (\( h, number ) ->
-                    li [] [ vimeovideo number, h2 [] [ text h ] ]
+                    li [] [ vimeoVideo number, h2 [] [ text h ] ]
                 )
             |> ul [ class "video-carousel" ]
         ]
@@ -56,7 +57,7 @@ videochannel =
           ]
             |> List.map
                 (\number ->
-                    li [] [ vimeovideo number ]
+                    li [] [ vimeoVideo number ]
                 )
             |> ul [ class "video-carousel dense" ]
         ]

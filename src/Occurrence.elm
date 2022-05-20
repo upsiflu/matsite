@@ -461,15 +461,15 @@ replaceAt =
 addDefaultOccasion : Occurrence -> Occurrence
 addDefaultOccasion occurrence =
     let
-        addWeek : Time.Posix -> Time.Posix
-        addWeek =
+        addWeeks : Int -> Time.Posix -> Time.Posix
+        addWeeks howMany =
             Time.posixToMillis
-                >> (+) (7 * 24 * 60 * 60 * 1000)
+                >> (+) (howMany * 7 * 24 * 60 * 60 * 1000)
                 >> Time.millisToPosix
 
         oneWeekLater : Occasion -> Occasion
         oneWeekLater { from, until } =
-            { from = addWeek from, until = addWeek until }
+            { from = addWeeks 2 from, until = addWeeks 2 until }
     in
     case List.reverse occurrence of
         [] ->

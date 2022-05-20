@@ -63,7 +63,7 @@ _To render Segments differently based on their position in the tree, use
 
 import Accordion.Segment.Fab as Fab exposing (Fab(..))
 import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode, Width(..))
-import Bool.Extra exposing (ifElse)
+import Bool.Extra as Bool exposing (ifElse)
 import Codec exposing (Codec, bool, decoder, field, float, int, maybeField, string, variant0, variant1, variant2)
 import Css exposing (..)
 import Dict exposing (Dict)
@@ -475,15 +475,16 @@ toc config =
 
 {-|
 
-    1. The Fab in the focus, if any
+    1. The Fab in the focus, if in the future
     2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
     3. Otherwise, Going up the breadcrumbs, take the first Fab, if any
 
 -}
 fab : { c | templates : Templates, context : Tree.Split Segment, now : Time.Posix } -> Maybe Fab
 fab config =
-    --1. The Fab in the focus, if any
+    --1. The Fab in the focus, and in the future
     config.context.present.focus.fab
+        |> Maybe.filter (Fab.isActive config)
         --2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
         |> Maybe.or
             (config.context.future
@@ -734,6 +735,14 @@ view_ ({ templates } as config) ui overlays mode s =
         viewCaption cc =
             header "" s.id cc.text
 
+        viewPeekLink =
+            case mode.region of
+                ViewMode.Peek c ->
+                    Html.a [ class "peekLink", href c.targetId, title c.hint ] [ Html.span [] [ Html.text c.hint ] ]
+
+                _ ->
+                    Ui.none
+
         --List.map (header "" s.id) cc |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
         viewBody body =
             let
@@ -852,6 +861,7 @@ view_ ({ templates } as config) ui overlays mode s =
         List.map (Html.map never)
             [ s.caption |> viewCaption |> Ui.notIf (hasBody config s && mode.position.isLeaf && not mode.position.isRoot)
             , s.body |> viewBody
+            , viewPeekLink
             , viewByline
             , orientation s |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
             , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly

@@ -188,10 +188,10 @@ view : { a | zone : ( String, Time.Zone ) } -> Fab -> Html Never
 view { zone } fab =
     case fab of
         Register { link, occurrence } ->
-            Html.a [ class "register fab", href link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
+            Html.a [ class "register fab", target "_blank", href link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
 
         Subscribe { link } ->
-            Html.a [ class "subscribe fab", href link ] [ Html.span [] [ Html.text "Subscribe" ] ]
+            Html.a [ class "subscribe fab", target "_blank", href link, title "Receive our e-newsletter!" ] [ Html.span [] [ Html.text "Subscribe" ] ]
 
 
 {-| -}
@@ -203,7 +203,7 @@ isActive { now } fab =
 
         Register { occurrence } ->
             Occurrence.beginning occurrence
-                |> Maybe.map (Time.posixToMillis >> (>=) (Time.posixToMillis now))
+                |> Maybe.map (Time.posixToMillis >> (<=) (Time.posixToMillis now))
                 |> Maybe.withDefault False
 
 

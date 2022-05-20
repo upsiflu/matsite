@@ -157,8 +157,13 @@ img {
 .A a.segmentLabel:visited,
 .F a.segmentLabel:link,
 .F a.segmentLabel:visited {
+  color: #eee;
+  background: rgba(255, 255, 255, 0.3);
+}
+.A a.segmentLabel:link,
+.A a.segmentLabel:visited {
   color: #ccc;
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
 }
 
 .A a.segmentLabel:hover,
@@ -413,6 +418,10 @@ iframe.traces {
   font-family: "subaruheavy";
   font-weight: 800;
   letter-spacing: -0.5px;
+  font-size: calc(7em / 8);
+}
+.P > .fab.subscribe {
+  right: -2rem;
 }
 .P.west > a.segmentLabel {
   position: relative;
@@ -434,4 +443,23 @@ iframe.traces {
   position: absolute;
   right: 0.2em;
   bottom: 0.275em;
+}
+.peekLink {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.peekLink > span {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: black;
+  padding: 0.1rem 0.8rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.peekLink:hover > span {
+  opacity: 1;
 }

@@ -96,6 +96,11 @@ initialTemplates zone =
     addTemplates zone Segment.initialTemplates
 
 
+subscribeLink : String
+subscribeLink =
+    "mailto:movingAcrossThresholds@gmail.com?subject=Subscription%20to%20the%20Moving%20across%Thresholds%20Newsletter&body=Dear%20Moving%20across%Thresholds%20Team%21%20Please%20add%20my%address%20to%20the%20list%3A"
+
+
 initialActions : Time.Zone -> List Accordion.Action
 initialActions timezone =
     let
@@ -128,7 +133,7 @@ initialActions timezone =
 
         register : Occurrence -> Accordion.Action
         register occurrence =
-            Fab.Register { link = "TODO eventbrite link", occurrence = occurrence }
+            Fab.Register { link = Series.eventbriteLink, occurrence = occurrence }
                 |> Just
                 |> WithFab
                 |> Modify
@@ -193,6 +198,7 @@ initialActions timezone =
     in
     Name "Home"
         :: Modify (WithShape Segment.Background)
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Go Right
         :: Name "Labs"
         :: Go Down
@@ -238,20 +244,21 @@ initialActions timezone =
         :: Go Up
         :: Go Right
         :: Name "About"
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Go Down
         :: Name "Contact"
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
         :: Go Right
         :: Name "About MaT"
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
         :: Go Right
         :: Name "Team"
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
         :: Go Left
         :: Go Up
-        :: Go Right
-        :: Name "Newsletter"
-        :: Go Left
         :: Go Left
         :: Go Left
         :: Go Left
