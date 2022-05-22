@@ -759,7 +759,16 @@ view_ ({ templates } as config) ui overlays mode s =
         viewPeekLink =
             case mode.region of
                 ViewMode.Peek c ->
-                    Html.a [ class "peekLink", href c.targetId, title c.hint ] [ Html.span [] [ Html.text c.hint ] ]
+                    Html.a [ class "peekLink", href c.targetId, title c.hint ]
+                        [ Maybe.map2
+                            (\o ( _, z ) ->
+                                Occurrence.view (Occurrence.AsList z Occurrence.Days) o |> htmlHeader "" s.id
+                            )
+                            (occ config)
+                            config.zone
+                            |> Maybe.withDefault Ui.none
+                        , Html.h2 [] [ Html.text c.hint ]
+                        ]
 
                 _ ->
                     Ui.none
