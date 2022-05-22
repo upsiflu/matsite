@@ -212,20 +212,14 @@ dense =
             ]
 
 
-header : String -> String -> String -> Html msg
-header query id t =
-    Html.text t
-        |> List.singleton
-        >> Html.h1
-            [ css
-                [ fontFamilies [ "subaruheavy", "sans" ]
-                , fontSize rhythm.default
-                , lineHeight rhythm.default
-                , margin zero
-                ]
-            , Attributes.id (id ++ "|label")
-            ]
-        |> List.singleton
+htmlHeader : String -> String -> Html msg -> Html msg
+htmlHeader =
+    headerHelp
+
+
+headerHelp : String -> String -> Html msg -> Html msg
+headerHelp query id =
+    List.singleton
         >> Html.a
             [ Attributes.href
                 (sanitise id
@@ -251,6 +245,22 @@ header query id t =
                 , padding2 rhythm.verticalPadding rhythm.padding
                 ]
             ]
+
+
+header : String -> String -> String -> Html msg
+header query id t =
+    Html.text t
+        |> List.singleton
+        >> Html.h1
+            [ css
+                [ fontFamilies [ "subaruheavy", "sans" ]
+                , fontSize rhythm.default
+                , lineHeight rhythm.default
+                , margin zero
+                ]
+            , Attributes.id (id ++ "|label")
+            ]
+        |> headerHelp query id
 
 
 section =

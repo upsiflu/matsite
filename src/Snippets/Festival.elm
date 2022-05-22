@@ -75,6 +75,11 @@ video =
         |> Segment.Illustration
 
 
+genericIllustration =
+    cacheImg "Festival (Illustration)" 2 "" "https://imgproxy.berlinonline.net/20OIHVWW_l8G4pdLCKj4_WO_cH6k6LtXAf6kHvbhxzM/pr:gallery/q:70/cb:2022032507/aHR0cHM6Ly9wb3B1bGEtbWlkZGxld2FyZS5zMy5hbWF6b25hd3MuY29tL2JvLW1pZGRsZXdhcmUvYm8uYmRlX2NoYW5uZWwuZXZlbnQvaW1hZ2VzLzk1L2U5ODJkZTE1LTNkZDUtZGIzNi1mNTVmLTNlOWNkMTc5ZDIxOS5qcGc.jpg"
+        |> Segment.Illustration
+
+
 view : Festival -> List Segment
 view festival =
     []

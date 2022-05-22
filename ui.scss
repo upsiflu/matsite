@@ -144,7 +144,7 @@ button.ui:focus {
     width: var(--column);
     left: 50vw;
     bottom: 0;
-    margin-left: calc(0px - var(--column) / 2);
+    margin-left: calc(0px - 50%);
     background: orangered;
     color: black;
     border: 2px double black;
@@ -403,6 +403,10 @@ button.ui.mode[aria-checked="true"]:enabled:active {
 
 .sheet.ui {
     border-bottom-width: 0;
+
+    &:not(:hover) {
+        opacity: .75;
+    }
 }
 
 .control.ui {

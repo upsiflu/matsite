@@ -3,7 +3,7 @@ module Accordion.Segment.Fab exposing
     , codec
     , merge
     , view, edit
-    , beginning, default, isActive
+    , beginning, default, isActive, occurrence
     )
 
 {-| Functionality of a Floating Action Button (Google terminology)
@@ -138,14 +138,14 @@ edit { zone, save } maybeFab =
                 Nothing ->
                     []
 
-                Just (Register ({ link, occurrence } as r)) ->
-                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
+                Just (Register r) ->
+                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value r.link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
                     , case zone of
                         Nothing ->
                             Html.text "Determining local time zone..."
 
                         Just z ->
-                            Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } occurrence
+                            Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
 
                 Just (Subscribe { link }) ->
@@ -187,32 +187,38 @@ edit { zone, save } maybeFab =
 view : { a | zone : ( String, Time.Zone ) } -> Fab -> Html Never
 view { zone } fab =
     case fab of
-        Register { link, occurrence } ->
-            Html.a [ class "register fab", target "_blank", href link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
+        Register r ->
+            Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
 
         Subscribe { link } ->
             Html.a [ class "subscribe fab", target "_blank", href link, title "Receive our e-newsletter!" ] [ Html.span [] [ Html.text "Subscribe" ] ]
 
 
-{-| -}
-isActive : { c | now : Time.Posix } -> Fab -> Bool
-isActive { now } fab =
-    case fab of
-        Subscribe _ ->
-            True
-
-        Register { occurrence } ->
-            Occurrence.beginning occurrence
-                |> Maybe.map (Time.posixToMillis >> (<=) (Time.posixToMillis now))
-                |> Maybe.withDefault False
-
-
-{-| -}
-beginning : Fab -> Maybe Time.Posix
-beginning fab =
+{-| where Nothing means something like eternal
+-}
+occurrence : Fab -> Maybe Occurrence
+occurrence fab =
     case fab of
         Subscribe _ ->
             Nothing
 
-        Register { occurrence } ->
-            Occurrence.beginning occurrence
+        Register r ->
+            Just r.occurrence
+
+
+{-| This is True if either:
+a. Starting time is now or in the future
+b. No starting time is given (it\`s an eternal event or a subscribe fab)
+-}
+isActive : { c | now : Time.Posix } -> Fab -> Bool
+isActive { now } =
+    occurrence
+        >> Maybe.andThen Occurrence.beginning
+        >> Maybe.map (Time.posixToMillis >> (<=) (Time.posixToMillis now))
+        >> Maybe.withDefault True
+
+
+{-| -}
+beginning : Fab -> Maybe Time.Posix
+beginning =
+    occurrence >> Maybe.andThen Occurrence.beginning

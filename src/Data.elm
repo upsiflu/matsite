@@ -74,6 +74,7 @@ addTemplates zone =
                 >> presetInfo "Artists" Segment.Toc
                 >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
                 >> presetInfo "Festivals" (Segment.Byline 1 (Layout.byline "Festivals Byline"))
+                >> presetBody "Festival (Illustration)" Festival.genericIllustration
     in
     addArtistTemplates >> addLabsTemplates >> addOtherTemplates
 
@@ -148,6 +149,9 @@ initialActions timezone =
             Go Down
                 :: Name "Perform[d]ance"
                 :: register2 25 Nov 2022 2
+                :: Go Down
+                :: Name "Festival (Illustration)"
+                :: Go Up
                 :: Go Right
                 :: Name "Radialsystem"
                 :: register2 23 Apr 2022 1

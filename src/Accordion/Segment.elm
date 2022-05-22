@@ -11,7 +11,7 @@ module Accordion.Segment exposing
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
     , infoLineCount
     , view, edit
-    , fab, templatesAreOn, toc, toggleTemplates
+    , fab, occ, templatesAreOn, toc, toggleTemplates
     )
 
 {-| contain the immutable site content
@@ -77,6 +77,7 @@ import Json.Encode as Encode
 import Layout exposing (..)
 import List.Extra as List
 import Maybe.Extra as Maybe
+import Occurrence exposing (Occurrence)
 import Time
 import Ui exposing (Ui)
 import Zipper
@@ -449,7 +450,7 @@ hint s =
 
 toc : yields the zipper of the headings of the present (a.k.a. the Aisle)
 
-occ : yields the embracing occasion around all occurrences of the `future`
+occ : yields the embracing occasion around all occurrences of present focus and its future
 
 -}
 toc : { c | templates : Templates, context : Tree.Split Segment } -> ( Html Never, Int )
@@ -501,28 +502,27 @@ fab config =
                     (.fab >> Maybe.andThen Fab.beginning >> Maybe.map Time.posixToMillis >> Maybe.withDefault 2147483646)
                 |> Maybe.andThen .fab
             )
+        --3. Otherwise, going up the breadcrumbs, take the first Fab if any
+        |> Maybe.or
+            (config.context.past
+                |> List.map MixedZipper.focus
+                |> List.find
+                    (.fab >> Maybe.map (Fab.isActive config) >> Maybe.withDefault False)
+                |> Maybe.andThen .fab
+            )
 
 
-
-{-
-   |> MixedZipper.mapPeriphery Branch.node
-   |> (\({ focus } as zipper) ->
-           Zipper.map
-               (\segment ->
-                   heading config segment
-                       |> Maybe.map
-                           (\entry ->
-                               Html.li
-                                   [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
-                                   [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
-                           )
-               )
-               zipper
-      )
-   |> Zipper.flat
-   |> List.filterMap identity
-   |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
+{-| combine all occasions in present focus and its future
 -}
+occ : { c | templates : Templates, context : Tree.Split Segment, now : Time.Posix } -> Maybe Occurrence
+occ config =
+    config.context.present.focus
+        :: List.concatMap
+            (MixedZipper.concatMap List.singleton Branch.flat)
+            config.context.future
+        |> List.map (.fab >> Maybe.andThen Fab.occurrence)
+        |> List.filterMap identity
+        |> List.foldl1 Occurrence.merge
 
 
 {-| -}
@@ -734,7 +734,27 @@ view_ ({ templates } as config) ui overlays mode s =
             }
 
         viewCaption cc =
-            header "" s.id cc.text
+            let
+                oneEntry =
+                    header "" s.id cc.text
+
+                twoEntries =
+                    Maybe.map2
+                        (\o ( _, z ) ->
+                            Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
+                                [ oneEntry
+                                , Occurrence.view (Occurrence.Short z Occurrence.Days) o |> htmlHeader "" s.id
+                                ]
+                        )
+                        (occ config)
+                        config.zone
+                        |> Maybe.withDefault oneEntry
+            in
+            if cc.showsDate then
+                twoEntries
+
+            else
+                oneEntry
 
         viewPeekLink =
             case mode.region of

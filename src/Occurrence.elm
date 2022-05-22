@@ -205,7 +205,9 @@ bounds =
         >> Maybe.withDefault { from = Time.millisToPosix 0, until = Time.millisToPosix 0 }
 
 
-{-| -}
+{-| `AsList` : Show all
+`Short` : Show bounds
+-}
 type ViewMode
     = AsList Time.Zone Precision
     | Short Time.Zone Precision

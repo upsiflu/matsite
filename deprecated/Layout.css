@@ -18,10 +18,7 @@
 .Accordion {
   width: var(--width);
   height: var(--height);
-  --height: calc(
-    var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) +
-      var(--south-height)
-  );
+  --height: calc(var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) + var(--south-height));
   /* Width and height of East, West, North and South are layout-independent */
   /* The extreme regions are tucked to the edges of the accordion */
   /* Cumulative measures */
@@ -71,14 +68,8 @@
   /* nearWest and nearEast are horizontally displayed, but their position depends on whether there is a body */
   /* nearWest and nearEast are default height when horizontally displayed */
   /* Their widths may vary */
-  --nearWest-width: calc(
-    var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) *
-      var(--screen)
-  );
-  --nearEast-width: calc(
-    var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) *
-      var(--screen)
-  );
+  --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
+  --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
   --center-width: var(--unit);
 }
 .🪗🀱 .center {
@@ -171,16 +162,10 @@
 .Accordion:not(.focusIsBackground) {
   /* South and North are outside the screen */
   /* West, East, nearWest and nearEast are outside the center */
-  --width: calc(
-    var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width)
-  );
-  --peek-height: max(
-    calc(3 / 4 * var(--column)),
-    calc(
-      100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) -
-        var(--south-height)
-    )
-  );
+  --width: calc(var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width));
+  --peek-height: max(calc(3 / 4 * var(--column)),
+      calc(100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) - var(--south-height)));
+  padding-bottom: 4rem;
 }
 
 /* ================================================================================

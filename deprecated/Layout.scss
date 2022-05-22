@@ -23,10 +23,7 @@
   width: var(--width);
   height: var(--height);
 
-  --height: calc(
-    var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) +
-      var(--south-height)
-  );
+  --height: calc(var(--north-height) + var(--nearWest-height) + var(--center-height) + var(--peek-height) + var(--nearEast-height) + var(--south-height));
 
   /* Width and height of East, West, North and South are layout-independent */
   .north,
@@ -35,6 +32,7 @@
     height: var(--unit);
     left: calc(var(--west-width) + var(--nearWest-width));
   }
+
   .west,
   .east {
     width: var(--unit);
@@ -46,12 +44,15 @@
   .north {
     top: calc(var(--units) * var(--unit));
   }
+
   .south {
     top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
   }
+
   .west {
     left: calc(var(--units) * var(--unit));
   }
+
   .east {
     left: calc(var(--width) - var(--west-width) + var(--units) * var(--unit));
   }
@@ -91,6 +92,7 @@
   .nearWest {
     --origin-left: var(--west-width);
   }
+
   .nearEast {
     --origin-left: calc(var(--width) - var(--east-width) - var(--nearEast-width));
   }
@@ -98,24 +100,13 @@
   /* Their widths may vary */
   .nearWest,
   .nearEast {
-    left: calc(
-      var(--origin-left) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) *
-        var(--screen)
-    );
-    width: calc(
-      var(--ownHeaders) * var(--unit) + var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen)
-    );
+    left: calc(var(--origin-left) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+    width: calc(var(--ownHeaders) * var(--unit) + var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
     top: var(--north-height);
   }
 
-  --nearWest-width: calc(
-    var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) *
-      var(--screen)
-  );
-  --nearEast-width: calc(
-    var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) *
-      var(--screen)
-  );
+  --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
+  --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
   --center-width: var(--unit);
 }
 
@@ -134,9 +125,11 @@
     height: var(--unit);
     left: var(--west-width);
   }
+
   .nearWest {
     top: calc(var(--north-height) + var(--units) * var(--unit));
   }
+
   .nearEast {
     top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
   }
@@ -160,13 +153,13 @@
   --center-height: var(--unit);
 
   /* The center layout depends on both the orientation and on whether the focus has a body or not */
-  &.🪗🁣 > .center {
+  &.🪗🁣>.center {
     height: var(--center-height);
     left: var(--west-width);
     top: calc(var(--north-height) + var(--nearWest-height));
   }
 
-  > .peek {
+  >.peek {
     width: 100vw;
     height: var(--peek-height);
     top: calc(var(--north-height) + var(--nearWest-height) + var(--center-height));
@@ -198,16 +191,10 @@
 .Accordion:not(.focusIsBackground) {
   /* South and North are outside the screen */
   /* West, East, nearWest and nearEast are outside the center */
-  --width: calc(
-    var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width)
-  );
-  --peek-height: max(
-    calc(3 / 4 * var(--column)),
-    calc(
-      100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) -
-        var(--south-height)
-    )
-  );
+  --width: calc(var(--west-width) + var(--nearWest-width) + var(--center-width) + var(--nearEast-width) + var(--east-width));
+  --peek-height: max(calc(3 / 4 * var(--column)),
+      calc(100vh - var(--north-height) - var(--nearWest-height) - var(--center-height) - var(--nearEast-height) - var(--south-height)));
+  padding-bottom: 4rem;
 }
 
 /* ================================================================================
