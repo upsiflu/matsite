@@ -361,4 +361,11 @@ svg {
   color: inherit;
   stroke: rgba(0, 0, 0, 0.5);
   fill: currentColor;
+}
+
+ul.overflow,
+ul.Accordion {
+  -webkit-padding-start: 0;
+          padding-inline-start: 0;
+  list-style-type: none;
 }/*# sourceMappingURL=Layout.css.map */

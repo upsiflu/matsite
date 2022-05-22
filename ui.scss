@@ -423,6 +423,11 @@ button.ui.mode[aria-checked="true"]:enabled:active {
 }
 
 
+.sheet.ui:not(:hover) {
+    width: 4rem;
+    margin-left: -2rem;
+}
+
 
 fieldset.ui {
     padding-top: 0;

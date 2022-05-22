@@ -439,7 +439,7 @@ hint : Segment -> String
 hint s =
     s.caption.text
         ++ (if s.caption.showsDate then
-                " (TODO: Date)"
+                ""
 
             else
                 ""
@@ -523,6 +523,7 @@ occ config =
         |> List.map (.fab >> Maybe.andThen Fab.occurrence)
         |> List.filterMap identity
         |> List.foldl1 Occurrence.merge
+        |> Maybe.map (List.unique >> Occurrence.sort)
 
 
 {-| -}
@@ -757,17 +758,22 @@ view_ ({ templates } as config) ui overlays mode s =
                 oneEntry
 
         viewPeekLink =
+            let
+                previewOccurrences =
+                    Maybe.map2
+                        (\o ( _, z ) ->
+                            Occurrence.view (Occurrence.AsList z Occurrence.Days) o
+                        )
+                        (occ config)
+                        config.zone
+                        |> Maybe.withDefault Ui.none
+            in
             case mode.region of
                 ViewMode.Peek c ->
                     Html.a [ class "peekLink", href c.targetId, title c.hint ]
-                        [ Maybe.map2
-                            (\o ( _, z ) ->
-                                Occurrence.view (Occurrence.AsList z Occurrence.Days) o |> htmlHeader "" s.id
-                            )
-                            (occ config)
-                            config.zone
-                            |> Maybe.withDefault Ui.none
-                        , Html.h2 [] [ Html.text c.hint ]
+                        [ Html.h2 [] [ Html.text c.hint ]
+                        , previewOccurrences
+                        , previewOccurrences
                         ]
 
                 _ ->

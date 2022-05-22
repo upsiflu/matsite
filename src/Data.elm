@@ -73,8 +73,8 @@ addTemplates zone =
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Segment.Toc
                 >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
-                >> presetInfo "Festivals" (Segment.Byline 1 (Layout.byline "Festivals Byline"))
                 >> presetBody "Festival (Illustration)" Festival.genericIllustration
+                >> presetBody "Tidal Shifts" Festival.tidalShifts
     in
     addArtistTemplates >> addLabsTemplates >> addOtherTemplates
 
@@ -139,22 +139,27 @@ initialActions timezone =
                 |> WithFab
                 |> Modify
 
-        register2 : Int -> Month -> Int -> Int -> Accordion.Action
-        register2 day month year hour =
+        registerTwoDays : Int -> Month -> Int -> Int -> Accordion.Action
+        registerTwoDays day month year hour =
             Occurrence.moment Time.utc month day year hour 0
-                |> Occurrence.withDurationMinutes 90
+                |> Occurrence.withDurationDays 1
                 |> register
 
         appendSubtree =
             Go Down
                 :: Name "Perform[d]ance"
-                :: register2 25 Nov 2022 2
+                :: registerTwoDays 26 Nov 2022 2
+                :: Modify (WithCaption { text = "Perform[d]ance Stralsund", showsDate = True })
+                :: Go Down
+                :: Name "Tidal Shifts"
                 :: Go Down
                 :: Name "Festival (Illustration)"
                 :: Go Up
+                :: Go Up
                 :: Go Right
                 :: Name "Radialsystem"
-                :: register2 23 Apr 2022 1
+                :: Modify (WithCaption { text = "Radialsystem Berlin", showsDate = True })
+                :: registerTwoDays 23 Apr 2022 1
                 :: Go Down
                 :: Name "Info"
                 :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
@@ -208,8 +213,6 @@ initialActions timezone =
         :: Go Down
         :: Series.structure timezone
         ++ Go Left
-        :: Go Left
-        :: Go Left
         :: Go Up
         :: Go Right
         :: Name "Festivals"
@@ -232,10 +235,11 @@ initialActions timezone =
         :: Name "Videos"
         :: Go Down
         :: Name "Video Channel"
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 4)))
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
         :: Go Right
         :: Name "Trailers"
         :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 3)))
+        :: Go Left
         :: Go Up
         :: Go Right
         :: Name "Library"
@@ -244,7 +248,7 @@ initialActions timezone =
         :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
         :: Go Right
         :: Name "Archive"
-        :: Modify (WithShape (Oriented Horizontal ViewSegment.Screen))
+        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 3)))
         :: Go Up
         :: Go Right
         :: Name "About"

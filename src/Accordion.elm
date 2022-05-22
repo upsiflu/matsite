@@ -82,6 +82,7 @@ import Json.Encode as Encode
 import Layout
 import Levenshtein
 import List.Extra as List
+import Occurrence exposing (Occurrence)
 import String exposing (left)
 import Time
 import Ui exposing (Ui)
@@ -804,7 +805,7 @@ view { zone, now, do, volatile } accordion =
         overlays =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
-            , ( "hamburgerMenu", Layout.hamburgerMenu "" )
+            , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
             , ( "logMenu", viewLog )
             ]
 

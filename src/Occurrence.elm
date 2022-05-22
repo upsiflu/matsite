@@ -6,7 +6,7 @@ module Occurrence exposing
     , merge
     , bounds
     , ViewMode(..), view
-    , Precision(..), beginning, edit, toString
+    , Precision(..), beginning, edit, sort, toString
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -308,15 +308,15 @@ occasionToString zone precision { from, until } =
                 format
                     [ DateFormat.monthNameAbbreviated
                     , DateFormat.text " "
-                    , DateFormat.dayOfMonthSuffix
+                    , DateFormat.dayOfMonthNumber
                     ]
                     zone
                     from
                     ++ format
                         [ DateFormat.text " + "
-                        , DateFormat.dayOfMonthSuffix
-                        , DateFormat.text ", "
-                        , DateFormat.yearNumber
+                        , DateFormat.dayOfMonthNumber
+                        , DateFormat.text " '"
+                        , DateFormat.yearNumberLastTwo
                         ]
                         zone
                         until
@@ -553,3 +553,8 @@ edit { zone, save } occurrence =
     List.indexedMap makeEditable occurrence
         |> Html.ul [ class "occasions" ]
         |> (\list -> Html.div [ class "dates" ] (list :: additionalOccasion))
+
+
+sort : Occurrence -> Occurrence
+sort =
+    List.sortBy (.from >> Time.posixToMillis)

@@ -113,11 +113,11 @@ disclose more handle =
 
 
 {-| -}
-view : Ui msg -> Html msg
+view : Ui msg -> List ( String, Html msg )
 view (Ui items) =
     let
-        viewItem i =
-            div [] (Keyed.ul [] i.scenes :: i.handles ++ i.infos ++ i.controls)
+        indexicate =
+            List.indexedMap (\index item -> ( String.fromInt index, item ))
     in
     items
         |> List.foldl
@@ -134,7 +134,7 @@ view (Ui items) =
             , infos = []
             , controls = []
             }
-        |> viewItem
+        |> (\i -> i.scenes ++ indexicate i.handles ++ indexicate i.infos ++ indexicate i.controls)
 
 
 

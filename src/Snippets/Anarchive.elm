@@ -32,4 +32,4 @@ incipit =
         , p []
             [ text "--", a [ href "/balam-kenter" ] [ text "Balam Kenter" ] ]
         ]
-        |> Segment.Content Nothing
+        |> Segment.Illustration

@@ -265,59 +265,54 @@ view model =
                 { zone = Just m.zone, now = m.now, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
                 m.accordion
                 |> Ui.composeScenes
-                    (Keyed.ul [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
+                    (Keyed.node "li" [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
     in
     { title = "Moving across Thresholds"
     , body =
-        [ Layout.typography
-            |> Html.toUnstyled
+        Html.toUnstyled Layout.typography
+            :: (case model of
+                    Loading _ ->
+                        [ Html.text "Loading" |> Html.toUnstyled ]
 
-        -- , Html.hr [] []
-        , case model of
-            Loading _ ->
-                Html.text "Loading" |> Html.toUnstyled
+                    Model m ->
+                        [ Ui.view (viewAccordion m)
+                            |> Keyed.ul [ Attributes.class "model" ]
+                            |> Html.toUnstyled
+                        , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
+                            [ m.backlog
+                                |> Maybe.map
+                                    (encoder Accordion.intentCodec
+                                        >> Encode.encode 0
+                                        >> UnstyledAttributes.attribute "backlog"
+                                        >> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+                                |> (++)
+                                    (if overwrite then
+                                        [ encoder Accordion.historyCodec m.overwrite
+                                            |> Encode.encode 0
+                                            |> UnstyledAttributes.attribute "overwrite"
+                                        ]
 
-            Model m ->
-                Ui.view (viewAccordion m) |> Html.toUnstyled
-        , Unstyled.div [] <|
-            case model of
-                Loading _ ->
-                    []
-
-                Model m ->
-                    [ m.backlog
-                        |> Maybe.map
-                            (encoder Accordion.intentCodec
-                                >> Encode.encode 0
-                                >> UnstyledAttributes.attribute "backlog"
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-                        |> (++)
-                            (if overwrite then
-                                [ encoder Accordion.historyCodec m.overwrite
-                                    |> Encode.encode 0
-                                    |> UnstyledAttributes.attribute "overwrite"
-                                ]
-
-                             else
-                                []
-                            )
-                        |> (++)
-                            [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
-                        |> (++)
-                            [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
-                                |> Decode.map LogReceived
-                                |> Events.on "logReceived"
+                                     else
+                                        []
+                                    )
+                                |> (++)
+                                    [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
+                                |> (++)
+                                    [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
+                                        |> Decode.map LogReceived
+                                        |> Events.on "logReceived"
+                                    ]
+                                |> Unstyled.node "append-log"
+                                |> (|>) []
+                            , [ Decode.at [ "detail" ] Decode.string
+                                    |> Decode.map ScrolledTo
+                                    |> Events.on "scrolledToA"
+                              ]
+                                |> Unstyled.node "closest-aisle"
+                                |> (|>) []
                             ]
-                        |> Unstyled.node "append-log"
-                        |> (|>) []
-                    , [ Decode.at [ "detail" ] Decode.string
-                            |> Decode.map ScrolledTo
-                            |> Events.on "scrolledToA"
-                      ]
-                        |> Unstyled.node "closest-aisle"
-                        |> (|>) []
-                    ]
-        ]
+                        ]
+               )
     }

@@ -19,4 +19,4 @@ traces =
             ]
             []
         ]
-        |> Segment.Content Nothing
+        |> Segment.Illustration

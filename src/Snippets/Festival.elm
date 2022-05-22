@@ -21,6 +21,19 @@ festivals =
     []
 
 
+tidalShifts =
+    div
+        [ Attr.class "richtext"
+        ]
+        [ h2 []
+            [ text "Tidal Shifts"
+            ]
+        , p []
+            [ text "in the frame of the Perform[d]ance Mini-festival at Stralsund; 26 + 27 November" ]
+        ]
+        |> Segment.Content (Just "Moving across Thresholds:")
+
+
 description =
     div
         [ Attr.class "richtext"

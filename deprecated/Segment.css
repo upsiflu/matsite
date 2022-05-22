@@ -249,7 +249,9 @@ img {
 .cache {
   visibility: hidden;
   opacity: 0;
-  transition: height 0.3s, width 0.3s, left 0.2s, top 0.7s, opacity 0.1s linear 0.4s, visibility 0s linear 0.5s;
+  transition: height 0.3s, width 0.3s, left 0.2s, top 0.5s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
+  left: var(--x);
+  top: var(--y);
 }
 .cache.🀱 {
   width: var(--unit);
@@ -408,7 +410,7 @@ iframe.traces {
 }
 .P.north > .fab {
   right: calc(var(--column) - 6rem);
-  top: calc(var(--here-height));
+  top: calc(var(--here-height) - 2rem);
 }
 .P > .fab:hover {
   transform: scale(1.1);
@@ -451,17 +453,40 @@ iframe.traces {
   width: 100%;
   height: 100%;
 }
-.peekLink > span {
+.peekLink:link > ul,
+.peekLink:visited > ul {
   position: absolute;
-  bottom: 0;
+  bottom: auto;
+  top: auto;
   right: 0;
-  background: black;
   padding: 0.1rem 0.8rem;
-  opacity: 0;
-  transition: opacity 0.3s;
 }
-.peekLink:hover > span {
-  opacity: 1;
+.peekLink > h2 {
+  text-align: right;
+  background: rgb(132, 0, 132);
+  mix-blend-mode: color-burn;
+  font-size: 5rem;
+  overflow: hidden;
+  line-height: 4rem;
+  margin: 0;
+}
+.peekLink > ul {
+  mix-blend-mode: screen;
+  color: orange;
+  transition: all 0.4s;
+}
+.peekLink > ul + ul {
+  background: transparent;
+  mix-blend-mode: multiply;
+  color: white;
+  transition: all 0.1s;
+  text-shadow: 1px 1px black;
+}
+.peekLink:hover > ul + ul {
+  background: rgb(111, 0, 255);
+}
+.peekLink:hover > ul {
+  padding: 0.1rem 1.8rem;
 }
 .artist fieldset,
 .artist fieldset {
@@ -492,4 +517,25 @@ iframe.traces {
   background-image: linear-gradient(transparent, blue, transparent);
   background-size: 400px 1000px;
   display: block;
+}
+
+.sheet.ui:not(:hover),
+#activityLog:not(:hover) {
+  /* width: 4rem; */
+  /* margin-left: -2rem; */
+  opacity: 0.3;
+}
+.sheet.ui {
+  transition: width 0.4s, margin-left 0.4s, opacity 0.2s;
+}
+.Accordion {
+  padding-bottom: 4rem !important;
+}
+
+.multipleHeaders > a:not(:first-child) {
+  line-height: 1rem;
+}
+
+.body.illustrative p {
+  max-width: calc(var(--column) * var(--own-columns));
 }
