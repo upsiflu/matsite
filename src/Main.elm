@@ -217,7 +217,7 @@ update msg model =
         ( IntentGenerated intent, Model m ) ->
             ( Model { m | backlog = Just intent }, Cmd.none )
 
-        ( NoteReceived str, Model m ) ->
+        ( NoteReceived str, _ ) ->
             {- Debug.log "NOTE RECEIVED" -}
             str
                 |> (\_ -> ( model, Cmd.none ))
@@ -232,7 +232,7 @@ upgradeIfPossible model =
         case model of
             Loading o ->
                 Maybe.map2
-                    (\(( descr, z ) as zone) now ->
+                    (\(( _, z ) as zone) now ->
                         let
                             initialAccordion =
                                 Data.initial z

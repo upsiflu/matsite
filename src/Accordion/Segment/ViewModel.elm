@@ -293,26 +293,25 @@ This satisfies the Ui rule that an app's screen may at most show one Fab.
 -}
 fab : { c | now : Time.Posix } -> ViewModel -> Maybe Fab
 fab config { position, branch, breadcrumbs } =
-    (if position.role == Parent then
+    if position.role == Parent then
         branch ()
             |> Branch.focusedChild
+            |> Maybe.andThen .fab
+            |> Maybe.orElseLazy
+                (\() ->
+                    Branch.flat (branch ())
+                        |> List.filterMap (.fab >> Fab.andUpcoming config)
+                        |> List.minimumBy (Fab.nextBeginning config >> Maybe.withDefault 2147483646)
+                )
+            |> Maybe.orElseLazy
+                (\() ->
+                    breadcrumbs ()
+                        |> List.filterMap (.fab >> Fab.andUpcoming config)
+                        |> List.head
+                )
 
-     else
+    else
         Nothing
-    )
-        |> Maybe.andThen .fab
-        |> Maybe.orElseLazy
-            (\() ->
-                Branch.flat (branch ())
-                    |> List.filterMap (.fab >> Fab.andUpcoming config)
-                    |> List.minimumBy (Fab.nextBeginning config >> Maybe.withDefault 2147483646)
-            )
-        |> Maybe.orElseLazy
-            (\() ->
-                breadcrumbs ()
-                    |> List.filterMap (.fab >> Fab.andUpcoming config)
-                    |> List.head
-            )
 
 
 {-| Note that, like the Fab, a Toc is only calculated once.
@@ -323,32 +322,31 @@ For now, we have a suboptimal solution.
 -}
 toc : { c | templates : Segment.Templates } -> ViewModel -> Maybe ( Html Never, Int )
 toc config { branch, position } =
-    (if position.role == Parent then
+    if position.role == Parent then
         branch ()
             |> Branch.nextGeneration
+            |> Maybe.map
+                (Zipper.map Branch.node)
+            |> Maybe.map
+                (\({ focus } as zipper) ->
+                    Zipper.map
+                        (\segment ->
+                            heading config segment
+                                |> Maybe.map
+                                    (\entry ->
+                                        Html.li
+                                            [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
+                                            [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
+                                    )
+                        )
+                        zipper
+                        |> Zipper.flat
+                        |> List.filterMap identity
+                        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
+                )
 
-     else
+    else
         Nothing
-    )
-        |> Maybe.map
-            (Zipper.map Branch.node)
-        |> Maybe.map
-            (\({ focus } as zipper) ->
-                Zipper.map
-                    (\segment ->
-                        heading config segment
-                            |> Maybe.map
-                                (\entry ->
-                                    Html.li
-                                        [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
-                                        [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
-                                )
-                    )
-                    zipper
-                    |> Zipper.flat
-                    |> List.filterMap identity
-                    |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
-            )
 
 
 {-| -}
@@ -596,7 +594,6 @@ view_ ({ zone, templates } as config) ui overlays model =
                 _ ->
                     Ui.none
 
-        --List.map (header "" s.id) cc |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
         viewBody body =
             let
                 bodyIsVisible =
@@ -613,11 +610,11 @@ view_ ({ zone, templates } as config) ui overlays model =
             (if bodyIsVisible then
                 [ Tuple.pair "heading" <|
                     case heading config model.segment of
-                        Nothing ->
-                            Html.text ""
-
                         Just h ->
                             Html.a [ href (Layout.sanitise model.segment.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+
+                        Nothing ->
+                            Html.text ""
                 , Tuple.pair "content" <|
                     case ( template.body, body ) of
                         ( Just (Content _ c), _ ) ->
@@ -693,7 +690,7 @@ view_ ({ zone, templates } as config) ui overlays model =
 
     else
         List.map (Html.map never)
-            [ model.segment.caption |> viewCaption |> Ui.notIf (Segment.hasBody config model.segment && model.position.isLeaf && not model.position.isRoot)
+            [ model.segment.caption |> viewCaption |> Ui.notIf (Segment.hasBody config model.segment && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
             , model.segment.body |> viewBody
             , viewPeekLink
             , viewByline

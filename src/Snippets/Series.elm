@@ -34,23 +34,34 @@ collageColumns c =
 
 collageToIllustration : Event -> List ( String, Segment.BodyTemplate )
 collageToIllustration event =
-    (\illu ->
-        div []
-            [ illu, Maybe.map (\d -> p [] [ text d ]) event.description |> Maybe.withDefault Ui.none ]
-            |> Segment.Illustration
-            |> Tuple.pair (event.title ++ " (Collage)")
-            |> List.singleton
-    )
-    <|
-        case event.collage of
-            Just (Image _ str) ->
-                cacheImg event.title 2 "" str
+    let
+        coll =
+            event.collage
+                |> Maybe.map
+                    (\collage ->
+                        case collage of
+                            Image _ str ->
+                                cacheImg event.title 2 "" str
 
-            Just (Vimeo _ int) ->
-                Video.vimeoVideo int
+                            Vimeo _ int ->
+                                Video.vimeoVideo int
+                    )
+                |> Maybe.map
+                    (\illustration ->
+                        Segment.Illustration (div [] [ illustration ])
+                            |> Tuple.pair (event.title ++ " (Collage)")
+                    )
 
-            Nothing ->
-                Ui.none
+        descr =
+            event.description
+                |> Maybe.map
+                    (\d ->
+                        p [] [ text d ]
+                            |> Segment.Content Nothing
+                            |> Tuple.pair (event.title ++ " (Description)")
+                    )
+    in
+    Maybe.toList coll ++ Maybe.toList descr
 
 
 type alias Event =
@@ -133,7 +144,7 @@ data =
         In this lab we will explore the anarchic archive of ‘Moving across Thresholds’ scores and stories built over the last 30-events. We will then dissolve this body of work and reconstruct it in a way that generates thresholds of potential to help us think and move now, in these urgent times.
         > 'movement' noun: position change.
         > 'movement 'noun: a group of people with a particular set of aims or ideas""") "Gather-town + bUm, Kreuzberg" "Renae Shadler and Susanne Schmitt" Nothing (Just <| Image 2 "https://lh5.googleusercontent.com/yp-n-jN-3yQgZaDYlqotY1hlQ37AqPZPWV7WALfJPtj_Al-g5gsfkg5lb3BrIbUbjrdN71CZ6wQDCdjUDCmpDRkX9PW6BUf1EXHMQ1W0zz0-P0uxlU4VRnryWudH4bI9tcQrTQbHw79ZCfbNIg")
-        , Event 7 Apr 2 "Moon Cancer Lightning" (Just """In an age where no one’s secrets are kept sacred, and we are all forced to be spies on each other’s realities; how do we connect with and express our innermost beings into a language recognisable by all?
+        , Event 7 Apr 22 "Moon Cancer Lightning" (Just """In an age where no one’s secrets are kept sacred, and we are all forced to be spies on each other’s realities; how do we connect with and express our innermost beings into a language recognisable by all?
         Driven by this question, guest facilitator - Tsuki, will guide us through a movement practice incorporating Ashtanga and Kundalini Yoga, Butoh and Contemporary Dance as well as Astrology. Tsuki sees every body as fundamentally transgender, with the power to transform between a multitude of expressions. In this event we will explore the thresholds of potential that lie between our perceived internal and external realities.
         Tsuki is a Performance Artist, Butoh and Ashtanga Yoga teacher based in Berlin. She leads Full Moon Performance Rituals and is focused on enabling spaces where the art, the community, and the survival can co-exist. Tsuki performs solo and collaborative performance projects influenced by her multidisciplinary training and has performed in Berlins most infamous night clubs and queer parties, including; Tresor, KitKat Club, Suicide Circus.""") "Gather-town + bUm, Kreuzberg" "Tsuki" Nothing (Just <| Image 2 "https://lh3.googleusercontent.com/6VR4GLZ2k7FOOI-AsQBKj6e2OZJDOchELAt7G3y7NS7zQnDmvHM70M-r-fOUDz2UpLU_n9vPuPxKqTLFF1Pr7s7QJYK9lD9wS0V5Nh9dYzUHX2IAUgSeX3sx83DYNKPe83V4D7Wiz6_koaAOFQ")
         , Event 21 Apr 22 "wailing is breathing out loud for others" (Just """Believing that we can only imagine futures of an otherwise if we acknowledge the grieves in this world, performance artist, researcher, and death doula - Siegmar Zacharias, will propose a listening practice where we can hold space for each other's grieving. This particular practice started with a lament her great grandmother sang as a wailing woman in Romania and works with solfeggio frequencies, the same frequency bees wings produce. They will be allies in re-generating while being in the quaking.
@@ -179,7 +190,7 @@ presets timezone =
                         ]
                     ]
                     |> Segment.Content (Just event.title)
-                    |> Tuple.pair event.title
+                    |> Tuple.pair (event.title ++ "-")
                 )
                     :: collageToIllustration event
             )
@@ -223,7 +234,7 @@ structure timezone =
                                 [ Name event.title
                                 , addFab
                                 , Go Down
-                                , Name (event.title ++ "")
+                                , Name (event.title ++ "-")
                                 , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns 1))
                                 ]
                                     ++ (case event.collage of
@@ -231,10 +242,14 @@ structure timezone =
                                                 []
 
                                             Just c ->
-                                                [ Go Right
+                                                [ Go Left
                                                 , Name (event.title ++ " (Collage)")
-                                                , addFab
                                                 , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns (collageColumns c)))
+                                                , Go Right
+                                                , Go Right
+                                                , Name (event.title ++ " (Description)")
+                                                , addFab
+                                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns 1))
                                                 , Go Left
                                                 ]
                                        )

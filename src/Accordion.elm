@@ -782,7 +782,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
                                 (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
                             |> List.minimumBy (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
                             ---- 2. DIRECT CHILD
-                            |> Maybe.or (Branch.nextGeneration focusedBranch |> Maybe.map Zipper.focus)
+                            |> Maybe.or (Just focusedBranch)
 
                 -- Find the closest illustration, among the nest, for a given branch of segments
                 peekTargetBranchToIllustration : Branch Segment -> Maybe Segment

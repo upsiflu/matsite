@@ -238,7 +238,7 @@
   top: calc(var(--y) + var(--center-height));
   width: var(--here-width);
   height: calc(var(--here-height) - var(--center-height));
-  background: grey;
+  background: #006;
   border-top: 1px dashed black;
   border-bottom: 1px dashed white;
   box-sizing: border-box;

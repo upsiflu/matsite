@@ -10,12 +10,14 @@
   /* First header will always display full content and grow to fill headerspace */
   flex-shrink: 0;
   flex-grow: 1;
+  padding-right: 0rem;
 }
 
 .multipleHeaders > :not(:first-child) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-left: 0.2rem;
 }
 
 .multipleHeaders h1 {
