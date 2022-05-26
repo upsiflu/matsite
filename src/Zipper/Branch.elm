@@ -18,6 +18,7 @@ module Zipper.Branch exposing
     , DirBranch
     , defoldWithDirections, zipDirections
     , flatFold
+    , focusedChild, subBranches, zipPositions
     )
 
 {-|
@@ -357,8 +358,22 @@ getRightmostLeaf =
         >> Result.unpack identity node
 
 
+{-| -}
+subBranches : Branch a -> List (Branch a)
+subBranches b =
+    nextGeneration b
+        |> Maybe.map
+            (Zipper.flat >> List.concatMap subBranches >> (\gen -> b :: gen))
+        |> Maybe.withDefault [ b ]
+
+
 {-| A fold that tries to adhere very well to the constructor and
 cons/append functions and has less functions
+
+`f` : excessive fields
+`a` : input
+`b` : output
+
 -}
 type alias Fold f a b =
     { f
@@ -640,6 +655,12 @@ path =
 children : Branch a -> List (MixedZipper a (Branch a))
 children (Branch b) =
     MixedNonempty.tail b
+
+
+{-| -}
+focusedChild : Branch a -> Maybe a
+focusedChild =
+    children >> List.head >> Maybe.map MixedZipper.focus
 
 
 {-| prunes the focus

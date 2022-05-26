@@ -262,7 +262,7 @@ view model =
     let
         viewAccordion m =
             Accordion.view
-                { zone = Just m.zone, now = m.now, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
+                { zone = m.zone, now = m.now, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
                 m.accordion
                 |> Ui.composeScenes
                     (Keyed.node "li" [ Attributes.class "overflow" ] >> Tuple.pair "overflow")

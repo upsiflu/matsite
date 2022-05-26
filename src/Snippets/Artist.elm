@@ -1,7 +1,7 @@
 module Snippets.Artist exposing (..)
 
 import Accordion.Segment as Segment
-import Html.Styled as Html exposing (Html, a, div, p, text)
+import Html.Styled as Html exposing (Html, text)
 import Html.Styled.Attributes exposing (..)
 import Layout
 import List.Extra as List
@@ -20,9 +20,6 @@ type alias Artist =
 artists : List Artist
 artists =
     let
-        link descr destination =
-            Html.a [ target "_blank", href destination ] [ Html.text descr ]
-
         event descr fblink =
             let
                 closeEvent =
@@ -32,7 +29,7 @@ artists =
                         |> Maybe.withDefault Ui.none
             in
             Html.fieldset []
-                [ Html.legend [] [ Html.text (descr++":") ]
+                [ Html.legend [] [ Html.text (descr ++ ":") ]
                 , closeEvent
                 , Html.a [ class "weblink", target "_blank", href fblink ] [ Html.text " [fb event page]" ]
                 ]

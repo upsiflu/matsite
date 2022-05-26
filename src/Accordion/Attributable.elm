@@ -17,9 +17,8 @@ module Accordion.Attributable exposing
 -}
 
 import Css exposing (..)
-import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled as Html
+import Html.Styled.Attributes exposing (..)
 
 
 {-| where `a` is the render target, for example `Html msg`

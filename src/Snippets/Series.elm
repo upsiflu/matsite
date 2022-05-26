@@ -2,8 +2,8 @@ module Snippets.Series exposing (..)
 
 import Accordion exposing (Action(..))
 import Accordion.Segment as Segment exposing (InfoTemplate(..), Orientation(..), Shape(..))
-import Accordion.Segment.Fab as Fab exposing (Fab)
-import Accordion.Segment.ViewMode as ViewSegment
+import Accordion.Segment.Fab as Fab
+import Accordion.Segment.ViewModel as ViewSegment
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -12,8 +12,6 @@ import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
-import Snippets.Festival exposing (Festival)
-import Snippets.Lab exposing (Lab)
 import Snippets.Video as Video
 import Time exposing (Month(..))
 import Ui exposing (cacheImg)
@@ -83,6 +81,7 @@ closeEvent proximity str =
         |> Maybe.map Tuple.second
 
 
+data : List Series
 data =
     [ Series 1
         "LOWERING THE THRESHOLD"
@@ -213,7 +212,7 @@ structure timezone =
         |> List.map
             (\series ->
                 Name ("Series " ++ String.fromInt series.number)
-                    :: Modify (Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                    :: Modify (Segment.WithShape (Oriented Horizontal (Segment.Columns 1)))
                     :: Go Down
                     :: (List.map
                             (\event ->
@@ -221,13 +220,11 @@ structure timezone =
                                     addFab =
                                         Modify <| Segment.WithFab (Just <| Fab.Register { link = eventbriteLink, occurrence = eventDate timezone event })
                                 in
-                                [ Name (event.title ++ "-")
-                                , Modify <| Segment.WithCaption { text = event.title, showsDate = True }
+                                [ Name event.title
                                 , addFab
                                 , Go Down
-                                , Name event.title
-                                , Modify <| Segment.WithShape (Oriented Horizontal (ViewSegment.Columns 1))
-                                , addFab
+                                , Name (event.title ++ "")
+                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns 1))
                                 ]
                                     ++ (case event.collage of
                                             Nothing ->
@@ -236,11 +233,14 @@ structure timezone =
                                             Just c ->
                                                 [ Go Right
                                                 , Name (event.title ++ " (Collage)")
-                                                , Modify <| Segment.WithShape (Oriented Horizontal (ViewSegment.Columns (collageColumns c)))
+                                                , addFab
+                                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns (collageColumns c)))
                                                 , Go Left
                                                 ]
                                        )
-                                    ++ [ Go Up ]
+                                    ++ [ Go Up
+                                       , Modify <| Segment.WithCaption { text = event.title, showsDate = True }
+                                       ]
                             )
                             series.events
                             |> List.intersperse [ Go Right ]

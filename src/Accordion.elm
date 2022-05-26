@@ -67,27 +67,28 @@ module Accordion exposing
 
 -}
 
-import Accordion.Segment as Segment exposing (Orientation(..), Segment)
-import Accordion.Segment.ViewMode as ViewSegment exposing (Region(..), ViewMode, Width(..))
-import Codec exposing (Codec, bool, decoder, encoder, field, float, int, maybeField, string, variant0, variant1, variant2)
+import Accordion.Segment as Segment exposing (Orientation(..), Segment, hasBody)
+import Accordion.Segment.Fab as Fab
+import Accordion.Segment.ViewModel as ViewSegment exposing (Region(..), ViewModel)
+import Codec exposing (Codec, encoder, int, string, variant0, variant1)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
-import Html.Attributes
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, classList, css, id)
 import Html.Styled.Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
-import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import Layout
 import Levenshtein
 import List.Extra as List
+import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
 import String exposing (left)
 import Time
 import Ui exposing (Ui)
 import Zipper
-import Zipper.Branch as Branch
+import Zipper.Branch as Branch exposing (Branch)
+import Zipper.Mixed as MixedZipper
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
@@ -594,7 +595,7 @@ type Renderable msg
 
 
 type alias ViewMode msg =
-    { zone : Maybe ( String, Time.Zone )
+    { zone : ( String, Time.Zone )
     , now : Time.Posix
     , do : (String -> Intent) -> msg
     , volatile : Msg -> msg
@@ -606,7 +607,7 @@ view :
     ViewMode msg
     -> Accordion
     -> Ui msg
-view { zone, now, do, volatile } accordion =
+view ({ zone, now, do, volatile } as mode) accordion =
     let
         c =
             config accordion
@@ -635,6 +636,20 @@ view { zone, now, do, volatile } accordion =
         atFocus : Action -> msg
         atFocus =
             generateIntent (focusId accordion) >> do
+
+        breadcrumbs : String -> (() -> List Segment)
+        breadcrumbs sid () =
+            goToId sid accordion
+                |> config
+                |> .tree
+                |> Tree.breadcrumbs
+
+        branch : String -> (() -> Branch Segment)
+        branch sid () =
+            goToId sid accordion
+                |> config
+                |> .tree
+                |> Tree.focusedBranch
 
         viewLog : Html msg
         viewLog =
@@ -685,17 +700,27 @@ view { zone, now, do, volatile } accordion =
                         Ui.none
                 ]
 
+        viewSegment : ViewModel -> Ui msg
         viewSegment =
-            case accordion of
+            (case accordion of
                 Log { editing } _ ->
                     if editing then
-                        Segment.edit { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                        ViewSegment.edit
 
                     else
-                        Segment.view { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                        ViewSegment.view
 
                 _ ->
-                    Segment.view { zone = zone, now = now, do = \location -> Modify >> generateIntent location >> do, insert = Insert >> atFocus, rename = Name >> atFocus, delete = Delete |> atFocus, templates = c.templates, context = Tree.split c.tree }
+                    ViewSegment.view
+            )
+                { zone = zone
+                , now = now
+                , templates = c.templates
+                , do = \location -> Modify >> generateIntent location >> do
+                , delete = Delete |> atFocus
+                , rename = Name >> atFocus
+                , insert = Insert >> atFocus
+                }
 
         editAccordion sheets =
             case accordion of
@@ -731,42 +756,62 @@ view { zone, now, do, volatile } accordion =
                 , ( "focusIsBackground", Segment.isBackground (Tree.focus c.tree) )
                 ]
 
-        findPeekConfig : Segment -> { targetId : String, hint : String }
-        findPeekConfig seg =
-            let
-                peekParent =
-                    .id
-                        >> (==) seg.id
-                        |> Tree.Find
-                        |> Tree.go
-                        |> (|>) c.tree
-                        |> Tree.up
-                        |> Tree.focus
-            in
-            { targetId = peekParent.id, hint = Segment.hint peekParent }
-
         createRegions : C -> List ( Region, List A )
         createRegions { up, left, x, here, nest, y, right, down } =
             let
-                ( perhapsPeek, cache ) =
-                    let
-                        findPeek toCache toTest =
-                            case toTest of
-                                [] ->
-                                    Result.Err ()
+                focusedSegment =
+                    Tree.focus c.tree
 
-                                (( _, seg ) as a) :: rest ->
-                                    if Segment.isIllustration c seg then
-                                        Result.Ok ( ( Peek (findPeekConfig seg), [ a ] ), toCache ++ rest )
+                focusedBranch =
+                    Tree.focusedBranch c.tree
 
-                                    else
-                                        findPeek (a :: toCache) rest
-                    in
-                    findPeek [] nest
-                        |> Result.withDefault
-                            ( ( ViewSegment.defaultPeek
-                              , [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ]
-                              )
+                split =
+                    Tree.split c.tree
+
+                ---- PEEK ----
+                maybePeekTargetBranch : Maybe (Branch Segment)
+                maybePeekTargetBranch =
+                    if hasBody c focusedSegment then
+                        Nothing
+
+                    else
+                        ---- 1. UPCOMING
+                        focusedBranch
+                            |> Branch.subBranches
+                            |> List.filter
+                                (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
+                            |> List.minimumBy (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
+                            ---- 2. DIRECT CHILD
+                            |> Maybe.or (Branch.nextGeneration focusedBranch |> Maybe.map Zipper.focus)
+
+                -- Find the closest illustration, among the nest, for a given branch of segments
+                peekTargetBranchToIllustration : Branch Segment -> Maybe Segment
+                peekTargetBranchToIllustration =
+                    Branch.flat
+                        >> List.filter (\a -> List.member a (List.map Tuple.second nest))
+                        >> List.find (Segment.isIllustration c)
+
+                ( peekConfig, peekList, cache ) =
+                    case maybePeekTargetBranch of
+                        Just targetBranch ->
+                            let
+                                illu =
+                                    peekTargetBranchToIllustration targetBranch
+
+                                cche =
+                                    Maybe.map
+                                        (\ill -> List.filter (Tuple.second >> (/=) ill) nest)
+                                        illu
+                                        |> Maybe.withDefault nest
+                            in
+                            ( { targetId = (Branch.node targetBranch).id, hint = "" }
+                            , Maybe.toList illu |> List.map (Tuple.pair Fold.fataMorganaPosition)
+                            , cche
+                            )
+
+                        Nothing ->
+                            ( ViewSegment.defaultPeekConfig
+                            , [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ]
                             , nest
                             )
             in
@@ -774,7 +819,7 @@ view { zone, now, do, volatile } accordion =
             , ( West, List.reverse left )
             , ( NearWest, List.reverse x )
             , ( Center, [ here ] )
-            , perhapsPeek
+            , ( Peek peekConfig, peekList )
             , ( Cache, cache )
             , ( NearEast, y )
             , ( East, right )
@@ -786,11 +831,22 @@ view { zone, now, do, volatile } accordion =
             List.foldl
                 (\( position, segment ) ( offset, newList ) ->
                     let
-                        mode =
-                            { zone = zone, position = position, region = region, offset = offset }
+                        model =
+                            { ---- Position
+                              position = position
+                            , region = region
+                            , offset = offset
+
+                            ---- Data
+                            , segment = segment
+
+                            ---- Lazy Neighbors
+                            , breadcrumbs = breadcrumbs segment.id
+                            , branch = branch segment.id
+                            }
                     in
-                    ( ViewSegment.addWidth mode (Segment.hasBody c segment) (Segment.width segment) (Segment.infoLineCount { templates = c.templates, context = Tree.split c.tree } mode segment) offset
-                    , viewSegment mode segment :: newList
+                    ( ViewSegment.addWidth c model (Segment.hasBody c segment) (Segment.width segment) offset
+                    , viewSegment model :: newList
                     )
                 )
                 ( ViewSegment.zeroOffset, [] )

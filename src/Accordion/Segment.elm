@@ -9,17 +9,15 @@ module Accordion.Segment exposing
     , initialTemplates
     , Templates, BodyTemplate(..), InfoTemplate(..)
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
-    , infoLineCount
-    , view, edit
-    , fab, occ, templatesAreOn, toc, toggleTemplates
+    , BodyChoice(..), InfoChoice(..), Width(..), bodyTypeToString, getTemplate, infoTypeToString, structureClass, templatesAreOn, toggleTemplates
     )
 
 {-| contain the immutable site content
 
-_To render Segments differently based on their position in the tree, use
-[`Segment.Viewmode`](Accordion.Segment.ViewMode)_
+_To render (view|edit) Segments, use
+[`Segment.Viewmodel`](Accordion.Segment.ViewModel)_
 
-  - `ViewMode` adds classes based on the position in the tree AND on the screen
+  - `ViewModel` adds classes based on the position in the tree AND on the screen
   - `Segment` adds classes based on the intended config, independent from the position
 
 @docs Segment
@@ -62,32 +60,17 @@ _To render Segments differently based on their position in the tree, use
 -}
 
 import Accordion.Segment.Fab as Fab exposing (Fab(..))
-import Accordion.Segment.ViewMode as ViewMode exposing (ViewMode, Width(..))
 import Bool.Extra as Bool exposing (ifElse)
-import Codec exposing (Codec, bool, decoder, field, float, int, maybeField, string, variant0, variant1, variant2)
+import Codec exposing (Codec, bool, field, string)
 import Css exposing (..)
 import Dict exposing (Dict)
 import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick, onInput)
-import Html.Styled.Keyed as Keyed
-import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Encode as Encode
+import Html.Styled.Events exposing (onClick)
 import Layout exposing (..)
 import List.Extra as List
 import Maybe.Extra as Maybe
-import Occurrence exposing (Occurrence)
-import Time
-import Ui exposing (Ui)
-import Zipper
-import Zipper.Branch as Branch
-import Zipper.Mixed as MixedZipper
-import Zipper.Tree as Tree
-
-
-debugging =
-    False
 
 
 {-| only contains user-editable properties
@@ -153,6 +136,29 @@ actionCodec =
         |> Codec.buildCustom
 
 
+{-| -}
+type Width
+    = Columns Int
+    | Screen
+
+
+{-| -}
+widthCodec : Codec Width
+widthCodec =
+    Codec.custom
+        (\col scr value ->
+            case value of
+                Columns i ->
+                    col i
+
+                Screen ->
+                    scr
+        )
+        |> Codec.variant1 "Columns" Columns Codec.int
+        |> Codec.variant0 "Screen" Screen
+        |> Codec.buildCustom
+
+
 type alias Caption =
     { text : String, showsDate : Bool }
 
@@ -179,7 +185,7 @@ shapeCodec =
                 Background ->
                     background
         )
-        |> Codec.variant2 "Oriented" Oriented orientationCodec ViewMode.widthCodec
+        |> Codec.variant2 "Oriented" Oriented orientationCodec widthCodec
         |> Codec.variant0 "Background" Background
         |> Codec.buildCustom
 
@@ -188,43 +194,6 @@ shapeCodec =
 orientationCodec : Codec Orientation
 orientationCodec =
     Codec.map (orientationFromString >> Maybe.withDefault Vertical) orientationToString Codec.string
-
-
-decodeOrientation : Decoder Orientation
-decodeOrientation =
-    let
-        recover x =
-            case x of
-                "Vertical" ->
-                    Decode.succeed Vertical
-
-                "Horizontal" ->
-                    Decode.succeed Horizontal
-
-                other ->
-                    Decode.fail <| "Unknown constructor for type Orientation: " ++ other
-    in
-    Decode.string |> Decode.andThen recover
-
-
-decodeShape : Decoder Shape
-decodeShape =
-    Decode.field "Constructor" Decode.string
-        |> Decode.andThen
-            (\constructor ->
-                case constructor of
-                    "Oriented" ->
-                        Decode.map2
-                            Oriented
-                            (Decode.field "A1" decodeOrientation)
-                            (Decode.field "A2" (decoder ViewMode.widthCodec))
-
-                    "Background" ->
-                        Decode.succeed Background
-
-                    other ->
-                        Decode.fail <| "Unknown constructor for type Shape: " ++ other
-            )
 
 
 {-| -}
@@ -236,6 +205,17 @@ width s =
 
         Oriented _ w ->
             w
+
+
+{-| -}
+widthToString : Width -> String
+widthToString w =
+    case w of
+        Columns c ->
+            String.fromInt c ++ "-column"
+
+        Screen ->
+            "screen"
 
 
 {-| option "Preset" is grayed out if templates.info==Nothing
@@ -344,16 +324,6 @@ getTemplate selector s =
             )
 
 
-toggleBodyTemplate : Segment -> Templates -> Templates
-toggleBodyTemplate s t =
-    { t | body = Dict.update s.id (Maybe.map (Tuple.mapFirst not)) t.body }
-
-
-toggleInfoTemplate : Segment -> Templates -> Templates
-toggleInfoTemplate s t =
-    { t | info = Dict.update s.id (Maybe.map (Tuple.mapFirst not)) t.info }
-
-
 {-| Volatile per-session preset dicts; individually switchable; all off by default; see `Data` module for presets
 -}
 initialTemplates : { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
@@ -391,18 +361,6 @@ isBackground s =
 type Orientation
     = Vertical
     | Horizontal
-
-
-{-| -}
-addClass : String -> Segment -> Action
-addClass str segment =
-    WithClasses (str :: segment.additionalClasses)
-
-
-{-| -}
-removeClass : String -> Segment -> Action
-removeClass str segment =
-    WithClasses (List.filter ((/=) str) segment.additionalClasses)
 
 
 {-| -}
@@ -446,482 +404,6 @@ hint s =
            )
 
 
-{-| the key to neighbors; requested lazily in the `P` segment.
-
-toc : yields the zipper of the headings of the present (a.k.a. the Aisle)
-
-occ : yields the embracing occasion around all occurrences of present focus and its future
-
--}
-toc : { c | templates : Templates, context : Tree.Split Segment } -> ( Html Never, Int )
-toc config =
-    config.context.present
-        |> MixedZipper.mapPeriphery Branch.node
-        |> (\({ focus } as zipper) ->
-                Zipper.map
-                    (\segment ->
-                        heading config segment
-                            |> Maybe.map
-                                (\entry ->
-                                    Html.li
-                                        [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
-                                        [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
-                                )
-                    )
-                    zipper
-           )
-        |> Zipper.flat
-        |> List.filterMap identity
-        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
-
-
-{-|
-
-    1. The Fab in the focus, if in the future
-    2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
-    3. Otherwise, Going up the breadcrumbs, take the first Fab, if any
-
--}
-fab : { c | templates : Templates, context : Tree.Split Segment, now : Time.Posix } -> Maybe Fab
-fab config =
-    --1. The Fab in the focus, and in the future
-    config.context.present.focus.fab
-        |> Maybe.filter (Fab.isActive config)
-        --2. Otherwise, Out of all Fabs in the Descendants that are in the future, the one with the earliest starting date
-        |> Maybe.or
-            (config.context.future
-                |> List.concatMap
-                    (MixedZipper.concatMap
-                        List.singleton
-                        Branch.flat
-                    )
-                -- List Segment
-                |> List.filter
-                    (.fab >> Maybe.map (Fab.isActive config) >> Maybe.withDefault False)
-                |> List.minimumBy
-                    (.fab >> Maybe.andThen Fab.beginning >> Maybe.map Time.posixToMillis >> Maybe.withDefault 2147483646)
-                |> Maybe.andThen .fab
-            )
-        --3. Otherwise, going up the breadcrumbs, take the first Fab if any
-        |> Maybe.or
-            (config.context.past
-                |> List.map MixedZipper.focus
-                |> List.find
-                    (.fab >> Maybe.map (Fab.isActive config) >> Maybe.withDefault False)
-                |> Maybe.andThen .fab
-            )
-
-
-{-| combine all occasions in present focus and its future
--}
-occ : { c | templates : Templates, context : Tree.Split Segment, now : Time.Posix } -> Maybe Occurrence
-occ config =
-    config.context.present.focus
-        :: List.concatMap
-            (MixedZipper.concatMap List.singleton Branch.flat)
-            config.context.future
-        |> List.map (.fab >> Maybe.andThen Fab.occurrence)
-        |> List.filterMap identity
-        |> List.foldl1 Occurrence.merge
-        |> Maybe.map (List.unique >> Occurrence.sort)
-
-
-{-| -}
-heading : { c | templates : Templates } -> Segment -> Maybe String
-heading { templates } s =
-    case ( s.body, getTemplate .body s templates ) of
-        ( _, Just (Content (Just str) _) ) ->
-            Just str
-
-        ( CustomContent (Just str), Nothing ) ->
-            Just str
-
-        _ ->
-            Nothing
-
-
-
----- View and helpers ----
-
-
-{-| In contrast to `view`, we can persist Segment Actions as well as insertions into the Accordion when editing
--}
-edit :
-    { zone : Maybe ( String, Time.Zone )
-    , do : String -> Action -> msg
-    , delete : msg
-    , rename : String -> msg
-    , insert : Direction -> msg
-    , templates : Templates
-    , context : Tree.Split Segment
-    , now : Time.Posix
-    }
-    -> ViewMode
-    -> Segment
-    -> Ui msg
-edit { zone, do, insert, delete, rename, templates, context, now } ({ position } as mode) s =
-    let
-        intend =
-            do s.id
-
-        ( overlay, propertySheet ) =
-            let
-                overlaidButton dir hint_ symbol =
-                    Html.button [ onClick (insert dir), title hint_ ] [ Html.span [] [ Html.text symbol ] ]
-
-                overlaidDeleteButton =
-                    Html.details [ class "deleteSegment fly-orientation" ]
-                        [ Html.summary [] [ Html.span [] [ Html.text "" ] ]
-                        , Html.div [ class "ui flying right-aligned bottom-aligned" ]
-                            [ Ui.toggleButton { front = [ Html.span [] [ Html.text "Cut" ] ], title = "Cut this segment" } False Nothing
-                            , Ui.toggleButton { front = [ Html.span [] [ Html.text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
-                            , Ui.toggleButton { front = [ Html.span [] [ Html.text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
-                            , Ui.toggleButton { front = [ Html.span [] [ Html.text "Delete" ] ], title = "Delete this segment" } False (Just delete)
-                            ]
-                        ]
-
-                template =
-                    { body = getTemplate .body s templates
-                    , info = getTemplate .info s templates
-                    }
-
-                maybeNot whatNot whatThen =
-                    case whatNot of
-                        Nothing ->
-                            Just whatThen
-
-                        _ ->
-                            Nothing
-            in
-            case position.role of
-                Focus ->
-                    let
-                        activeOption =
-                            case ( template.body, s.body ) of
-                                ( Just _, _ ) ->
-                                    "Preset"
-
-                                ( _, custom ) ->
-                                    bodyTypeToString custom
-
-                        options =
-                            [ ( bodyTypeToString CustomIllustration, intend (WithBody CustomIllustration) )
-                            , ( bodyTypeToString (CustomContent Nothing), intend (WithBody (CustomContent Nothing)) )
-                            , ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) )
-                            ]
-                                |> Zipper.create
-                                    ( bodyTypeToString PeekThrough, intend (WithBody PeekThrough) )
-                                    []
-                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
-                                |> Zipper.map
-                                    (\( str, msg ) ->
-                                        ( { front = [ Html.text str ], title = "Select a Body type for this Segment" }
-                                        , maybeNot template.body msg
-                                        )
-                                    )
-                    in
-                    ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                      , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
-                      , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
-                      , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
-                      ]
-                    , Html.fieldset [ class "ui" ]
-                        [ Html.legend [ class "fill-h" ]
-                            [ Ui.textInput "The Unique ID of this segment" s.id (Just <| \newName -> rename newName), Ui.distanceHolder, overlaidDeleteButton ]
-                        , Ui.pick options
-                        ]
-                    )
-
-                Parent ->
-                    let
-                        activeOption =
-                            case ( template.info, s.info ) of
-                                ( Just _, _ ) ->
-                                    "Preset"
-
-                                ( _, custom ) ->
-                                    infoTypeToString custom
-
-                        options =
-                            [ ( infoTypeToString (Just (CustomByline 1)), intend (WithInfo <| Just (CustomByline 1)) )
-                            , ( infoTypeToString (Just (CustomByline 2)), intend (WithInfo <| Just (CustomByline 2)) )
-                            ]
-                                |> Zipper.create
-                                    ( infoTypeToString Nothing, intend (WithInfo Nothing) )
-                                    [ ( infoTypeToString (Just CustomToc), intend (WithInfo (Just CustomToc)) ) ]
-                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
-                                |> Zipper.map
-                                    (\( str, msg ) ->
-                                        ( { front = [ Html.text str ], title = "Select a Byline if needed" }
-                                        , maybeNot template.info msg
-                                        )
-                                    )
-
-                        originalCaption =
-                            s.caption
-                    in
-                    ( []
-                    , Html.fieldset [ class "ui" ]
-                        [ Html.legend [ class "editCaption" ]
-                            [ Ui.textInput "Caption" s.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
-                            , Ui.singlePickOrNot s.caption.showsDate
-                                ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
-                                , Just (intend (WithCaption { originalCaption | showsDate = not s.caption.showsDate }))
-                                )
-                            ]
-                        , Ui.pick options
-                        , Fab.edit { zone = zone, save = WithFab >> intend } s.fab
-                        ]
-                    )
-
-                _ ->
-                    ( [], Ui.none )
-
-        ui =
-            Ui.fromEmpty <| \e -> { e | control = propertySheet }
-    in
-    view_ { zone = zone, templates = templates, context = context, now = now } ui overlay mode s
-
-
-{-| -}
-view :
-    { c | zone : Maybe ( String, Time.Zone ), templates : Templates, context : Tree.Split Segment, now : Time.Posix }
-    -> ViewMode
-    -> Segment
-    -> Ui msg
-view config =
-    view_ config (Ui.fromEmpty identity) []
-
-
-view_ :
-    { c | templates : Templates, context : Tree.Split Segment, zone : Maybe ( String, Time.Zone ), now : Time.Posix }
-    -> Ui msg
-    -> List (Html msg)
-    -> ViewMode
-    -> Segment
-    -> Ui msg
-view_ ({ templates } as config) ui overlays mode s =
-    let
-        hideBecauseVeryFarAway =
-            case mode.position.role of
-                Aisle ->
-                    if List.length mode.position.path > 5 then
-                        True
-
-                    else
-                        False
-
-                _ ->
-                    False
-
-        viewFab =
-            fab config
-                |> Maybe.map2 Tuple.pair config.zone
-                |> Maybe.map
-                    (\( zone, f ) ->
-                        case mode.position.role of
-                            Parent ->
-                                Fab.view { zone = zone } f
-                                    |> Html.map never
-
-                            _ ->
-                                Ui.none
-                    )
-                |> Maybe.withDefault Ui.none
-
-        template =
-            { body = getTemplate .body s templates
-            , info = getTemplate .info s templates
-            }
-
-        viewCaption cc =
-            let
-                oneEntry =
-                    header "" s.id cc.text
-
-                twoEntries =
-                    Maybe.map2
-                        (\o ( _, z ) ->
-                            Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
-                                [ oneEntry
-                                , Occurrence.view (Occurrence.Short z Occurrence.Days) o |> htmlHeader "" s.id
-                                ]
-                        )
-                        (occ config)
-                        config.zone
-                        |> Maybe.withDefault oneEntry
-            in
-            if cc.showsDate then
-                twoEntries
-
-            else
-                oneEntry
-
-        viewPeekLink =
-            let
-                previewOccurrences =
-                    Maybe.map2
-                        (\o ( _, z ) ->
-                            Occurrence.view (Occurrence.AsList z Occurrence.Days) o
-                        )
-                        (occ config)
-                        config.zone
-                        |> Maybe.withDefault Ui.none
-            in
-            case mode.region of
-                ViewMode.Peek c ->
-                    Html.a [ class "peekLink", href c.targetId, title c.hint ]
-                        [ Html.h2 [] [ Html.text c.hint ]
-                        , previewOccurrences
-                        , previewOccurrences
-                        ]
-
-                _ ->
-                    Ui.none
-
-        --List.map (header "" s.id) cc |> Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
-        viewBody body =
-            let
-                bodyIsVisible =
-                    (||) (isIllustration { templates = templates } s) <|
-                        case mode.position.role of
-                            Focus ->
-                                True
-
-                            Parent ->
-                                True
-
-                            Breadcrumb ->
-                                True
-
-                            Aisle ->
-                                True
-
-                            _ ->
-                                False
-            in
-            (if bodyIsVisible then
-                [ Tuple.pair "heading" <|
-                    case heading config s of
-                        Nothing ->
-                            Html.text ""
-
-                        Just h ->
-                            Html.a [ href (Layout.sanitise s.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
-                , Tuple.pair "content" <|
-                    case ( template.body, body ) of
-                        ( Just (Content _ c), _ ) ->
-                            c
-
-                        ( Just (Illustration i), _ ) ->
-                            i
-
-                        ( Nothing, PeekThrough ) ->
-                            Html.text ""
-
-                        ( Nothing, CustomIllustration ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
-
-                        ( Nothing, CustomContent _ ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ s.id) ] []
-                ]
-
-             else
-                []
-            )
-                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", isIllustration config s ) ] ]
-
-        ( viewByline, bylineHeight ) =
-            case ( template.info, s.info, mode.position.role ) of
-                ( Just Toc, _, Parent ) ->
-                    toc config
-
-                ( Just (Byline l b), _, Parent ) ->
-                    ( b, l )
-
-                ( Nothing, Just CustomToc, Parent ) ->
-                    toc config
-
-                ( Nothing, Just (CustomByline _), Parent ) ->
-                    ( Html.text "Todo: Load Custom Byline from Database", 1 )
-
-                _ ->
-                    ( Html.text "", 0 )
-
-        additionalAttributes =
-            s.additionalClasses
-                |> List.map Attributes.class
-
-        ownWidthAsVars =
-            (case width s of
-                Columns c ->
-                    ( c, 0 )
-
-                Screen ->
-                    ( 0, 1 )
-            )
-                |> (\( col, scr ) ->
-                        List.map Layout.toProperty
-                            [ ( "ownColumns"
-                              , col
-                              )
-                            , ( "ownScreens"
-                              , scr
-                              )
-                            , ( "ownHeaders"
-                              , hasBody config s |> ifElse 1 0
-                              )
-                            , ( "ownInfoLines"
-                              , bylineHeight
-                              )
-                            ]
-                   )
-    in
-    if hideBecauseVeryFarAway then
-        List.indexedMap (\i -> Html.map never >> Tuple.pair (String.fromInt i))
-            [ s.caption |> viewCaption
-            , Html.div [ class "body waiting" ] []
-            ]
-            |> Keyed.node "li"
-                (id s.id
-                    :: ViewMode.toClass mode
-                    :: class (orientationToString (orientation s))
-                    :: class (bodyTypeToString s.body)
-                    :: structureClass config s
-                    :: ViewMode.toCssVariables mode
-                    :: css ownWidthAsVars
-                    :: additionalAttributes
-                )
-            |> Tuple.pair s.id
-            |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
-
-    else
-        List.map (Html.map never)
-            [ s.caption |> viewCaption |> Ui.notIf (hasBody config s && mode.position.isLeaf && not mode.position.isRoot)
-            , s.body |> viewBody
-            , viewPeekLink
-            , viewByline
-            , orientation s |> orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
-            , mode.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
-            ]
-            ++ overlays
-            ++ [ viewFab ]
-            |> List.indexedMap (String.fromInt >> Tuple.pair)
-            |> Keyed.node "li"
-                (id s.id
-                    :: ViewMode.toClass mode
-                    :: class (orientationToString (orientation s))
-                    :: class (bodyTypeToString s.body)
-                    :: structureClass config s
-                    :: ViewMode.toCssVariables mode
-                    :: css ownWidthAsVars
-                    :: additionalAttributes
-                )
-            |> Tuple.pair s.id
-            |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
-            |> Ui.with ui
-
-
 
 ---- Deconstruct
 
@@ -958,32 +440,6 @@ isIllustration { templates } s =
 
         _ ->
             False
-
-
-{-| -}
-infoLineCount : { c | context : Tree.Split Segment, templates : Templates } -> ViewMode -> Segment -> Int
-infoLineCount config mode =
-    byline config mode >> Tuple.second
-
-
-{-| -}
-byline : { c | context : Tree.Split Segment, templates : Templates } -> ViewMode -> Segment -> ( Html Never, Int )
-byline config mode s =
-    case ( getTemplate .info s config.templates, s.info, mode.position.role ) of
-        ( Just Toc, _, Parent ) ->
-            toc config
-
-        ( Just (Byline l b), _, Parent ) ->
-            ( b, l )
-
-        ( Nothing, Just CustomToc, Parent ) ->
-            toc config
-
-        ( Nothing, Just (CustomByline _), Parent ) ->
-            ( Html.text "Todo: Load Custom Byline from Database", 1 )
-
-        _ ->
-            ( Html.text "", 0 )
 
 
 

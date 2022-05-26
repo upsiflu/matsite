@@ -1,9 +1,8 @@
 module Snippets.Lab exposing (..)
 
 import Css exposing (..)
-import Date
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr exposing (css)
+import Html.Styled.Attributes as Attr
 import Occurrence exposing (Occurrence)
 import Time exposing (Month(..))
 

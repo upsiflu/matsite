@@ -3,9 +3,9 @@ module Snippets.Traces exposing (..)
 import Accordion.Segment as Segment
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
-import Layout
 
 
+foldernumber : String
 foldernumber =
     "1MVHUG1PAKUmlCqeGuJSZQ0gMZV7Kb3hS"
 

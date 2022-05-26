@@ -51,9 +51,8 @@ module Fold exposing
 
 -}
 
-import Codec exposing (Codec, bool, field, float, int, maybeField, string, variant0, variant1, variant2)
-import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Encode as Encode
+import Codec exposing (Codec)
+import Json.Decode exposing (Decoder, Value)
 
 
 {-| The generic type for folding any recursive structure

@@ -1,9 +1,9 @@
 module Snippets.Festival exposing (..)
 
-import Accordion.Segment as Segment exposing (Segment)
+import Accordion.Segment as Segment exposing (BodyTemplate, Segment)
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr exposing (css)
+import Html.Styled.Attributes as Attr
 import Ui exposing (cacheImg)
 
 
@@ -21,6 +21,7 @@ festivals =
     []
 
 
+tidalShifts : BodyTemplate
 tidalShifts =
     div
         [ Attr.class "richtext"
@@ -34,6 +35,7 @@ tidalShifts =
         |> Segment.Content (Just "Moving across Thresholds:")
 
 
+description : BodyTemplate
 description =
     div
         [ Attr.class "richtext"
@@ -49,11 +51,13 @@ description =
         |> Segment.Content (Just "Moving across Thresholds:")
 
 
+collage : BodyTemplate
 collage =
     cacheImg "Moving across Thresholds at Radialsystem (Berlin) - Collage: Judith Förster" 2 "" "https://lh4.googleusercontent.com/bDLi5oDfqgi5fEySAi4NJxsjxYSRsf80RQswbdtbAVacYQy-CBQ_7KiR6bq5xKrL7c4lAjVDjzGosYsvIcCIyYnOd0ZVBZEtkkcJAyNHTcmxPp7MCEW5SF8sMqr0ci0RdN9AZbWqbnK_DxMmsA"
         |> Segment.Illustration
 
 
+video : BodyTemplate
 video =
     div [ Attr.class "bleeding" ]
         [ div
@@ -88,11 +92,12 @@ video =
         |> Segment.Illustration
 
 
+genericIllustration : BodyTemplate
 genericIllustration =
     cacheImg "Festival (Illustration)" 2 "" "https://imgproxy.berlinonline.net/20OIHVWW_l8G4pdLCKj4_WO_cH6k6LtXAf6kHvbhxzM/pr:gallery/q:70/cb:2022032507/aHR0cHM6Ly9wb3B1bGEtbWlkZGxld2FyZS5zMy5hbWF6b25hd3MuY29tL2JvLW1pZGRsZXdhcmUvYm8uYmRlX2NoYW5uZWwuZXZlbnQvaW1hZ2VzLzk1L2U5ODJkZTE1LTNkZDUtZGIzNi1mNTVmLTNlOWNkMTc5ZDIxOS5qcGc.jpg"
         |> Segment.Illustration
 
 
 view : Festival -> List Segment
-view festival =
+view _ =
     []

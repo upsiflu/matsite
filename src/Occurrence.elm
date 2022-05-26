@@ -52,11 +52,9 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, title, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Iso8601
-import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import List.Extra as List
 import String.Extra as String
-import Time exposing (Month(..), Posix, Zone)
+import Time exposing (Month(..), Zone)
 
 
 {-| An event has a single Occurrence which may comprise Occasions of varying precision.

@@ -3,7 +3,6 @@ module Snippets.Video exposing (..)
 import Accordion.Segment as Segment
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
-import Layout
 
 
 vimeoVideo : Int -> Html msg

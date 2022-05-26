@@ -28,7 +28,7 @@ module Zipper.Tree exposing
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , deleteIfPossible
+    , breadcrumbs, deleteIfPossible, toDict
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -192,6 +192,13 @@ path =
                     (.focus s.present)
                     (List.map .focus s.future)
            )
+
+
+{-| Items in the past
+-}
+breadcrumbs : Tree a -> List a
+breadcrumbs ( _, past ) =
+    List.map .focus past
 
 
 {-| creates a Tree without past
@@ -607,49 +614,6 @@ mapfold fu =
     , left = []
     , right = []
     }
-
-
-type alias Positionality =
-    { isLeaf : Bool, isRoot : Bool }
-
-
-{-| -}
-positionalMapfold : (Positionality -> a -> b) -> Foldr {} a (List (Branch (Positionality -> b))) (MixedZipper (Positionality -> b) (Branch (Positionality -> b))) (Zipper (Branch (Positionality -> b))) (List (MixedZipper (Positionality -> b) (Branch (Positionality -> b)))) (Branch (Positionality -> b)) (Tree (Positionality -> b))
-positionalMapfold fu =
-    { consAisle = (::) --: b -> aisle -> aisle
-    , join = \a l r -> MixedZipper.create (\inherited -> fu inherited a) l r -- a -> aisle -> aisle -> z
-    , joinBranch = Zipper.create -- : b -> aisle -> aisle -> zB
-    , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch =
-        --: a -> trunk -> b
-        \a trunk ->
-            if trunk == [] then
-                Branch.create (\inherited -> fu { inherited | isLeaf = True } a) trunk
-
-            else
-                Branch.create (\inherited -> fu inherited a) trunk
-    , mergeTree = create -- : z -> trunk -> result
-    , leaf = []
-    , left = []
-    , right = []
-    }
-
-
-{-| -}
-type Marked a
-    = Focused a
-    | Blurred a
-
-
-{-| -}
-switch : Marked a -> Marked a
-switch m =
-    case m of
-        Focused a ->
-            Blurred a
-
-        Blurred a ->
-            Focused a
 
 
 {-| -}

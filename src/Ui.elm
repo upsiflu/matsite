@@ -5,13 +5,11 @@ module Ui exposing (..)
 
 import Bool.Extra as Bool exposing (ifElse)
 import Css exposing (..)
-import Html.Styled as Html exposing (Attribute, Html, details, div, fieldset, input, label, section, span, summary, text)
+import Html.Styled as Html exposing (Attribute, Html, details, div, input, label, span, summary)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick, onInput)
-import Html.Styled.Keyed as Keyed
 import Occurrence exposing (Occurrence)
 import Zipper exposing (Zipper)
-import Zipper.Mixed as MixedZipper exposing (MixedZipper)
 
 
 {-| consists of several `Item`s that are somewhat orthogonal to each other.
@@ -141,10 +139,12 @@ view (Ui items) =
 ---- Conditional Views
 
 
+isDebugging : Bool
 isDebugging =
     False
 
 
+debugOnly : Html msg -> Html msg
 debugOnly =
     notIf (not isDebugging)
 

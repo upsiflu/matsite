@@ -3,7 +3,7 @@ module Accordion.Segment.Fab exposing
     , codec
     , merge
     , view, edit
-    , beginning, default, isActive, occurrence
+    , andUpcoming, beginning, default, isActive, isUpcoming, nextBeginning, occurrence
     )
 
 {-| Functionality of a Floating Action Button (Google terminology)
@@ -24,12 +24,12 @@ that manages its own data and can be queried but is stateless
 
 -}
 
-import Codec exposing (Codec, bool, field, float, int, maybeField, string, variant0, variant1, variant2)
+import Codec exposing (Codec, string)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (onInput)
-import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Encode as Encode
+import List.Extra as List
+import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
 import Time
 import Ui
@@ -130,7 +130,7 @@ stringToFabType str =
 
 
 {-| -}
-edit : { a | zone : Maybe ( String, Time.Zone ), save : Maybe Fab -> msg } -> Maybe Fab -> Html msg
+edit : { a | zone : ( String, Time.Zone ), save : Maybe Fab -> msg } -> Maybe Fab -> Html msg
 edit { zone, save } maybeFab =
     let
         editor =
@@ -140,12 +140,7 @@ edit { zone, save } maybeFab =
 
                 Just (Register r) ->
                     [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value r.link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
-                    , case zone of
-                        Nothing ->
-                            Html.text "Determining local time zone..."
-
-                        Just z ->
-                            Occurrence.edit { zone = z, save = \o -> Register { r | occurrence = o } |> Just |> save } r.occurrence
+                    , Occurrence.edit { zone = zone, save = \o -> Register { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
 
                 Just (Subscribe { link }) ->
@@ -218,7 +213,37 @@ isActive { now } =
         >> Maybe.withDefault True
 
 
-{-| -}
+{-| This is True if:
+any occasion starts now or later
+-}
+isUpcoming : { c | now : Time.Posix } -> Fab -> Bool
+isUpcoming { now } =
+    occurrence
+        >> Maybe.unwrap False (List.any (.from >> Time.posixToMillis >> (<=) (Time.posixToMillis now)))
+
+
+{-| filter: any occasion starts now or later
+-}
+andUpcoming : { c | now : Time.Posix } -> Maybe Fab -> Maybe Fab
+andUpcoming =
+    isUpcoming
+        >> Maybe.filter
+
+
+{-| Milliseconds at which the next-upcoming occasion starts
+-}
+nextBeginning : { c | now : Time.Posix } -> Fab -> Maybe Int
+nextBeginning { now } =
+    occurrence
+        >> Maybe.andThen
+            (List.filterMap (.from >> Time.posixToMillis >> Just >> Maybe.filter ((<=) (Time.posixToMillis now)))
+                >> List.minimum
+            )
+
+
+{-| earliest time another occasion starts
+-}
 beginning : Fab -> Maybe Time.Posix
 beginning =
-    occurrence >> Maybe.andThen Occurrence.beginning
+    occurrence
+        >> Maybe.andThen Occurrence.beginning

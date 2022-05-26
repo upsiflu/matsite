@@ -3,7 +3,7 @@ module Data exposing (addTemplates, initial, initialActions, initialIntents, ini
 import Accordion exposing (Accordion, Action(..))
 import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
 import Accordion.Segment.Fab as Fab
-import Accordion.Segment.ViewMode as ViewSegment
+import Accordion.Segment.ViewModel as ViewSegment
 import Dict
 import Fold exposing (Direction(..), Role(..))
 import Layout
@@ -116,16 +116,16 @@ initialActions timezone =
                             (WithShape
                                 (Oriented Horizontal
                                     (if wide then
-                                        ViewSegment.Columns 2
+                                        Segment.Columns 2
 
                                      else
-                                        ViewSegment.Columns 1
+                                        Segment.Columns 1
                                     )
                                 )
                             )
                         , Go Right
                         , Name name
-                        , Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                        , Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
                         , Modify (WithClasses [ "fg" ])
                         ]
                     )
@@ -162,19 +162,19 @@ initialActions timezone =
                 :: registerTwoDays 23 Apr 2022 1
                 :: Go Down
                 :: Name "Info"
-                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
                 :: Go Right
                 :: Name "Collage"
-                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
                 :: Go Right
                 :: Name "Description"
-                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
                 :: Go Right
                 :: Name "Video"
-                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 2)))
+                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 2)))
                 :: Go Right
                 :: Name "Credits"
-                :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
                 :: Go Left
                 :: Go Left
                 :: Go Up
@@ -229,26 +229,26 @@ initialActions timezone =
         :: Name "Traces"
         :: Go Down
         :: Name "Collective Docs"
-        :: Modify (WithShape (Oriented Vertical ViewSegment.Screen))
+        :: Modify (WithShape (Oriented Vertical Segment.Screen))
         :: Go Up
         :: Go Right
         :: Name "Videos"
         :: Go Down
         :: Name "Video Channel"
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Right
         :: Name "Trailers"
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 3)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 3)))
         :: Go Left
         :: Go Up
         :: Go Right
         :: Name "Library"
         :: Go Down
         :: Name "Incipit"
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Right
         :: Name "Archive"
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 3)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 3)))
         :: Go Up
         :: Go Right
         :: Name "About"
@@ -256,15 +256,15 @@ initialActions timezone =
         :: Go Down
         :: Name "Contact"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Right
         :: Name "About MaT"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Right
         :: Name "Team"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (ViewSegment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Left
         :: Go Up
         :: Go Left
