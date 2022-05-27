@@ -738,6 +738,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
                         [ Html.div [ class "stretch-h" ]
                             [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Segments" } False (Just (volatile EditingToggled))
                             ]
+                            |> Ui.notIf True
                         ]
 
                 _ ->
@@ -862,7 +863,8 @@ view ({ zone, now, do, volatile } as mode) accordion =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
             , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
-            , ( "logMenu", viewLog )
+
+            --, ( "logMenu", viewLog )
             ]
 
         propertySheet : Ui msg
