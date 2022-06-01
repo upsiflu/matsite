@@ -10,8 +10,8 @@ vimeoVideo number =
     div [ attribute "style" "padding:56.25% 0 0 0;position:relative;" ]
         [ iframe
             [ attribute "allow" "autoplay; fullscreen; picture-in-picture"
-            , attribute "dnt" "true"
-            , attribute "controls" "false"
+            , attribute "dnt" "True"
+            , attribute "controls" "False"
             , attribute "allowfullscreen" ""
             , attribute "frameborder" "0"
             , src <| "https://player.vimeo.com/video/" ++ String.fromInt number ++ "?h=39fbc4dbc1&color=70f0a0&title=0&byline=0&portrait=0&dnt=1"
@@ -23,20 +23,25 @@ vimeoVideo number =
 
 trailers : Segment.BodyTemplate
 trailers =
+    let
+        makeTrailer =
+            \( h, number ) ->
+                li [] [ vimeoVideo number, h2 [] [ text h ] ]
+
+        hVideo =
+            714389952
+    in
     article []
-        [ [ ( "Series 1", 510475030 )
+        [ makeTrailer ( "Trailer", 688293718 )
+        , [ ( "Series 1", 510475030 )
           , ( "Series 2", 544616520 )
           , ( "Series 3", 572540457 )
-          , ( "Look Back", 0 )
-          , ( "Look Forward", 688293718 )
+          , ( "Radialsystem", 685421693 )
           ]
-            |> List.map
-                (\( h, number ) ->
-                    li [] [ vimeoVideo number, h2 [] [ text h ] ]
-                )
+            |> List.map makeTrailer
             |> ul [ class "video-carousel" ]
         ]
-        |> Segment.Content (Just "Trailers")
+        |> Segment.Content (Just "Trailer")
 
 
 videochannel : Segment.BodyTemplate

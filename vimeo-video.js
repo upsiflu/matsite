@@ -20,7 +20,7 @@ customElements.define(
       var lnk = clientHeight > clientWidth ? vVideo : hVideo;
 
       /**/
-      var htmlt = `<iframe id="intro-player" src="https://player.vimeo.com/video/${lnk}&amp;badge=0&amp;background=True&amp;autopause=0&amp;player_id=0&amp;app_id=58479" width="${clientWidth}" height="${clientHeight}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title=""></iframe>`;
+      var htmlt = `<iframe id="intro-player" background=True autoplay=True byline=False title=False dnt=True loop=True src="https://player.vimeo.com/video/${lnk}&amp;badge=0&amp;background=True&amp;byline=False&amp;dnt=True&amp;autoplay=True&amp;loop=True&amp;title=False&amp;autopause=0&amp;player_id=0&amp;app_id=58479" width="${clientWidth}" height="${clientHeight}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title=""></iframe>`;
 
       this.innerHTML = htmlt;
     }
