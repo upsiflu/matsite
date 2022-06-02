@@ -3,6 +3,8 @@ module Snippets.Video exposing (..)
 import Accordion.Segment as Segment
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
+import Layout
+import Ui
 
 
 vimeoVideo : Int -> Html msg
@@ -26,13 +28,26 @@ trailers =
     let
         makeTrailer =
             \( h, number ) ->
-                li [] [ vimeoVideo number, h2 [] [ text h ] ]
+                li []
+                    [ vimeoVideo number
+                    , h2 []
+                        [ text h
+                        , text " "
+                        , a [ href (Layout.sanitise h) ]
+                            [ if h /= "" then
+                                text "More..."
+
+                              else
+                                Ui.none
+                            ]
+                        ]
+                    ]
 
         hVideo =
             714389952
     in
     article []
-        [ makeTrailer ( "Trailer", 688293718 )
+        [ makeTrailer ( "", 688293718 )
         , [ ( "Series 1", 510475030 )
           , ( "Series 2", 544616520 )
           , ( "Series 3", 572540457 )

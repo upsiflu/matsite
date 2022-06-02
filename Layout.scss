@@ -467,7 +467,53 @@ svg {
 
 
 ul.overflow,
-ul.Accordion {
+ul.Accordion,
+ul:not(.body ul) {
     padding-inline-start: 0;
     list-style-type: none;
+}
+
+
+
+
+//--------
+
+.Accordion.focusIsBackground.focusIsRoot .A {
+    animation: scrollIn 2s ease-out 2s;
+    animation-delay: calc(5s - 0.2s * var(--units));
+    top: calc(var(--units) * var(--unit) + 90vh);
+}
+
+
+@keyframes scrollIn {
+    0% {
+        transform: translateX(calc(-300px * var(--units) - 800px));
+        top: calc(var(--units) * var(--unit) + 10vh);
+
+    }
+
+
+    20% {
+        transform: translateX(0px);
+        top: calc(var(--units) * var(--unit) + 20vh);
+    }
+
+    60% {
+        transform: translateX(calc(1px * var(--units)));
+        top: calc(var(--units) * var(--unit) * 1.02 + 20vh);
+    }
+
+
+    100% {
+        transform: translateX(calc(16px * var(--units)));
+        top: calc(var(--units) * var(--unit) + 90vh);
+    }
+}
+
+
+//----
+
+
+#Trailers li:first-child {
+    max-width: calc(2 * var(--column));
 }
