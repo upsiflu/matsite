@@ -156,7 +156,11 @@ Siegmar Zacharias collaborates with humans and uncontrollable materials, such as
 Facilitated by choreographer/dancer Renae Shadler and anthropologist Susanne Schmitt, this event will focus on Bennett’s 2010 book VIBRANT MATTER where she proposes a philosophy that ties the universe together not through an omniscient god, but by the very material stuff that makes up every thing, substance, place, and person in the world. Together, we will read an excerpt of the text and explore movement propositions that shift the focus from the human experience of things to the things themselves, emphasizing the active participation of nonhuman forces present.""") "Gather-town + bUm, Kreuzberg" "Facilitator: Renae Shadler; Creative Companion: Susanne Schmitt" Nothing (Just <| Image 2 "https://lh4.googleusercontent.com/VhOAuWZhdvGKJOh8n1zQjrl9Ct7ss_7Z7pYROGkU7D1lGXJLE9NJa1BmpOSZyonKS-gAJKrESPjsOzeBqylNTWqhfggGCjLCh1Z2UQGItgsmigvgRJzD2y2e3vm3XnB9MbFEANVVBX6x8XVP5g")
         , Event 26 May 22 "Slow Transitions" (Just """Slow Transitions is a gathering facilitated by Natal Igor Dobkin that investigates the temporality of slowness as a method for change. The gathering will explore ‘mythical’ linear movements and how they can become radical when done in slow motion, such as with gender transitions, aging and even the process of committing to a relationship.
 Natal Igor Dobkin, based both in Berlin and Tel aviv, is a performance artist, teacher, and adjunct professor in the department of gender studies at Ben Gurion University. He/They teach a performance-art course at 'The Garage' for students facing mental health challenges and regularly facilitates independent workshops in Tel Aviv that deal with the performer’s identity in sexual contexts and the stage world.""") "Gather-town + bUm, Kreuzberg" "Natal Igor Dobkin" Nothing (Just <| Image 2 "https://lh3.googleusercontent.com/c3-fWmyLIwcgbX6FXCAO_9KGeufPxFxU_vWZSRnYuGHURU1fmrF_ov6F_uxmjzRJj7oHcL2VZX5BiG4PQmgIORAsvx3iu3Ud7euiG5PQ2_kytc1W6GUUXtbTHwVodHNCI30j5ZRzi0yFC5UWww")
-        , Event 9 Jun 22 "t.b.a. (Queering #3)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
+        , Event 9 Jun 22 "Power of Gentleness" (Just """This gathering will be centered around ‘Power of Gentleness: Meditations on the Risk of Living’ by Anne Dufourmantelle. The text proposes an expansive view of gentleness, inviting us to notice it where we did not notice it before, and to appreciate it as power when it occurs. Dufourmantelle challenges the idea of gentleness as a capitalist byproduct to ‘sweeten’ a transaction, and instead positions it together with notions of power, sensory experience and connection.
+Co-facilitated by choreographer/dancer Renae Shadler and objects that are silky, soft, smooth in texture or delicate in nature, this MaT lab continues our research into the thick relationality between the human and non-human. Can we further our understanding of gentleness through a coexistence with objects that hold these qualities?
+Can we move our thoughts as though they are tangible materials? Embracing the ease in movement, smooth transitions, graceful beginnings and soft touch.
+🌀🌀🌀
+""") "Gather-town + bUm, Kreuzberg" "Facilitator: Renae Shadler; Creative Companion: Susanne Schmitt" Nothing (Just <| Image 2 "https://lh4.googleusercontent.com/40KgYRksGUCkGBpx2Qe2GaM5i9viPDs4ozpl3ScL0DsZHgl3d5z6rzbmeZeoS2Vps0qGe14ChDybtg021YPFPsE-1SOtZo_eMAB_dqVT7P88Hm8ea1wPe-ovue91Bvau3M3uQaDYZZFL98W1TQ")
         , Event 23 Jun 22 "t.b.a. (Queering #4)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
         , Event 7 Jul 22 "t.b.a. (Queering #5)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
         , Event 21 Jul 22 "t.b.a. (Queering #6)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
@@ -261,7 +265,7 @@ structure timezone =
                             |> List.intersperse [ Go Right ]
                             |> List.concat
                        )
-                    ++ [ Go Left, Go Left, Go Left, Go Left, Go Left, Go Up ]
+                    ++ [ Go Left, Go Left, Go Left, Go Up ]
             )
         |> List.intersperse [ Go Right ]
         |> List.concat

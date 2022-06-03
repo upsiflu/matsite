@@ -248,7 +248,7 @@ initialActions timezone =
         :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
         :: Go Right
         :: Name "Archive"
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 3)))
+        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 2)))
         :: Go Up
         :: Go Right
         :: Name "About"
