@@ -183,10 +183,19 @@ view : { a | zone : ( String, Time.Zone ) } -> Fab -> Html Never
 view { zone } fab =
     case fab of
         Register r ->
-            Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [] [ Html.text "Register" ] ]
+            Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
 
         Subscribe { link } ->
-            Html.a [ class "subscribe fab", target "_blank", href link, title "Receive our e-newsletter!" ] [ Html.span [] [ Html.text "Subscribe" ] ]
+            Html.details
+                [ class "subscribe fab" ]
+                [ Html.summary [ title "Receive our e-newsletter!" ] [ Html.span [ class "title" ] [ Html.text "Subscribe" ] ]
+                , Html.div [ class "subscribe display" ]
+                    [ Html.h2 []
+                        [ Html.text "Send an e-Mail with the subject line 'subscribe' to:"
+                        ]
+                    , Html.node "copy-text" [] []
+                    ]
+                ]
 
 
 {-| where Nothing means something like eternal

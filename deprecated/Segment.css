@@ -417,7 +417,10 @@ iframe.traces {
 .P > .fab:hover {
   transform: scale(1.1);
 }
-.P > .fab > span {
+.fab > details > summary {
+  list-style-type: none !important;
+}
+.P > .fab span.title {
   line-height: 1ex;
   font-family: "subaruheavy";
   font-weight: 800;

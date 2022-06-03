@@ -418,4 +418,39 @@ ul:not(.body ul) {
 }
 #Trailers li:first-child {
   max-width: calc(2 * var(--column));
+}
+
+.subscribe.display {
+  background: #4F8;
+  padding: 1.5rem 0;
+  position: absolute;
+  top: 2rem;
+  z-index: 2;
+  border-radius: 2rem 0;
+  right: 0;
+}
+.subscribe.display > h2 {
+  color: black;
+}
+.subscribe.display > span {
+  padding: 0 1.25rem;
+}
+.subscribe.display #mailTeam {
+  padding: 0 1.25rem;
+  background: white;
+  font-weight: bold;
+  font-size: 1.25em;
+}
+
+.fab summary {
+  list-style: none !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 11;
+}
+.fab summary > span.title {
+  display: block;
+  width: 100%;
+  text-align: center;
 }/*# sourceMappingURL=Layout.css.map */

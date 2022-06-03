@@ -2,6 +2,7 @@ import { Elm } from "./src/Main.elm";
 import {} from "./append-log";
 import {} from "./closest-aisle";
 import {} from "./vimeo-video";
+import {} from "./copy-text";
 
 var app = Elm.Main.init({
   node: document.getElementById("app"),
