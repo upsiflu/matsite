@@ -18,11 +18,8 @@ customElements.define(
 
       var lnk = clientHeight > clientWidth ? vVideo : hVideo;
 
-      /**/
-      var htmlt = `<iframe id="intro-player" autoplay=1 loop=1 background=1 autoplay=1 byline=False title=False dnt=True loop=1 src="https://player.vimeo.com/video/${lnk}&amp;badge=0&amp;background=True&amp;byline=False&amp;dnt=True&amp;autoplay=True&amp;loop=True&amp;title=False&amp;autopause=0&amp;player_id=0&amp;app_id=58479" width="${clientWidth}" height="${clientHeight}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title=""></iframe>`;
-
       var htmlt2 = `<iframe  id="vi-banner-video"
-       src="https://player.vimeo.com/video/${lnk}&autoplay=1&portrait=0&loop=1&color=70f0a0&title=0&byline=0&dnt=1" 
+       src="https://player.vimeo.com/video/${lnk}&autoplay=0&portrait=0&loop=1&color=70f0a0&title=0&byline=0&dnt=1" 
         width="${clientWidth}" height="${clientHeight}" frameborder="0" 
         allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
 
