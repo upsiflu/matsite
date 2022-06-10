@@ -1,7 +1,9 @@
 module Accordion exposing
     ( Accordion
+    , History, historyCodec
+    , Intent, intentCodec
     , create
-    , exit, mapTemplates
+    , exit, reviseHistory, mapTemplates
     , Msg, update
     , Action(..), actionCodec
     , goToId, goToParentId
@@ -9,7 +11,6 @@ module Accordion exposing
     , isRoot
     , closestId
     , view
-    , History, Intent, historyCodec, intentCodec, reviseHistory
     )
 
 {-|
@@ -23,6 +24,9 @@ module Accordion exposing
 
 @docs Accordion
 
+@docs History, historyCodec
+@docs Intent, intentCodec
+
 
 # Create
 
@@ -31,7 +35,7 @@ module Accordion exposing
 
 # Modify
 
-@docs exit, mapTemplates
+@docs exit, reviseHistory, mapTemplates
 
 
 # Update
@@ -46,7 +50,7 @@ module Accordion exposing
 
 # Navigate
 
-@docs find, goToId, goToParentId
+@docs goToId, goToParentId
 
 
 # Deconstruct
@@ -67,9 +71,9 @@ module Accordion exposing
 
 -}
 
-import Accordion.Segment as Segment exposing (Orientation(..), Segment, hasBody)
-import Accordion.Segment.Fab as Fab
-import Accordion.Segment.ViewModel as ViewSegment exposing (Region(..), ViewModel)
+import Accordion.Article as Article exposing (Article, Orientation(..), hasBody)
+import Accordion.Article.Fab as Fab
+import Accordion.Article.ViewModel as ViewArticle exposing (Region(..), ViewModel)
 import Codec exposing (Codec, encoder, int, string, variant0, variant1)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -82,13 +86,11 @@ import Layout
 import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
-import Occurrence exposing (Occurrence)
-import String exposing (left)
+import String
 import Time
 import Ui exposing (Ui)
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
-import Zipper.Mixed as MixedZipper
 import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
 
 
@@ -104,7 +106,7 @@ type Accordion
 
 
 type alias Config =
-    { tree : Tree Segment, templates : Segment.Templates, syncing : Bool }
+    { tree : Tree Article, templates : Article.Templates, syncing : Bool }
 
 
 type alias LogConfig =
@@ -142,7 +144,7 @@ config accordion =
 
 
 {-| -}
-mapTemplates : (Segment.Templates -> Segment.Templates) -> Accordion -> Accordion
+mapTemplates : (Article.Templates -> Article.Templates) -> Accordion -> Accordion
 mapTemplates fu =
     mapConfig <| \c -> { c | templates = fu c.templates }
 
@@ -166,13 +168,6 @@ isRoot =
     config >> .tree >> Tree.isRoot
 
 
-{-| Go upmost
--}
-root : Accordion -> Accordion
-root =
-    mapTree Tree.root
-
-
 
 ---- A C T I O N S ----
 
@@ -181,7 +176,7 @@ root =
 -}
 type Action
     = Name String
-    | Modify Segment.Action
+    | Modify Article.Action
     | Go Direction
     | Insert Direction
     | Delete
@@ -213,7 +208,7 @@ actionCodec =
                     undo_ i
         )
         |> variant1 "Name" Name string
-        |> variant1 "Modify" Modify Segment.actionCodec
+        |> variant1 "Modify" Modify Article.actionCodec
         |> variant1 "Go" Go Fold.directionCodec
         |> variant1 "Insert" Insert Fold.directionCodec
         |> variant0 "Delete" Delete
@@ -221,19 +216,23 @@ actionCodec =
         |> Codec.buildCustom
 
 
+{-| -}
 type alias History =
     List Intent
 
 
+{-| -}
 historyCodec : Codec History
 historyCodec =
     Codec.list intentCodec
 
 
+{-| -}
 type alias Intent =
     { intentId : IntentId, location : Maybe String, action : Action }
 
 
+{-| -}
 intentCodec : Codec Intent
 intentCodec =
     Codec.object Intent
@@ -245,7 +244,7 @@ intentCodec =
 
 withoutHistory : Accordion -> Accordion
 withoutHistory =
-    mapConfig (\c -> { c | tree = Tree.singleton Segment.empty })
+    mapConfig (\c -> { c | tree = Tree.singleton Article.empty })
         >> mapLog (\l -> { l | history = [] })
 
 
@@ -268,11 +267,11 @@ injectHistory history accordion =
                 |> Maybe.withDefault acc
                 |> (case action of
                         Name caption ->
-                            Segment.singleton caption
-                                |> setSegment
+                            Article.singleton caption
+                                |> setArticle
 
                         Modify segmentAction ->
-                            Segment.apply segmentAction
+                            Article.apply segmentAction
                                 |> mapFocus
 
                         Go direction ->
@@ -307,9 +306,9 @@ reviseHistory history accordion =
 
 
 {-| -}
-create : Segment.Templates -> History -> Accordion
+create : Article.Templates -> History -> Accordion
 create templates history =
-    Log { viewingHistory = False, editing = False, history = history } { tree = Tree.singleton Segment.empty, templates = templates, syncing = False }
+    Log { viewingHistory = False, editing = False, history = history } { tree = Tree.singleton Article.empty, templates = templates, syncing = False }
         |> injectHistory history
 
 
@@ -453,7 +452,7 @@ goToClosestId id acc =
 
 go : Direction -> Accordion -> Accordion
 go direction =
-    Branch.singleton Segment.empty |> Tree.Insert |> Walk direction |> Tree.go |> mapTree
+    Branch.singleton Article.empty |> Tree.Insert |> Walk direction |> Tree.go |> mapTree
 
 
 
@@ -461,14 +460,14 @@ go direction =
 
 
 {-| -}
-mapTree : (Tree Segment -> Tree Segment) -> Accordion -> Accordion
+mapTree : (Tree Article -> Tree Article) -> Accordion -> Accordion
 mapTree fu =
     mapConfig <| \c -> { c | tree = fu c.tree }
 
 
 insertEmpty : Direction -> Accordion -> Accordion
 insertEmpty direction =
-    (Tree.insert direction Segment.empty |> mapTree) >> go direction >> setSegment Segment.empty
+    (Tree.insert direction Article.empty |> mapTree) >> go direction >> setArticle Article.empty
 
 
 delete : Accordion -> Accordion
@@ -478,8 +477,8 @@ delete =
 
 {-| The segment.id is made unique by appending an incrementing suffix if necessary
 -}
-setSegment : Segment -> Accordion -> Accordion
-setSegment segment accordion =
+setArticle : Article -> Accordion -> Accordion
+setArticle segment accordion =
     let
         id =
             segment.id
@@ -509,7 +508,7 @@ setSegment segment accordion =
     mapFocus (\_ -> { segment | id = uniqueId }) accordion
 
 
-mapFocus : (Segment -> Segment) -> Accordion -> Accordion
+mapFocus : (Article -> Article) -> Accordion -> Accordion
 mapFocus =
     Tree.mapFocus >> mapTree
 
@@ -561,7 +560,7 @@ focusId =
 
 {-| -}
 type Msg
-    = TemplatesUpdated (Segment.Templates -> Segment.Templates)
+    = TemplatesUpdated (Article.Templates -> Article.Templates)
     | LogToggled
     | EditingToggled
     | SyncingToggled
@@ -637,14 +636,14 @@ view ({ zone, now, do, volatile } as mode) accordion =
         atFocus =
             generateIntent (focusId accordion) >> do
 
-        breadcrumbs : String -> (() -> List Segment)
+        breadcrumbs : String -> (() -> List Article)
         breadcrumbs sid () =
             goToId sid accordion
                 |> config
                 |> .tree
                 |> Tree.breadcrumbs
 
-        branch : String -> (() -> Branch Segment)
+        branch : String -> (() -> Branch Article)
         branch sid () =
             goToId sid accordion
                 |> config
@@ -700,18 +699,18 @@ view ({ zone, now, do, volatile } as mode) accordion =
                         Ui.none
                 ]
 
-        viewSegment : ViewModel -> Ui msg
-        viewSegment =
+        viewArticle : ViewModel -> Ui msg
+        viewArticle =
             (case accordion of
                 Log { editing } _ ->
                     if editing then
-                        ViewSegment.edit
+                        ViewArticle.edit
 
                     else
-                        ViewSegment.view
+                        ViewArticle.view
 
                 _ ->
-                    ViewSegment.view
+                    ViewArticle.view
             )
                 { zone = zone
                 , now = now
@@ -736,7 +735,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
 
                     else
                         [ Html.div [ class "stretch-h" ]
-                            [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Segments" } False (Just (volatile EditingToggled))
+                            [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
                             ]
                             |> Ui.notIf True
                         ]
@@ -750,29 +749,26 @@ view ({ zone, now, do, volatile } as mode) accordion =
         classes : Html.Attribute msg
         classes =
             classList
-                [ ( "\u{1FA97}" ++ Segment.orientationToString (Segment.orientation (Tree.focus c.tree)), True )
-                , ( "aisleHasBody", List.any (Segment.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
-                , ( "focusHasBody", Segment.hasBody c (Tree.focus c.tree) )
+                [ ( "\u{1FA97}" ++ Article.orientationToString (Article.orientation (Tree.focus c.tree)), True )
+                , ( "aisleHasBody", List.any (Article.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
+                , ( "focusHasBody", Article.hasBody c (Tree.focus c.tree) )
                 , ( "focusIsRoot", Tree.isRoot c.tree )
-                , ( "focusIsBackground", Segment.isBackground (Tree.focus c.tree) )
+                , ( "focusIsBackground", Article.isBackground (Tree.focus c.tree) )
                 ]
 
         createRegions : C -> List ( Region, List A )
         createRegions { up, left, x, here, nest, y, right, down } =
             let
-                focusedSegment =
+                focusedArticle =
                     Tree.focus c.tree
 
                 focusedBranch =
                     Tree.focusedBranch c.tree
 
-                split =
-                    Tree.split c.tree
-
                 ---- PEEK ----
-                maybePeekTargetBranch : Maybe (Branch Segment)
+                maybePeekTargetBranch : Maybe (Branch Article)
                 maybePeekTargetBranch =
-                    if hasBody c focusedSegment then
+                    if hasBody c focusedArticle then
                         Nothing
 
                     else
@@ -786,11 +782,11 @@ view ({ zone, now, do, volatile } as mode) accordion =
                             |> Maybe.or (Just focusedBranch)
 
                 -- Find the closest illustration, among the nest, for a given branch of segments
-                peekTargetBranchToIllustration : Branch Segment -> Maybe Segment
+                peekTargetBranchToIllustration : Branch Article -> Maybe Article
                 peekTargetBranchToIllustration =
                     Branch.flat
                         >> List.filter (\a -> List.member a (List.map Tuple.second nest))
-                        >> List.find (Segment.isIllustration c)
+                        >> List.find (Article.isIllustration c)
 
                 ( peekConfig, peekList, cache ) =
                     case maybePeekTargetBranch of
@@ -811,8 +807,8 @@ view ({ zone, now, do, volatile } as mode) accordion =
                             )
 
                         Nothing ->
-                            ( ViewSegment.defaultPeekConfig
-                            , [ ( Fold.fataMorganaPosition, Segment.defaultIllustration ) ]
+                            ( ViewArticle.defaultPeekConfig
+                            , [ ( Fold.fataMorganaPosition, Article.defaultIllustration ) ]
                             , nest
                             )
             in
@@ -846,16 +842,16 @@ view ({ zone, now, do, volatile } as mode) accordion =
                             , branch = branch segment.id
                             }
                     in
-                    ( ViewSegment.addWidth c model (Segment.hasBody c segment) (Segment.width segment) offset
-                    , viewSegment model :: newList
+                    ( ViewArticle.addWidth c model (Article.hasBody c segment) (Article.width segment) offset
+                    , viewArticle model :: newList
                     )
                 )
-                ( ViewSegment.zeroOffset, [] )
+                ( ViewArticle.zeroOffset, [] )
                 list
-                |> (\( totalOffset, renderedSegments ) ->
-                        ViewSegment.offsetToCssVariables totalOffset
-                            |> List.map (Tuple.mapFirst ((++) (ViewSegment.regionToString region ++ "-")) >> Var)
-                            |> (++) (List.map Item renderedSegments)
+                |> (\( totalOffset, renderedArticles ) ->
+                        ViewArticle.offsetToCssVariables totalOffset
+                            |> List.map (Tuple.mapFirst ((++) (ViewArticle.regionToString region ++ "-")) >> Var)
+                            |> (++) (List.map Item renderedArticles)
                    )
 
         overlays : List ( String, Html msg )
@@ -863,9 +859,13 @@ view ({ zone, now, do, volatile } as mode) accordion =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
             , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
-
-            --, ( "logMenu", viewLog )
             ]
+                ++ (if False then
+                        [ ( "logMenu", viewLog ) ]
+
+                    else
+                        []
+                   )
 
         propertySheet : Ui msg
         propertySheet =
@@ -874,8 +874,8 @@ view ({ zone, now, do, volatile } as mode) accordion =
                     { e
                         | control =
                             Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
-                                (volatile (TemplatesUpdated Segment.toggleTemplates))
-                                (Segment.templatesAreOn (accordion |> config |> .templates))
+                                (volatile (TemplatesUpdated Article.toggleTemplates))
+                                (Article.templatesAreOn (accordion |> config |> .templates))
                     }
 
         renderAccordion : List (Renderable msg) -> Ui msg
@@ -922,7 +922,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
 
 
 type alias A =
-    ( Position, Segment )
+    ( Position, Article )
 
 
 type alias B =
@@ -946,7 +946,7 @@ renderBranch =
     in
     { init =
         \(( position, segment ) as here) ->
-            { orientation = Segment.orientation segment, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
+            { orientation = Article.orientation segment, role = position.role, here = here, nest = [], left = [], right = [], down = [] }
     , grow =
         { downwards =
             \a b ->
@@ -1002,7 +1002,7 @@ renderTree =
     , grow =
         { upwards =
             \(( _, segment ) as a) c ->
-                case Segment.orientation segment of
+                case Article.orientation segment of
                     Horizontal ->
                         { c | left = c.left ++ [ a ] }
 

@@ -1,9 +1,8 @@
 module Snippets.Series exposing (..)
 
 import Accordion exposing (Action(..))
-import Accordion.Segment as Segment exposing (InfoTemplate(..), Orientation(..), Shape(..))
-import Accordion.Segment.Fab as Fab
-import Accordion.Segment.ViewModel as ViewSegment
+import Accordion.Article as Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
+import Accordion.Article.Fab as Fab
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -32,7 +31,7 @@ collageColumns c =
             cc
 
 
-collageToIllustration : Event -> List ( String, Segment.BodyTemplate )
+collageToIllustration : Event -> List ( String, Article.BodyTemplate )
 collageToIllustration event =
     let
         coll =
@@ -48,7 +47,7 @@ collageToIllustration event =
                     )
                 |> Maybe.map
                     (\illustration ->
-                        Segment.Illustration (div [] [ illustration ])
+                        Article.Illustration (div [] [ illustration ])
                             |> Tuple.pair (event.title ++ " (Collage)")
                     )
 
@@ -57,7 +56,7 @@ collageToIllustration event =
                 |> Maybe.map
                     (\d ->
                         p [] [ text d ]
-                            |> Segment.Content Nothing
+                            |> Article.Content Nothing
                             |> Tuple.pair (event.title ++ " (Description)")
                     )
     in
@@ -177,7 +176,7 @@ Can we move our thoughts as though they are tangible materials? Embracing the ea
     ]
 
 
-presets : Time.Zone -> List ( String, Segment.BodyTemplate )
+presets : Time.Zone -> List ( String, Article.BodyTemplate )
 presets timezone =
     data
         |> List.concatMap
@@ -193,7 +192,7 @@ presets timezone =
                         , Maybe.map (\c -> text (" (" ++ c ++ ")")) event.country |> Maybe.withDefault Ui.none
                         ]
                     ]
-                    |> Segment.Content (Just event.title)
+                    |> Article.Content (Just event.title)
                     |> Tuple.pair (event.title ++ "-")
                 )
                     :: collageToIllustration event
@@ -206,7 +205,7 @@ eventDate timezone event =
         |> Occurrence.withDurationMinutes 90
 
 
-presetInfos : List ( String, Segment.InfoTemplate )
+presetInfos : List ( String, Article.InfoTemplate )
 presetInfos =
     data
         |> List.map
@@ -227,19 +226,19 @@ structure timezone =
         |> List.map
             (\series ->
                 Name ("Series " ++ String.fromInt series.number)
-                    :: Modify (Segment.WithShape (Oriented Horizontal (Segment.Columns 1)))
+                    :: Modify (Article.WithShape (Oriented Horizontal (Article.Columns 1)))
                     :: Go Down
                     :: (List.map
                             (\event ->
                                 let
                                     addFab =
-                                        Modify <| Segment.WithFab (Just <| Fab.Register { link = eventbriteLink, occurrence = eventDate timezone event })
+                                        Modify <| Article.WithFab (Just <| Fab.Register { link = eventbriteLink, occurrence = eventDate timezone event })
                                 in
                                 [ Name event.title
                                 , addFab
                                 , Go Down
                                 , Name (event.title ++ "-")
-                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns 1))
+                                , Modify <| Article.WithShape (Oriented Horizontal (Article.Columns 1))
                                 ]
                                     ++ (case event.collage of
                                             Nothing ->
@@ -248,17 +247,17 @@ structure timezone =
                                             Just c ->
                                                 [ Go Left
                                                 , Name (event.title ++ " (Collage)")
-                                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns (collageColumns c)))
+                                                , Modify <| Article.WithShape (Oriented Horizontal (Article.Columns (collageColumns c)))
                                                 , Go Right
                                                 , Go Right
                                                 , Name (event.title ++ " (Description)")
                                                 , addFab
-                                                , Modify <| Segment.WithShape (Oriented Horizontal (Segment.Columns 1))
+                                                , Modify <| Article.WithShape (Oriented Horizontal (Article.Columns 1))
                                                 , Go Left
                                                 ]
                                        )
                                     ++ [ Go Up
-                                       , Modify <| Segment.WithCaption { text = event.title, showsDate = True }
+                                       , Modify <| Article.WithCaption { text = event.title, showsDate = True }
                                        ]
                             )
                             series.events

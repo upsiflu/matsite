@@ -1,13 +1,13 @@
 module Snippets.Anarchive exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (class, css, href, src, title)
 
 
 {-| -}
-anarchive : Segment.BodyTemplate
+anarchive : Article.BodyTemplate
 anarchive =
     Html.iframe
         [ Attr.attribute "width" "100%"
@@ -17,11 +17,11 @@ anarchive =
         , title "Moving Across Thresholds - Library"
         ]
         []
-        |> Segment.Content Nothing
+        |> Article.Content Nothing
 
 
 {-| -}
-incipit : Segment.BodyTemplate
+incipit : Article.BodyTemplate
 incipit =
     Html.div
         [ class "richtext"
@@ -32,4 +32,4 @@ incipit =
         , p []
             [ text "--", a [ href "/balam-kenter" ] [ text "Balam Kenter" ] ]
         ]
-        |> Segment.Illustration
+        |> Article.Illustration

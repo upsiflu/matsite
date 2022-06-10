@@ -5,6 +5,7 @@ module Zipper.Mixed exposing
     , left, right
     , leftmost, rightmost
     , map, mapFocus, mapPeriphery, mapEach
+    , concatMap
     , deleteFocus
     , growLeft, growRight
     , prepend, append
@@ -19,7 +20,6 @@ module Zipper.Mixed exposing
     , Fold, fold, defold
     , Foldl, foldl, defoldl
     , Foldr, foldr, defoldr
-    , concatMap
     )
 
 {-| A Zipper that requires a reversible function for navigations
@@ -42,6 +42,7 @@ Note: This zipper wraps over the edges by default. If you want to implement a di
 # Map
 
 @docs map, mapFocus, mapPeriphery, mapEach
+@docs concatMap
 
 
 # Shrink and Grow

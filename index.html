@@ -1,58 +1,59 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Main</title>
+    <script type="module" src="index.js"></script>
+    <script src="main.js"></script>
+    <link href="index.css" rel="stylesheet" />
+    <link href="deprecated/Article.css" rel="stylesheet" />
+    <link href="Layout.css" rel="stylesheet" />
+    <link rel="preload" href="fonts.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="preload" href="ui.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link href="ui.css" rel="stylesheet" />
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon" />
+  </head>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Main</title>
-	<script type="module" src="index.js"></script>
-	<script src="main.js"></script>
-	<link href="index.css" rel="stylesheet">
-	<link href="deprecated/Segment.css" rel="stylesheet">
-	<link href="Layout.css" rel="stylesheet">
-	<link rel="preload" href="fonts.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-	<link rel="preload" href="ui.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-	<link href="ui.css" rel="stylesheet">
-	<link rel="icon" href="static/favicon.ico" type="image/x-icon">
-</head>
+  <body>
+    <div id="app"></div>
+    <script>
+      history.scrollRestoration = "manual";
+      center = () =>
+        document
+          .getElementsByClassName("hereBackground")[0]
+          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 
-<body>
-	<div id="app"></div>
-	<script>
-		history.scrollRestoration = "manual"
-		center = () =>
-			document.getElementsByClassName("hereBackground")[0]?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      focus = () =>
+        document
+          .getElementsByClassName("F")[0]
+          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 
-		focus = () =>
-			document.getElementsByClassName("F")[0]?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      screen = () =>
+        document
+          .getElementsByClassName("screenBackground")[0]
+          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 
-		screen = () =>
-			document.getElementsByClassName("screenBackground")[0]?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-		
+      makeIntroVideoPlay = () => {
+        var iframe = document.getElementById("intro-player");
+        var player = new Vimeo.Player(iframe);
 
-		
-		makeIntroVideoPlay = () => {
-			var iframe = document.getElementById('intro-player');
-			var player = new Vimeo.Player(iframe);
+        console.log(player);
 
-			console.log(player);
+        iframe.onClick = function () {
+          player.play();
+        };
 
-			iframe.onClick = function () {
-				player.play();
-			}
+        player.on("play", function () {
+          console.log("Played the video");
+        });
 
-
-			player.on('play', function () {
-				console.log('Played the video');
-			});
-
-			player.getVideoTitle().then(function (title) {
-				console.log('title:', title);
-			});
-		}
-		setTimeout(makeIntroVideoPlay, 800);
-	</script>
-	<script src="https://player.vimeo.com/api/player.js"></script>
-</body>
-
+        player.getVideoTitle().then(function (title) {
+          console.log("title:", title);
+        });
+      };
+      setTimeout(makeIntroVideoPlay, 800);
+    </script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+  </body>
 </html>

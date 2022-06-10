@@ -1,27 +1,19 @@
-module Accordion.Segment.ViewModel exposing
-    ( Region(..)
+module Accordion.Article.ViewModel exposing
+    ( ViewModel
+    , Region(..)
     , regionToString
     , addWidth, Offset, cumulativeOffset
     , offsetToCssVariables, zeroOffset
+    , fab, occ
     , path
     , toCssVariables
-    , toClass
-    , ViewModel, defaultPeekConfig, edit, fab, occ, view
+    , view, edit, toClass
+    , defaultPeekConfig
     )
 
-{-| reflects a Segment's momentary position within the Tree
-and provides View-related functions
+{-| Display Data as a Article within an `Accordion`.
 
-![Accordion Structure](../asset/22-03-17-Accordion.svg)
-
-
-# Create
-
-@docs defaultPeek
-
----
-
-@docs ViewMode
+@docs ViewModel
 
 ---
 
@@ -31,24 +23,30 @@ and provides View-related functions
 
 ### Width
 
-@docs Width, addWidth, widthToString, Offset, cumulativeOffset
+@docs addWidth, Offset, cumulativeOffset
 @docs offsetToCssVariables, zeroOffset
 
 
 # Deconstruct
 
+@docs fab, occ
 @docs path
 @docs toCssVariables
 
 
 # View
 
-@docs toClass
+@docs view, edit, toClass
+
+
+# Helpers
+
+@docs defaultPeekConfig
 
 -}
 
-import Accordion.Segment as Segment exposing (Action(..), BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Segment, Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
-import Accordion.Segment.Fab as Fab exposing (Fab)
+import Accordion.Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
+import Accordion.Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -68,7 +66,7 @@ import Zipper.Branch as Branch exposing (Branch)
 
 {-|
 
-    The ViewModel encodes a Segment's momentary state for viewing:
+    The ViewModel encodes a Article's momentary state for viewing:
     - logical position (in relation to the enclosing Structure)
     - visual position (in relation to the screen)
     - persistent data
@@ -82,11 +80,11 @@ type alias ViewModel =
     , offset : Offset
 
     ---- Data
-    , segment : Segment
+    , segment : Article
 
     ---- Lazy Neighbors
-    , breadcrumbs : () -> List Segment
-    , branch : () -> Branch Segment
+    , breadcrumbs : () -> List Article
+    , branch : () -> Branch Article
     }
 
 
@@ -151,7 +149,7 @@ regionToString region =
             "cache"
 
 
-{-| encode the cumulative shift from the origin in a series of Segments
+{-| encode the cumulative shift from the origin in a series of Articles
 -}
 type alias Offset =
     { screens : Int, columns : Int, units : Int, headers : Int, infoLines : Int }
@@ -191,7 +189,7 @@ isParent =
 
 
 {-| -}
-addWidth : { c | templates : Segment.Templates } -> ViewModel -> Bool -> Width -> Offset -> Offset
+addWidth : { c | templates : Article.Templates } -> ViewModel -> Bool -> Width -> Offset -> Offset
 addWidth config model isExpanded width acc =
     let
         respectInfoLines : Bool
@@ -320,7 +318,7 @@ In a future version of the algorithm, we my want to produce a details/summary th
 For now, we have a suboptimal solution.
 
 -}
-toc : { c | templates : Segment.Templates } -> ViewModel -> Maybe ( Html Never, Int )
+toc : { c | templates : Article.Templates } -> ViewModel -> Maybe ( Html Never, Int )
 toc config { branch, position } =
     if position.role == Parent then
         branch ()
@@ -350,7 +348,7 @@ toc config { branch, position } =
 
 
 {-| -}
-heading : { c | templates : Templates } -> Segment -> Maybe String
+heading : { c | templates : Templates } -> Article -> Maybe String
 heading { templates } s =
     case ( s.body, getTemplate .body s templates ) of
         ( _, Just (Content (Just str) _) ) ->
@@ -388,7 +386,7 @@ byline ({ templates } as config) model =
             ( Html.text "", 0 )
 
 
-{-| In contrast to `view`, we can persist Segment Actions as well as insertions into the Accordion when editing
+{-| In contrast to `view`, we can persist Article Actions as well as insertions into the Accordion when editing
 -}
 edit :
     { zone : ( String, Time.Zone )
@@ -412,7 +410,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                     button [ onClick (insert dir), title hint_ ] [ span [] [ text symbol ] ]
 
                 overlaidDeleteButton =
-                    details [ class "deleteSegment fly-orientation" ]
+                    details [ class "deleteArticle fly-orientation" ]
                         [ summary [] [ Html.span [] [ Html.text "" ] ]
                         , div [ class "ui flying right-aligned bottom-aligned" ]
                             [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
@@ -457,7 +455,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                                 |> Zipper.findClosest (Tuple.first >> (==) activeOption)
                                 |> Zipper.map
                                     (\( str, msg ) ->
-                                        ( { front = [ Html.text str ], title = "Select a Body type for this Segment" }
+                                        ( { front = [ Html.text str ], title = "Select a Body type for this Article" }
                                         , maybeNot template.body msg
                                         )
                                     )
@@ -597,7 +595,7 @@ view_ ({ zone, templates } as config) ui overlays model =
         viewBody body =
             let
                 bodyIsVisible =
-                    Segment.isIllustration { templates = templates } model.segment
+                    Article.isIllustration { templates = templates } model.segment
                         || model.position.role
                         == Focus
                         || model.position.role
@@ -636,7 +634,7 @@ view_ ({ zone, templates } as config) ui overlays model =
              else
                 []
             )
-                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", Segment.isIllustration config model.segment ) ] ]
+                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", Article.isIllustration config model.segment ) ] ]
 
         ( viewByline, bylineHeight ) =
             byline config model
@@ -646,7 +644,7 @@ view_ ({ zone, templates } as config) ui overlays model =
                 |> List.map class
 
         ownWidthAsVars =
-            (case Segment.width model.segment of
+            (case Article.width model.segment of
                 Columns c ->
                     ( c, 0 )
 
@@ -662,7 +660,7 @@ view_ ({ zone, templates } as config) ui overlays model =
                               , scr
                               )
                             , ( "ownHeaders"
-                              , Segment.hasBody config model.segment |> ifElse 1 0
+                              , Article.hasBody config model.segment |> ifElse 1 0
                               )
                             , ( "ownInfoLines"
                               , bylineHeight
@@ -678,9 +676,9 @@ view_ ({ zone, templates } as config) ui overlays model =
             |> Keyed.node "li"
                 (id model.segment.id
                     :: toClass model
-                    :: class (Segment.orientationToString (Segment.orientation model.segment))
+                    :: class (Article.orientationToString (Article.orientation model.segment))
                     :: class (bodyTypeToString model.segment.body)
-                    :: Segment.structureClass config model.segment
+                    :: Article.structureClass config model.segment
                     :: toCssVariables model
                     :: css ownWidthAsVars
                     :: additionalAttributes
@@ -690,11 +688,11 @@ view_ ({ zone, templates } as config) ui overlays model =
 
     else
         List.map (Html.map never)
-            [ model.segment.caption |> viewCaption |> Ui.notIf (Segment.hasBody config model.segment && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
+            [ model.segment.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.segment && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
             , model.segment.body |> viewBody
             , viewPeekLink
             , viewByline
-            , Segment.orientation model.segment |> Segment.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
+            , Article.orientation model.segment |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
             , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
             ]
             ++ overlays
@@ -703,9 +701,9 @@ view_ ({ zone, templates } as config) ui overlays model =
             |> Keyed.node "li"
                 (id model.segment.id
                     :: toClass model
-                    :: class (Segment.orientationToString (Segment.orientation model.segment))
+                    :: class (Article.orientationToString (Article.orientation model.segment))
                     :: class (bodyTypeToString model.segment.body)
-                    :: Segment.structureClass config model.segment
+                    :: Article.structureClass config model.segment
                     :: toCssVariables model
                     :: css ownWidthAsVars
                     :: additionalAttributes

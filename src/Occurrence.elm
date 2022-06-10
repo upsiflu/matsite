@@ -1,12 +1,13 @@
 module Occurrence exposing
     ( Occurrence
     , codec
+    , Precision(..)
     , moment
-    , withDurationDays, withDurationMinutes
+    , withDurationDays, withDurationMinutes, sort
     , merge
     , bounds
-    , ViewMode(..), view
-    , Precision(..), beginning, edit, sort, toString
+    , beginning
+    , ViewMode(..), view, edit, toString
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -18,6 +19,8 @@ improved humaneness.
 @docs Occurrence
 @docs codec
 
+@docs Precision
+
 
 # Create
 
@@ -26,7 +29,7 @@ improved humaneness.
 
 # Modify
 
-@docs withDurationDays, withDurationMinutes
+@docs withDurationDays, withDurationMinutes, sort
 
 
 # Combine
@@ -37,11 +40,12 @@ improved humaneness.
 # Deconstruct
 
 @docs bounds
+@docs beginning
 
 
 # View
 
-@docs ViewMode, view
+@docs ViewMode, view, edit, toString
 
 -}
 
@@ -126,6 +130,7 @@ posixCodec =
     Codec.map Time.millisToPosix Time.posixToMillis Codec.int
 
 
+{-| -}
 type Precision
     = Years
     | Days
@@ -153,6 +158,7 @@ localToGlobal zone local =
         |> Time.millisToPosix
 
 
+{-| -}
 toString : ( String, Zone ) -> Precision -> Occurrence -> String
 toString ( zoneDesc, zone ) precision =
     List.map (occasionToString zone precision)
@@ -160,6 +166,8 @@ toString ( zoneDesc, zone ) precision =
         >> (\str -> str ++ " (in your current timezone, " ++ zoneDesc ++ ")")
 
 
+{-| Beginning time of the first occurrence
+-}
 beginning : Occurrence -> Maybe Time.Posix
 beginning =
     List.head >> Maybe.map .from
@@ -480,6 +488,8 @@ addDefaultOccasion occurrence =
             List.reverse (oneWeekLater latest :: latest :: earlier)
 
 
+{-| TODO: fix "when database has accepted input, it overwrites the value -> fast typing impossible"
+-}
 edit : { zone : ( String, Time.Zone ), save : Occurrence -> msg } -> Occurrence -> Html msg
 edit { zone, save } occurrence =
     let
@@ -553,6 +563,8 @@ edit { zone, save } occurrence =
         |> (\list -> Html.div [ class "dates" ] (list :: additionalOccasion))
 
 
+{-| by beginning time
+-}
 sort : Occurrence -> Occurrence
 sort =
     List.sortBy (.from >> Time.posixToMillis)

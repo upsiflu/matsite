@@ -1,26 +1,29 @@
-module Accordion.Segment exposing
-    ( Segment
+module Accordion.Article exposing
+    ( Article
     , defaultIllustration
     , empty, singleton
     , Action(..)
     , actionCodec
     , apply
     , Orientation(..), Shape(..)
+    , BodyChoice(..), InfoChoice(..), Width(..)
     , initialTemplates
     , Templates, BodyTemplate(..), InfoTemplate(..)
+    , toggleTemplates
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
-    , BodyChoice(..), InfoChoice(..), Width(..), bodyTypeToString, getTemplate, infoTypeToString, structureClass, templatesAreOn, toggleTemplates
+    , bodyTypeToString, infoTypeToString
+    , structureClass
+    , templatesAreOn
+    , getTemplate
     )
 
-{-| contain the immutable site content
-
-_To render (view|edit) Segments, use
-[`Segment.Viewmodel`](Accordion.Segment.ViewModel)_
+{-| _To render (view|edit) Articles, use
+[`Article.Viewmodel`](Accordion.Article.ViewModel)_
 
   - `ViewModel` adds classes based on the position in the tree AND on the screen
-  - `Segment` adds classes based on the intended config, independent from the position
+  - `Article` adds classes based on the intended config, independent from the position
 
-@docs Segment
+@docs Article
 
 
 # Create
@@ -39,6 +42,7 @@ _To render (view|edit) Segments, use
 ## Field types
 
 @docs Orientation, Shape
+@docs BodyChoice, InfoChoice, Width
 
 
 ## Template types
@@ -47,27 +51,35 @@ _To render (view|edit) Segments, use
 @docs Templates, BodyTemplate, InfoTemplate
 
 
+# Modify
+
+@docs toggleTemplates
+
+
 # Deconstruct
 
 @docs hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
-@docs infoLineCount
+
+@docs bodyTypeToString, infoTypeToString
+
+@docs structureClass
+
+@docs templatesAreOn
 
 
-# View
+# Query
 
-@docs view, edit
+@docs getTemplate
 
 -}
 
-import Accordion.Segment.Fab as Fab exposing (Fab(..))
-import Bool.Extra as Bool exposing (ifElse)
+import Accordion.Article.Fab as Fab exposing (Fab(..))
 import Codec exposing (Codec, bool, field, string)
 import Css exposing (..)
 import Dict exposing (Dict)
 import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes as Attributes exposing (..)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (..)
 import Layout exposing (..)
 import List.Extra as List
 import Maybe.Extra as Maybe
@@ -75,7 +87,7 @@ import Maybe.Extra as Maybe
 
 {-| only contains user-editable properties
 -}
-type alias Segment =
+type alias Article =
     { id : String
     , caption : { text : String, showsDate : Bool }
     , info : Maybe InfoChoice
@@ -197,7 +209,7 @@ orientationCodec =
 
 
 {-| -}
-width : Segment -> Width
+width : Article -> Width
 width s =
     case s.shape of
         Background ->
@@ -205,17 +217,6 @@ width s =
 
         Oriented _ w ->
             w
-
-
-{-| -}
-widthToString : Width -> String
-widthToString w =
-    case w of
-        Columns c ->
-            String.fromInt c ++ "-column"
-
-        Screen ->
-            "screen"
 
 
 {-| option "Preset" is grayed out if templates.info==Nothing
@@ -247,6 +248,7 @@ type InfoTemplate
     | Toc
 
 
+{-| -}
 type BodyChoice
     = PeekThrough
     | CustomContent Heading
@@ -281,7 +283,7 @@ type BodyTemplate
 
 {-| akin to update, but with serializable `Action` instead of `Msg`
 -}
-apply : Action -> Segment -> Segment
+apply : Action -> Article -> Article
 apply a s =
     case a of
         WithCaption c ->
@@ -310,7 +312,9 @@ type alias Templates =
     { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
 
 
-getTemplate : (Templates -> Dict String ( Bool, v )) -> Segment -> Templates -> Maybe v
+{-| returns a corresponding template if it's activated
+-}
+getTemplate : (Templates -> Dict String ( Bool, v )) -> Article -> Templates -> Maybe v
 getTemplate selector s =
     selector
         >> Dict.get s.id
@@ -336,7 +340,7 @@ initialTemplates =
 
 
 {-| -}
-orientation : Segment -> Orientation
+orientation : Article -> Orientation
 orientation s =
     case s.shape of
         Oriented o _ ->
@@ -347,7 +351,7 @@ orientation s =
 
 
 {-| -}
-isBackground : Segment -> Bool
+isBackground : Article -> Bool
 isBackground s =
     case s.shape of
         Background ->
@@ -364,7 +368,7 @@ type Orientation
 
 
 {-| -}
-singleton : String -> Segment
+singleton : String -> Article
 singleton caption =
     { empty
         | caption = { text = caption, showsDate = False }
@@ -373,7 +377,7 @@ singleton caption =
 
 
 {-| -}
-empty : Segment
+empty : Article
 empty =
     { id = ""
     , caption = { text = "", showsDate = False }
@@ -386,14 +390,14 @@ empty =
 
 
 {-| -}
-defaultIllustration : Segment
+defaultIllustration : Article
 defaultIllustration =
     { empty | id = "defaultIllustration", body = CustomIllustration }
 
 
 {-| Title for peeks and images. May be extended later to include A11y captions.
 -}
-hint : Segment -> String
+hint : Article -> String
 hint s =
     s.caption.text
         ++ (if s.caption.showsDate then
@@ -409,13 +413,13 @@ hint s =
 
 
 {-| -}
-structureClass : { c | templates : Templates } -> Segment -> Html.Attribute msg
+structureClass : { c | templates : Templates } -> Article -> Html.Attribute msg
 structureClass config s =
     classList [ ( "noCaption", s.caption.text == "" ), ( "hasBody", hasBody config s ) ]
 
 
 {-| -}
-hasBody : { c | templates : Templates } -> Segment -> Bool
+hasBody : { c | templates : Templates } -> Article -> Bool
 hasBody { templates } s =
     case ( s.body, getTemplate .body s templates ) of
         ( _, Just _ ) ->
@@ -429,7 +433,7 @@ hasBody { templates } s =
 
 
 {-| -}
-isIllustration : { c | templates : Templates } -> Segment -> Bool
+isIllustration : { c | templates : Templates } -> Article -> Bool
 isIllustration { templates } s =
     case ( s.body, getTemplate .body s templates ) of
         ( _, Just (Illustration _) ) ->
@@ -505,6 +509,7 @@ infoTypeToString info =
             String.fromInt n
 
 
+{-| -}
 toggleTemplates : Templates -> Templates
 toggleTemplates t =
     { body = Dict.map (\_ ( b, x ) -> ( not b, x )) t.body
@@ -512,6 +517,7 @@ toggleTemplates t =
     }
 
 
+{-| -}
 templatesAreOn : Templates -> Maybe Bool
 templatesAreOn =
     .body

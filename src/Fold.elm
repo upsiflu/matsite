@@ -2,7 +2,7 @@ module Fold exposing
     ( Fold
     , Foldr
     , Direction(..)
-    , decodeDirection, encodeDirection
+    , directionCodec
     , directionFromString, directionToString
     , directionsToRole
     , Position
@@ -10,7 +10,6 @@ module Fold exposing
     , positionToString
     , fataMorganaPosition
     , list
-    , directionCodec
     )
 
 {-| Folding over (nonempty) Lists and Zippers
@@ -23,7 +22,7 @@ module Fold exposing
 # Directions
 
 @docs Direction
-@docs decodeDirection, encodeDirection
+@docs directionCodec
 
 ---
 

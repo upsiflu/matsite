@@ -1,6 +1,6 @@
 module Snippets.Video exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Layout
@@ -23,7 +23,7 @@ vimeoVideo number =
         ]
 
 
-trailers : Segment.BodyTemplate
+trailers : Article.BodyTemplate
 trailers =
     let
         makeTrailer =
@@ -56,10 +56,10 @@ trailers =
             |> List.map makeTrailer
             |> ul [ class "video-carousel" ]
         ]
-        |> Segment.Content (Just "Trailer")
+        |> Article.Content (Just "Trailer")
 
 
-videochannel : Segment.BodyTemplate
+videochannel : Article.BodyTemplate
 videochannel =
     article []
         [ [ 514927927
@@ -80,4 +80,4 @@ videochannel =
                 )
             |> ul [ class "video-carousel dense" ]
         ]
-        |> Segment.Content Nothing
+        |> Article.Content Nothing

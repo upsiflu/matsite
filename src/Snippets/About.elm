@@ -1,13 +1,13 @@
 module Snippets.About exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Layout
 import Ui exposing (cacheImg)
 
 
-mat : Segment.BodyTemplate
+mat : Article.BodyTemplate
 mat =
     [ "(MaT) is an ongoing experience-based knowledge lab that combines movement, philosophy and inclusion. Together, we ask how we can perceive thresholds and lower them to encourage greater participation and active co-creation. 'Threshold' is a term that describes a barrier and the act of crossing it. It encompasses physical access requirements, language barriers and even the psychological threshold sometimes caused by the need to introduce oneself at the beginning of an event."
     , "The series is curated and often facilitated by choreographer Renae Shadler, with guests joining throughout the program. The lab is shaped by Renae’s research into choreographic thinking, embodied learning and attuning to more-than human worlds. "
@@ -38,10 +38,10 @@ mat =
                        ]
            )
         |> article []
-        |> Segment.Content (Just "Moving across Thresholds")
+        |> Article.Content (Just "Moving across Thresholds")
 
 
-team : Segment.BodyTemplate
+team : Article.BodyTemplate
 team =
     article []
         [ cacheImg "Team" 1 "" "https://lh5.googleusercontent.com/DDQ5JPLeAEEx8DraEuc3NzLWq-u3CQl8alu-doc4KUBoBT6BizoBy3Cjs9RgJEoroC5-nH_cmI7VocfbgsmZaM5Y9GKhhizMb70OPpnSGk6IdbfxoFspHaq3_qPEa4T0c1V9YEZTrFpgp7DOHQ"
@@ -60,10 +60,10 @@ team =
                 )
             |> ul []
         ]
-        |> Segment.Content (Just "Team")
+        |> Article.Content (Just "Team")
 
 
-contact : Segment.BodyTemplate
+contact : Article.BodyTemplate
 contact =
     article []
         [ cacheImg "Contact us" 1 "" "https://lh4.googleusercontent.com/Ds7cG-YcQPjFBkp5sKJv4wc6etScO-vQlpiHV9g4mmeWmKZZ8TntqJSciF9AzhooKkItlr3utsravVz4sKRS-d-LCpOV1INuWoiYq0AECHHD-mCqBNpnjoAig2RCo4SnN1YGzjyUlfJb8QQQRg"
@@ -81,4 +81,4 @@ contact =
             [ text "To join our e-newsletter, send an email with 'Subscribe' in the subject to movingacrossthresholds@gmail.com"
             ]
         ]
-        |> Segment.Content (Just "Contact")
+        |> Article.Content (Just "Contact")

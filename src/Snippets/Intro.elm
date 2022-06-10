@@ -1,11 +1,11 @@
 module Snippets.Intro exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 
 
-intro : Segment.BodyTemplate
+intro : Article.BodyTemplate
 intro =
     div [ attribute "class" "intro" ]
         [ node "vimeo-video" [] []
@@ -25,4 +25,4 @@ intro =
            ]
         -}
         ]
-        |> Segment.Illustration
+        |> Article.Illustration

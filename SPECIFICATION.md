@@ -1,8 +1,8 @@
 **Specification of the interactivity and layout**
 
-- [Segments](#segments)
-  - [Layout of a Segment](#layout-of-a-segment)
-  - [Interactivity of a Segment](#interactivity-of-a-segment)
+- [Articles](#segments)
+  - [Layout of a Article](#layout-of-a-segment)
+  - [Interactivity of a Article](#interactivity-of-a-segment)
 - [Accordion](#accordion)
   - [Url](#url)
   - [Layout of the Accordion](#layout-of-the-accordion)
@@ -13,17 +13,17 @@
 
 ---
 
-# Segments
+# Articles
 
-A Segment consists of a unique **id**, an optional **caption**, and an optional **body**. It also has an **orientation** (vertical or horizontal). Adjacent segments should have the same orientation, but this is not enforced by the data model. Segments do not change through navigation, only through editing. Their data is stored as indexed by their id.
+A Article consists of a unique **id**, an optional **caption**, and an optional **body**. It also has an **orientation** (vertical or horizontal). Adjacent segments should have the same orientation, but this is not enforced by the data model. Articles do not change through navigation, only through editing. Their data is stored as indexed by their id.
 
-## Layout of a Segment
+## Layout of a Article
 
-The `ViewMode` determines how Segments are rendered differently, depending on their position in the tree, and on the Accordion's state.
+The `ViewMode` determines how Articles are rendered differently, depending on their position in the tree, and on the Accordion's state.
 
-- When a Segment is _collapsed_, only the caption will display; when _expanded_, both caption and body (if any) will display. For now, the Accordion decides on this mode. Besides **Default** and **Collapsed**, there is a third mode, namely **Placeholder**, which causes the Segment to render as a buffer for the present to remain centered.
+- When a Article is _collapsed_, only the caption will display; when _expanded_, both caption and body (if any) will display. For now, the Accordion decides on this mode. Besides **Default** and **Collapsed**, there is a third mode, namely **Placeholder**, which causes the Article to render as a buffer for the present to remain centered.
 
-- A Segment's momentary **role** depends on the relative `path` from the Focus in the Tree
+- A Article's momentary **role** depends on the relative `path` from the Focus in the Tree
 
 1. `*P*` **Parent**: collapsed
 2. `*F*` **Focus**: expanded if accordion is expanded
@@ -34,13 +34,13 @@ The `ViewMode` determines how Segments are rendered differently, depending on th
 7. `. .` **None**
 
 
-## Interactivity of a Segment
+## Interactivity of a Article
 
-- [x] You can click on a segment's _caption_ it to navigate to it. This will re-route you to the Segment id page or fragment. If it was already focused, the accordion will **collapse**, else it will navigate to the new focus and **expand**.
+- [x] You can click on a segment's _caption_ it to navigate to it. This will re-route you to the Article id page or fragment. If it was already focused, the accordion will **collapse**, else it will navigate to the new focus and **expand**.
 
 # Accordion
 
-The Accordion is either _expanded_ or _collapsed_ (use `flip` to switch between these modes), and it has a `ZipperTree` of Segments. When serializing, the Segments are replaced by their `id`s, and when deserializing, the Accordion will try to fetch the appropriate data, either from within its namespace (compile-time data) or from the cloud database.
+The Accordion is either _expanded_ or _collapsed_ (use `flip` to switch between these modes), and it has a `ZipperTree` of Articles. When serializing, the Articles are replaced by their `id`s, and when deserializing, the Accordion will try to fetch the appropriate data, either from within its namespace (compile-time data) or from the cloud database.
 
 ## Url
 
@@ -59,15 +59,15 @@ _b0_b1_r0_r1:L1 L0 X1 X0 *F Y0 Y1 R0 R1:l1_l0_a1_a0_
                          F1
 ```
 
-- _`L` are horizontal Segments from left `Aisle` or `Breadcrumb`_
-- _`R` are horizontal right `BreadcrumbAisle` Segments_
+- _`L` are horizontal Articles from left `Aisle` or `Breadcrumb`_
+- _`R` are horizontal right `BreadcrumbAisle` Articles_
 - _`*F`, `A` and `B` are the `Focus` with horizontal `Aisle`s_
-- _`P` are vertical Segments from left `BreadcrumbAisle` including the `Breadcrumb`s_, plus vertical left `Aisle`s
-- _`F` are vertical right `BreadcrumbAisle` Segments, plus vertical right `Aisle`s_
+- _`P` are vertical Articles from left `BreadcrumbAisle` including the `Breadcrumb`s_, plus vertical left `Aisle`s
+- _`F` are vertical right `BreadcrumbAisle` Articles, plus vertical right `Aisle`s_
 
 To achieve this effect, we use the following algorithm:
 
-- [ ] Pair all Segments with the `Imploded` Viewmode
+- [ ] Pair all Articles with the `Imploded` Viewmode
 - [ ] Then mark `Parent`, `Focus`, `Aisle`, `Breadcrumb`, `BreadcrumbAisle`
 - [ ] Fold the tree using the rules stated below
 

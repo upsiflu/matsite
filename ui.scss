@@ -1,11 +1,11 @@
 .overlay {
-    .deleteSegment>summary {
+    .deleteArticle>summary {
         background: black;
         min-width: min-content;
         white-space: nowrap;
     }
 
-    .deleteSegment>div {
+    .deleteArticle>div {
         display: flex;
         flex-direction: column;
         background: orangered;
@@ -14,15 +14,15 @@
         outline: 1.5px double black;
     }
 
-    .deleteSegment[open]>summary::marker {
+    .deleteArticle[open]>summary::marker {
         content: "cancel deletion: ";
     }
 
-    .deleteSegment[open] {
+    .deleteArticle[open] {
         background: black;
     }
 
-    .deleteSegment button {
+    .deleteArticle button {
         max-width: 50%;
     }
 
@@ -282,11 +282,11 @@ button.ui:focus {
     }
 }
 
-.deleteSegment>summary::marker {
+.deleteArticle>summary::marker {
     content: "...";
 }
 
-.deleteSegment[open]>summary::marker {
+.deleteArticle[open]>summary::marker {
     content: "Cancel";
 }
 

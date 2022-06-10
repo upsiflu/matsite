@@ -3,6 +3,7 @@ module Zipper.Branch exposing
     , singleton, create, fromPath
     , map, mapOffspring, mapNode, mapSpine
     , mapLeaves, mapFocusedLeaf
+    , zipPositions
     , cons, insert
     , forkLeft, forkRight
     , prepend, append
@@ -10,6 +11,7 @@ module Zipper.Branch exposing
     , growLeaf, growBranch, growLevel, grow
     , uncons, getLeftmostLeaf, getRightmostLeaf
     , node, children, nextGeneration, allGenerations
+    , focusedChild, subBranches
     , path, flat
     , isLeaf
     , Fold, fold, defold
@@ -18,7 +20,6 @@ module Zipper.Branch exposing
     , DirBranch
     , defoldWithDirections, zipDirections
     , flatFold
-    , focusedChild, subBranches, zipPositions
     )
 
 {-|
@@ -31,6 +32,7 @@ module Zipper.Branch exposing
 
 @docs map, mapOffspring, mapNode, mapSpine
 @docs mapLeaves, mapFocusedLeaf
+@docs zipPositions
 
 
 # Grow
@@ -46,7 +48,14 @@ module Zipper.Branch exposing
 
 @docs uncons, getLeftmostLeaf, getRightmostLeaf
 @docs node, children, nextGeneration, allGenerations
+@docs focusedChild, subBranches
+
+---
+
 @docs path, flat
+
+---
+
 @docs isLeaf
 
 

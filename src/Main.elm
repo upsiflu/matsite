@@ -3,7 +3,7 @@ port module Main exposing (..)
 import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
-import Codec exposing (Codec, decoder, encoder)
+import Codec exposing (decoder, encoder)
 import Css exposing (..)
 import Data
 import Html as Unstyled
@@ -12,7 +12,7 @@ import Html.Events as Events
 import Html.Styled as Html
 import Html.Styled.Attributes as Attributes exposing (href)
 import Html.Styled.Keyed as Keyed
-import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Decode as Decode
 import Json.Encode as Encode
 import Layout exposing (..)
 import Task
@@ -104,14 +104,14 @@ type
 
 type Route
     = Home
-    | Segment String
+    | Article String
 
 
 route : Parser (Route -> a) a
 route =
     UrlParser.oneOf
         [ UrlParser.map Home UrlParser.top
-        , UrlParser.map Segment UrlParser.string
+        , UrlParser.map Article UrlParser.string
         ]
 
 
@@ -121,7 +121,7 @@ destination url =
         Just Home ->
             ""
 
-        Just (Segment s) ->
+        Just (Article s) ->
             s
 
         _ ->

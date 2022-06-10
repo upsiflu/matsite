@@ -1,6 +1,6 @@
 module Snippets.Festival exposing (..)
 
-import Accordion.Segment as Segment exposing (BodyTemplate, Segment)
+import Accordion.Article as Article exposing (Article, BodyTemplate)
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr
@@ -10,7 +10,7 @@ import Ui exposing (cacheImg)
 type alias Festival =
     { date : String
     , title : String
-    , description : Segment.BodyTemplate
+    , description : Article.BodyTemplate
     , collage : String
     , video : Maybe String
     }
@@ -32,7 +32,7 @@ tidalShifts =
         , p []
             [ text "in the frame of the Perform[d]ance Mini-festival at Stralsund; 26 + 27 November" ]
         ]
-        |> Segment.Content (Just "Moving across Thresholds:")
+        |> Article.Content (Just "Moving across Thresholds:")
 
 
 description : BodyTemplate
@@ -48,13 +48,13 @@ description =
         , p []
             [ text "The workshop at Radialsystem deals specifically with the topic of “Foregrounding the background”; that is, with the invisible thresholds that mark power and privilege in the relationship between foreground and background. What is highlighted and what is pushed into the background is not accidental, but the result of historical processes, dominant pedagogical practices as well as systematic relations of power and oppression. With international artists and researchers based in Berlin, São Paulo and Dar es salaam/Tanzania, the workshop reverses this relationship: what happens when the background comes to life and makes its presence felt? What if the landscape becomes a part of us, just as we are a part of it? What if we centre the periphery?" ]
         ]
-        |> Segment.Content (Just "Moving across Thresholds:")
+        |> Article.Content (Just "Moving across Thresholds:")
 
 
 collage : BodyTemplate
 collage =
     cacheImg "Moving across Thresholds at Radialsystem (Berlin) - Collage: Judith Förster" 2 "" "https://lh4.googleusercontent.com/bDLi5oDfqgi5fEySAi4NJxsjxYSRsf80RQswbdtbAVacYQy-CBQ_7KiR6bq5xKrL7c4lAjVDjzGosYsvIcCIyYnOd0ZVBZEtkkcJAyNHTcmxPp7MCEW5SF8sMqr0ci0RdN9AZbWqbnK_DxMmsA"
-        |> Segment.Illustration
+        |> Article.Illustration
 
 
 video : BodyTemplate
@@ -89,15 +89,15 @@ video =
                 []
             ]
         ]
-        |> Segment.Illustration
+        |> Article.Illustration
 
 
 genericIllustration : BodyTemplate
 genericIllustration =
     cacheImg "Festival (Illustration)" 2 "" "https://imgproxy.berlinonline.net/20OIHVWW_l8G4pdLCKj4_WO_cH6k6LtXAf6kHvbhxzM/pr:gallery/q:70/cb:2022032507/aHR0cHM6Ly9wb3B1bGEtbWlkZGxld2FyZS5zMy5hbWF6b25hd3MuY29tL2JvLW1pZGRsZXdhcmUvYm8uYmRlX2NoYW5uZWwuZXZlbnQvaW1hZ2VzLzk1L2U5ODJkZTE1LTNkZDUtZGIzNi1mNTVmLTNlOWNkMTc5ZDIxOS5qcGc.jpg"
-        |> Segment.Illustration
+        |> Article.Illustration
 
 
-view : Festival -> List Segment
+view : Festival -> List Article
 view _ =
     []

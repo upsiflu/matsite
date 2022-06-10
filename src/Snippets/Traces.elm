@@ -1,6 +1,6 @@
 module Snippets.Traces exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 
@@ -10,7 +10,7 @@ foldernumber =
     "1MVHUG1PAKUmlCqeGuJSZQ0gMZV7Kb3hS"
 
 
-traces : Segment.BodyTemplate
+traces : Article.BodyTemplate
 traces =
     div [ class "traces-container" ]
         [ iframe
@@ -19,4 +19,4 @@ traces =
             ]
             []
         ]
-        |> Segment.Illustration
+        |> Article.Illustration

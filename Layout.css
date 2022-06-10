@@ -65,20 +65,36 @@
   --x: calc(var(--west-width) + var(--here-width) / 2 - var(--column) / 2);
   --y: calc(var(--north-height) + var(--nearWest-height));
   --width: calc(var(--west-width) + var(--here-width) + var(--east-width));
-  --height: calc(var(--north-height) + var(--nearWest-height) + var(--here-height) + var(--nearEast-height) + var(--south-height));
+  --height: calc(
+    var(--north-height) + var(--nearWest-height) + var(--here-height) + var(--nearEast-height) + var(--south-height)
+  );
   /* Compress height in main menu-like situation */
 }
 .Accordion:not(.focusIsBackground).🪗🁣.focusIsRoot:not(.focusHasBody) {
-  --here-height: max(var(--column), calc(100vh - var(--padding) * 2 - var(--north-height) - var(--info-height) - var(--nearEast-height) - var(--nearWest-height) - var(--south-height)));
+  --here-height: max(
+    var(--column),
+    calc(
+      100vh - var(--padding) * 2 - var(--north-height) - var(--info-height) - var(--nearEast-height) -
+        var(--nearWest-height) - var(--south-height)
+    )
+  );
 }
 .Accordion:not(.focusIsBackground).🪗🀱 {
   --x: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) / 2 - var(--column) / 2);
   --y: calc(var(--north-height));
-  --width: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) + var(--nearEast-width) + var(--east-width));
+  --width: calc(
+    var(--west-width) + var(--nearWest-width) + var(--here-width) + var(--nearEast-width) + var(--east-width)
+  );
   --height: calc(var(--north-height) + var(--here-height) + var(--south-height));
   /* Aisles expand */
-  --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
-  --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
+  --nearWest-width: calc(
+    var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) *
+      var(--screen)
+  );
+  --nearEast-width: calc(
+    var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) *
+      var(--screen)
+  );
 }
 .Accordion > .north {
   left: var(--x);
@@ -103,7 +119,7 @@
 }
 .Accordion > .west > .segmentLabel {
   -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
   padding: 1.125rem 1rem;
 }
 .Accordion > .east {
@@ -115,7 +131,7 @@
 }
 .Accordion > .east > .segmentLabel {
   -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
   padding: 1.125rem 1rem;
 }
 .Accordion.🪗🁣 > .nearWest {
@@ -124,7 +140,9 @@
   z-index: 3;
 }
 .Accordion.🪗🀱 > .nearWest {
-  left: calc(var(--west-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+  left: calc(
+    var(--west-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen)
+  );
   top: var(--y);
   z-index: 3;
 }
@@ -133,7 +151,7 @@
 }
 .Accordion.🪗🀱 > .nearWest:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
   padding: 1.125rem 1rem;
 }
 .Accordion.🪗🁣 > .nearEast {
@@ -142,7 +160,10 @@
   z-index: 3;
 }
 .Accordion.🪗🀱 > .nearEast {
-  left: calc(var(--width) - var(--east-width) - var(--nearEast-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+  left: calc(
+    var(--width) - var(--east-width) - var(--nearEast-width) + var(--headers) * var(--unit) + var(--columns) *
+      var(--column) + var(--screens) * var(--screen)
+  );
   top: var(--y);
   z-index: 3;
 }
@@ -151,7 +172,7 @@
 }
 .Accordion.🪗🀱 > .nearEast:not(.hasBody) > .segmentLabel {
   -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
   padding: 1.125rem 1rem;
 }
 .Accordion > .center {
@@ -165,10 +186,12 @@
 .Accordion.focusHasBody.🪗🀱 > .center {
   left: calc(var(--west-width) + var(--nearWest-width));
 }
-.Accordion.focusIsBackground > .🀱:not(.center), .Accordion.focusIsBackground > .🁣:not(.center) {
+.Accordion.focusIsBackground > .🀱:not(.center),
+.Accordion.focusIsBackground > .🁣:not(.center) {
   z-index: 2;
 }
-.Accordion.focusIsBackground > .🀱:not(.center):hover, .Accordion.focusIsBackground > .🁣:not(.center):hover {
+.Accordion.focusIsBackground > .🀱:not(.center):hover,
+.Accordion.focusIsBackground > .🁣:not(.center):hover {
   background: black;
 }
 .Accordion.focusIsBackground > .center {
@@ -221,7 +244,7 @@
 }
 .Accordion:not(.focusHasBody) > .center.🀱 > .segmentLabel {
   -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
   padding: 1.125rem 1rem;
 }
 .Accordion > .peek {
@@ -245,7 +268,7 @@
 }
 .Accordion.🪗🁣:not(.focusHasBody) > .peek img {
   -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   max-width: max(100vw, 100vh);
   min-width: 100%;
   height: 100%;
@@ -275,7 +298,9 @@
   pointer-events: none;
   position: absolute;
   left: calc(var(--west-width) + var(--nearWest-width, 0rem) + var(--here-width) / 2 - 50vw);
-  top: calc(var(--north-height) + var(--nearWest-height, 0rem) - var(--info-height) / 2 + var(--here-height) / 2 - 50vh);
+  top: calc(
+    var(--north-height) + var(--nearWest-height, 0rem) - var(--info-height) / 2 + var(--here-height) / 2 - 50vh
+  );
   pointer-events: none;
   background: transparent;
 }
@@ -311,7 +336,7 @@
   top: var(--padding);
 }
 
-/* Segment Layout */
+/* Article Layout */
 .body {
   /* crop and provide scrollbars */
   max-height: var(--here-height);
@@ -367,15 +392,15 @@ ul.overflow,
 ul.Accordion,
 ul:not(.body ul) {
   -webkit-padding-start: 0;
-          padding-inline-start: 0;
+  padding-inline-start: 0;
   list-style-type: none;
 }
 
 .Accordion.focusIsBackground.focusIsRoot .A {
   -webkit-animation: scrollIn 2s ease-out 2s;
-          animation: scrollIn 2s ease-out 2s;
+  animation: scrollIn 2s ease-out 2s;
   -webkit-animation-delay: calc(5s - 0.2s * var(--units));
-          animation-delay: calc(5s - 0.2s * var(--units));
+  animation-delay: calc(5s - 0.2s * var(--units));
   top: calc(var(--units) * var(--unit) + 90vh);
 }
 
@@ -421,7 +446,7 @@ ul:not(.body ul) {
 }
 
 .subscribe.display {
-  background: #4F8;
+  background: #4f8;
   padding: 1.5rem 0;
   position: absolute;
   top: 2rem;
@@ -453,4 +478,4 @@ ul:not(.body ul) {
   display: block;
   width: 100%;
   text-align: center;
-}/*# sourceMappingURL=Layout.css.map */
+} /*# sourceMappingURL=Layout.css.map */

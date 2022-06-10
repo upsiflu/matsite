@@ -1,4 +1,4 @@
-# Segments
+# Articles
 
 The Elm produces a list of DOM nodes, one per segment, without hierarchies.
 
@@ -48,7 +48,7 @@ Depending on the orientation of the focus, whether it has a body or not, and whe
 As you can see in the table, the widths of Focus and Aisles depend on whether the focus has a body.
 - The center region is one column wide if the focus has no body but will extend with the focus width if it does.
 
-# Segment Placement
+# Article Placement
 
 Conceptually, we add two vectors: first, the region origin,
 second, the segment offset. We use coordinates relative to the accordion's top left so that the positions can be easily transitioned (animated).

@@ -10,25 +10,25 @@ module Zipper.Tree exposing
     , go, Walk(..), Edge(..), EdgeOperation(..)
     , map, mapFocus, mapBranch, mapAisles, mapAisleNodes, mapTrace, mapSpine
     , mapByPosition, mapFocusedLeaf, mapLeaves, mapRoot, mapRoots
-    , deleteFocus
+    , deleteFocus, deleteIfPossible
     , growRoot, growLeaf, growBranch
     , growLeft, growRight
     , growRootLeft, growRootRight
     , insert, insertLeft, insertRight
     , prepend, append
     , consLeft, consRight
+    , any
     , focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
     , isRoot
-    , path
+    , path, breadcrumbs
     , circumference
     , petrify
     , flatten
-    , any
+    , toDict
     , Fold, defold, fold
     , foldr, defoldr
     , DirTree, defoldWithDirections, zipDirections
     , ViewMode(..), view
-    , breadcrumbs, deleteIfPossible, toDict
     )
 
 {-| A nonempty List of branches 🌿 that can be navigated horizontally and vertically.
@@ -40,7 +40,7 @@ module Zipper.Tree exposing
 ## To Do
 
   - [ ] Change the `go`/`EdgeOperation` interface to use `Result`
-  - [x] Move the `Role` interface from Segment.ViewMode to here, change it into `Position`
+  - [x] Move the `Role` interface from Article.ViewMode to here, change it into `Position`
 
 ---
 
@@ -74,7 +74,7 @@ module Zipper.Tree exposing
 
 ## Shrink and Grow
 
-@docs deleteFocus
+@docs deleteFocus, deleteIfPossible
 
 @docs growRoot, growLeaf, growBranch
 @docs growLeft, growRight
@@ -87,6 +87,11 @@ module Zipper.Tree exposing
 @docs consLeft, consRight
 
 
+# Query
+
+@docs any
+
+
 # Deconstruct
 
 @docs focus, focusedBranch, getLeftmostRoot, getRightmostRoot, getAisleNodes
@@ -94,15 +99,11 @@ module Zipper.Tree exposing
 ---
 
 @docs isRoot
-@docs path
+@docs path, breadcrumbs
 @docs circumference
 @docs petrify
 @docs flatten
-
-
-# Query
-
-@docs any
+@docs toDict
 
 
 ## Fold
@@ -127,7 +128,6 @@ module Zipper.Tree exposing
 import Css exposing (..)
 import Dict exposing (Dict)
 import Fold exposing (Direction(..), Foldr, Position, Role(..))
-import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import List.Extra as List
 import Nonempty
@@ -1305,379 +1305,3 @@ view viewMode =
     case viewMode of
         Uniform f config ->
             fold defold >> fold f >> config.toHtml
-
-
-viewFolder :
-    Foldr
-        {}
-        --f
-        (Html msg)
-        --a
-        (List (Html msg))
-        --aisle
-        (Html msg)
-        --z
-        (Html msg)
-        ---zB
-        (List (Html msg))
-        --trunk
-        (Html msg)
-        --b
-        (Html msg)
-viewFolder =
-    let
-        asNode =
-            css [ backgroundColor yellow, borderRadius (rem 1), Css.height (em 1.5), Css.minWidth (em 1.5), color black, verticalAlign middle, textAlign center ]
-
-        asLeaf =
-            css [ backgroundColor white, borderRadius (rem 1), Css.height (em 1.5), Css.minWidth (em 1.5), color black, verticalAlign middle, textAlign center ]
-
-        focused =
-            bordered yellow
-
-        horizontal =
-            css [ displayFlex, justifyContent center ]
-
-        ( leftAligned, rightAligned ) =
-            ( css [ justifyContent Css.left ], css [ justifyContent Css.right ] )
-
-        ( red, green, blue ) =
-            ( rgb 200 20 40, rgb 90 240 80, rgb 20 20 140 )
-
-        ( black, white, yellow ) =
-            ( rgb 0 0 0, rgb 255 255 255, rgb 255 255 0 )
-
-        bordered color =
-            css [ border3 (px 5) solid color ]
-
-        label t =
-            Html.div [ css [ fontSize (px 9), backgroundColor black, opacity (num 0.9), Css.height (em 1.5), marginTop (em -2), marginBottom (em 0.5), Css.width (pct 100), textAlign center, hover [ opacity (num 1) ] ] ] [ Html.text t ]
-
-        hideVertically =
-            Html.div [ css [ visibility Css.hidden, overflow Css.hidden, maxHeight (px 5) ] ]
-    in
-    { consAisle = (::) --: b -> aisle -> aisle
-    , join =
-        \a l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned, css [ backgroundColor green ] ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div []
-                [ label "join"
-                , Html.div [ horizontal ]
-                    [ Html.div [ bordered blue ]
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ css [ backgroundColor red ] ]
-                        [ Html.div [ asLeaf ] [ a ] ]
-                    , Html.div []
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-
-    -- a -> aisle -> aisle -> z --past
-    , joinBranch =
-        (\branch l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div [ bordered green ]
-                [ label "joinBranch"
-                , Html.div [ horizontal ]
-                    [ Html.div []
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ focused, id "focus" ] [ branch ]
-                    , Html.div []
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-         --Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
-        )
-
-    -- : b -> aisle -> aisle -> zB -- future
-    , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch =
-        \node body ->
-            Html.div []
-                [ label "mergeBranch"
-                , Html.div [ horizontal ]
-                    [ Html.div [ asNode ] [ node ] ]
-                , Html.div [] body
-                ]
-
-    --: a -> trunk -> b
-    , mergeTree =
-        \future past ->
-            Html.div [ css [ backgroundColor black, Css.width (rem 29), overflowX scroll ] ]
-                [ Html.div [ css [ Css.width (px 2000) ] ]
-                    [ Html.h1 [] [ Html.text "TREE" ]
-                    , Html.div [] (List.reverse past)
-                    , Html.div [] [ future ]
-                    ]
-                ]
-
-    -- : z -> trunk -> result
-    , leaf = []
-    , left = [ Html.div [] [] ]
-    , right = [ Html.div [] [] ]
-    }
-
-
-viewFolder2 :
-    Foldr
-        {}
-        --f
-        (Html msg)
-        --a
-        (List (Html msg))
-        --aisle
-        (Html msg)
-        --z
-        (Html msg)
-        ---zB
-        (List (Html msg))
-        --trunk
-        (Html msg)
-        --b
-        (Html msg)
-viewFolder2 =
-    let
-        dimmed =
-            css [ opacity (num 0.5) ]
-
-        asNode =
-            css []
-
-        asLeaf =
-            css []
-
-        focused =
-            bordered yellow
-
-        horizontal =
-            css [ displayFlex, justifyContent center ]
-
-        ( leftAligned, rightAligned ) =
-            ( css [ justifyContent Css.left ], css [ justifyContent Css.right ] )
-
-        ( red, green, blue ) =
-            ( rgb 200 20 40, rgb 90 240 80, rgb 20 20 140 )
-
-        ( black, white, yellow ) =
-            ( rgb 0 0 0, rgb 255 255 255, rgb 255 255 0 )
-
-        bordered color =
-            css [ border3 (px 1) solid color ]
-
-        hideVertically =
-            Html.div [ css [ visibility Css.hidden, overflow Css.hidden, maxHeight (px 0) ] ]
-    in
-    { consAisle = (::) --: b -> aisle -> aisle
-    , join =
-        \a l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned, css [] ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div []
-                [ Html.div [ horizontal ]
-                    [ Html.div [ dimmed ]
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ css [] ]
-                        [ Html.div [ asLeaf ] [ a ] ]
-                    , Html.div [ dimmed ]
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-
-    -- a -> aisle -> aisle -> z --past
-    , joinBranch =
-        (\branch l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div [ bordered green ]
-                [ Html.div [ horizontal ]
-                    [ Html.div []
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ focused, id "focus" ] [ branch ]
-                    , Html.div []
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-         --Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
-        )
-
-    -- : b -> aisle -> aisle -> zB -- future
-    , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch =
-        \node body ->
-            Html.div []
-                [ Html.div [ horizontal ]
-                    [ Html.div [ asNode ] [ node ] ]
-                , Html.div [] body
-                ]
-
-    --: a -> trunk -> b
-    , mergeTree =
-        \future past ->
-            Html.div [ css [ backgroundColor black, Css.width (rem 29), overflowX scroll ] ]
-                [ Html.div [ css [ Css.width (px 2000) ] ]
-                    [ Html.h1 [] [ Html.text "TREE" ]
-                    , Html.div [] (List.reverse past)
-                    , Html.div [] [ future ]
-                    ]
-                ]
-
-    -- : z -> trunk -> result
-    , leaf = []
-    , left = [ Html.div [] [] ]
-    , right = [ Html.div [] [] ]
-    }
-
-
-{-| switch Arrangement every next level
--}
-viewFolder3 :
-    Foldr
-        {}
-        --f
-        (Html msg)
-        --a
-        (List (Html msg))
-        --aisle
-        (Html msg)
-        --z
-        (Html msg)
-        ---zB
-        (List (Html msg))
-        --trunk
-        (Html msg)
-        --b
-        (Html msg)
-viewFolder3 =
-    let
-        dimmed =
-            css [ opacity (num 0.5) ]
-
-        asNode =
-            css []
-
-        asLeaf =
-            css []
-
-        focused =
-            bordered yellow
-
-        horizontal =
-            css [ displayFlex, justifyContent center ]
-
-        vertical =
-            css [ displayFlex, justifyContent center, flexDirection column ]
-
-        ( leftAligned, rightAligned ) =
-            ( css [ justifyContent Css.left ], css [ justifyContent Css.right ] )
-
-        ( red, green, blue ) =
-            ( rgb 200 20 40, rgb 90 240 80, rgb 20 20 140 )
-
-        ( black, white, yellow ) =
-            ( rgb 0 0 0, rgb 255 255 255, rgb 255 255 0 )
-
-        bordered color =
-            css [ border3 (px 1) solid color ]
-
-        hideVertically =
-            Html.div [ css [ visibility Css.hidden, overflow Css.hidden, maxHeight (px 0) ] ]
-    in
-    { consAisle = (::) --: b -> aisle -> aisle
-    , join =
-        \a l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned, css [] ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div []
-                [ Html.div [ horizontal ]
-                    [ Html.div [ dimmed ]
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ css [] ]
-                        [ Html.div [ asLeaf ] [ a ] ]
-                    , Html.div [ dimmed ]
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-
-    -- a -> aisle -> aisle -> z --past
-    , joinBranch =
-        (\branch l r ->
-            let
-                ( leftBranch, rightBranch ) =
-                    ( Html.div [ horizontal, rightAligned ] (List.reverse l)
-                    , Html.div [ horizontal, leftAligned ] r
-                    )
-            in
-            Html.div [ bordered green ]
-                [ Html.div [ horizontal ]
-                    [ Html.div []
-                        [ hideVertically [ rightBranch ], leftBranch ]
-                    , Html.div [ focused, id "focus" ] [ branch ]
-                    , Html.div []
-                        [ hideVertically [ leftBranch ], rightBranch ]
-                    ]
-                ]
-         --Html.div [horizontal] [Html.div [] l, Html.div [focused] [ branch ], Html.div [] r ]
-        )
-
-    -- : b -> aisle -> aisle -> zB -- future
-    , consTrunk = (::) --: z -> trunk -> trunk
-    , mergeBranch =
-        \node body ->
-            Html.div []
-                [ Html.div [ horizontal ]
-                    [ Html.div [ asNode ] [ node ] ]
-                , Html.div [] body
-                ]
-
-    --: a -> trunk -> b
-    , mergeTree =
-        \future past ->
-            Html.div [ css [ backgroundColor black, Css.width (rem 29), overflowX scroll ] ]
-                [ Html.div [ css [ Css.width (px 2000) ] ]
-                    [ Html.h1 [] [ Html.text "TREE" ]
-                    , Html.div [] (List.reverse past)
-                    , Html.div [] [ future ]
-                    ]
-                ]
-
-    -- : z -> trunk -> result
-    , leaf = []
-    , left = [ Html.div [] [] ]
-    , right = [ Html.div [] [] ]
-    }
-
-
-
--- SCOPING --
-
-
-type Scope
-    = Row
-    | Neighborhood Int
-    | Stem
-
-
-
--- and many more, possibly

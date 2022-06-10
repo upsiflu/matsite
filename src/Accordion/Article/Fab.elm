@@ -1,9 +1,13 @@
-module Accordion.Segment.Fab exposing
+module Accordion.Article.Fab exposing
     ( Fab(..)
     , codec
+    , default
     , merge
+    , andUpcoming
+    , occurrence
+    , beginning, nextBeginning
+    , isActive, isUpcoming
     , view, edit
-    , andUpcoming, beginning, default, isActive, isUpcoming, nextBeginning, occurrence
     )
 
 {-| Functionality of a Floating Action Button (Google terminology)
@@ -13,9 +17,26 @@ that manages its own data and can be queried but is stateless
 @docs codec
 
 
+# Create
+
+@docs default
+
+
 # Combine
 
 @docs merge
+
+
+## Combine `Maybe Fab`
+
+@docs andUpcoming
+
+
+# Decompose
+
+@docs occurrence
+@docs beginning, nextBeginning
+@docs isActive, isUpcoming
 
 
 # View
@@ -70,6 +91,8 @@ codec =
         |> Codec.buildCustom
 
 
+{-| A `Subscribe` Fab
+-}
 default : String -> Fab
 default =
     stringToFabType >> Maybe.withDefault (Subscribe { link = "https://" })
@@ -163,7 +186,7 @@ edit { zone, save } maybeFab =
         |> (\( active, options ) ->
                 Zipper.map
                     (\( str, msg ) ->
-                        ( { front = [ Html.text str ], title = "Select a Body type for this Segment" }
+                        ( { front = [ Html.text str ], title = "Select a Body type for this Article" }
                         , Just msg
                         )
                     )
@@ -185,7 +208,7 @@ view { zone } fab =
         Register r ->
             Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
 
-        Subscribe { link } ->
+        Subscribe _ ->
             Html.details
                 [ class "subscribe fab" ]
                 [ Html.summary [ title "Receive our e-newsletter!" ] [ Html.span [ class "title" ] [ Html.text "Subscribe" ] ]

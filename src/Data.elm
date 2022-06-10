@@ -1,9 +1,9 @@
 module Data exposing (addTemplates, initial, initialActions, initialIntents, initialTemplates)
 
 import Accordion exposing (Accordion, Action(..))
-import Accordion.Segment as Segment exposing (Action(..), Orientation(..), Shape(..))
-import Accordion.Segment.Fab as Fab
-import Accordion.Segment.ViewModel as ViewSegment
+import Accordion.Article as Article exposing (Action(..), Orientation(..), Shape(..))
+import Accordion.Article.Fab as Fab
+import Accordion.Article.ViewModel as ViewArticle
 import Dict
 import Fold exposing (Direction(..), Role(..))
 import Layout
@@ -21,7 +21,7 @@ import String.Extra as String
 import Time exposing (Month(..))
 
 
-addTemplates : Time.Zone -> Segment.Templates -> Segment.Templates
+addTemplates : Time.Zone -> Article.Templates -> Article.Templates
 addTemplates zone =
     let
         presetBody key value t =
@@ -71,8 +71,8 @@ addTemplates zone =
                 >> presetBody "Video Channel" Video.videochannel
                 >> presetBody "Collective Docs" Traces.traces
                 >> presetBody "Contact" About.contact
-                >> presetInfo "Artists" Segment.Toc
-                >> presetInfo "Labs" (Segment.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
+                >> presetInfo "Artists" Article.Toc
+                >> presetInfo "Labs" (Article.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
                 >> presetBody "Festival (Illustration)" Festival.genericIllustration
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
     in
@@ -92,9 +92,9 @@ initialIntents =
 
 {-| These should only be used while editing
 -}
-initialTemplates : Time.Zone -> Segment.Templates
+initialTemplates : Time.Zone -> Article.Templates
 initialTemplates zone =
-    addTemplates zone Segment.initialTemplates
+    addTemplates zone Article.initialTemplates
 
 
 subscribeLink : String
@@ -116,16 +116,16 @@ initialActions timezone =
                             (WithShape
                                 (Oriented Horizontal
                                     (if wide then
-                                        Segment.Columns 2
+                                        Article.Columns 2
 
                                      else
-                                        Segment.Columns 1
+                                        Article.Columns 1
                                     )
                                 )
                             )
                         , Go Right
                         , Name name
-                        , Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+                        , Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                         , Modify (WithClasses [ "fg" ])
                         ]
                     )
@@ -162,19 +162,19 @@ initialActions timezone =
                 :: registerTwoDays 23 Apr 2022 1
                 :: Go Down
                 :: Name "Info"
-                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Right
                 :: Name "Collage"
-                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Right
                 :: Name "Description"
-                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Right
                 :: Name "Video"
-                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 2)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
                 :: Go Right
                 :: Name "Credits"
-                :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Left
                 :: Go Left
                 :: Go Up
@@ -206,7 +206,7 @@ initialActions timezone =
         -}
     in
     Name "Home"
-        :: Modify (WithShape Segment.Background)
+        :: Modify (WithShape Article.Background)
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Go Right
         :: Name "Labs"
@@ -229,26 +229,26 @@ initialActions timezone =
         :: Name "Traces"
         :: Go Down
         :: Name "Collective Docs"
-        :: Modify (WithShape (Oriented Vertical Segment.Screen))
+        :: Modify (WithShape (Oriented Vertical Article.Screen))
         :: Go Up
         :: Go Right
         :: Name "Videos"
         :: Go Down
         :: Name "Video Channel"
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
         :: Name "Trailers"
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 3)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 3)))
         :: Go Left
         :: Go Up
         :: Go Right
         :: Name "Library"
         :: Go Down
         :: Name "Incipit"
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
         :: Name "Archive"
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 2)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
         :: Go Up
         :: Go Right
         :: Name "About"
@@ -256,15 +256,15 @@ initialActions timezone =
         :: Go Down
         :: Name "Contact"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
         :: Name "About MaT"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
         :: Name "Team"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
-        :: Modify (WithShape (Oriented Horizontal (Segment.Columns 1)))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Left
         :: Go Up
         :: Go Left

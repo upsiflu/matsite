@@ -48,7 +48,7 @@ Renae or a collaborator can log in through a button hidden in the 'About' sectio
     - before (if it's the first section, add one before)
     - up one level (if it's the top level, ignore)
     - down one level (if it's the bottom level, add one below)
-- **Add** an empty Segment to North, West, East or South. TODO
+- **Add** an empty Article to North, West, East or South. TODO
 - **Delete** it: If there is a `Section` before it in the current level, that will be focused instead. Else if there is one after it, that will come into focus. Else, we go one level up. The last remaining `Section` can't be deleted at all; the command will then be ignored.
 
 [^7]: For the prototype, these are arbitrary Html hypertexts. Later iterations should progressively add invariance in order to add order.

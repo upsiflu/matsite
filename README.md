@@ -17,8 +17,8 @@ Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm current
 - [x] Arrange initial content into `Zipper` structure
 - [x] Create simple theme
 - [x] Display `Zipper` as Accordion
-- [x] Allow linking to any Segment inside the Accordion
-- [ ] Animate moving across Segments
+- [x] Allow linking to any Article inside the Accordion
+- [ ] Animate moving across Articles
 - [ ] Deploy to [movingAcrossThresholds.com](movingAcrossThresholds.com)
 
 ------------------ Milestone #1: MVP done ------------------

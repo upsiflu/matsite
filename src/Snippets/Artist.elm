@@ -1,6 +1,6 @@
 module Snippets.Artist exposing (..)
 
-import Accordion.Segment as Segment
+import Accordion.Article as Article
 import Html.Styled as Html exposing (Html, text)
 import Html.Styled.Attributes exposing (..)
 import Layout
@@ -221,14 +221,14 @@ artists =
         |> List.sortBy (.name >> String.split " " >> List.last >> Maybe.withDefault "z")
 
 
-view : Artist -> Segment.BodyTemplate
+view : Artist -> Article.BodyTemplate
 view artist =
     Html.div [ class "artist richtext" ]
         [ Html.map never artist.bio ]
-        |> Segment.Content (Just artist.name)
+        |> Article.Content (Just artist.name)
 
 
-viewPhoto : Artist -> Segment.BodyTemplate
+viewPhoto : Artist -> Article.BodyTemplate
 viewPhoto artist =
     cacheImg artist.name
         (if artist.wide then
@@ -239,4 +239,4 @@ viewPhoto artist =
         )
         "artist"
         artist.photo
-        |> Segment.Illustration
+        |> Article.Illustration
