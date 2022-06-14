@@ -279,34 +279,36 @@ view model =
                             |> Keyed.ul [ Attributes.class "model" ]
                             |> Html.toUnstyled
                         , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
-                            [ m.backlog
-                                |> Maybe.map
-                                    (encoder Accordion.intentCodec
-                                        >> Encode.encode 0
-                                        >> UnstyledAttributes.attribute "backlog"
-                                        >> List.singleton
-                                    )
-                                |> Maybe.withDefault []
-                                |> (++)
-                                    (if overwrite then
-                                        [ encoder Accordion.historyCodec m.overwrite
-                                            |> Encode.encode 0
-                                            |> UnstyledAttributes.attribute "overwrite"
-                                        ]
+                            [ {- m.backlog
+                                     |> Maybe.map
+                                         (encoder Accordion.intentCodec
+                                             >> Encode.encode 0
+                                             >> UnstyledAttributes.attribute "backlog"
+                                             >> List.singleton
+                                         )
+                                     |> Maybe.withDefault []
+                                     |> (++)
+                                         (if overwrite then
+                                             [ encoder Accordion.historyCodec m.overwrite
+                                                 |> Encode.encode 0
+                                                 |> UnstyledAttributes.attribute "overwrite"
+                                             ]
 
-                                     else
-                                        []
-                                    )
-                                |> (++)
-                                    [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
-                                |> (++)
-                                    [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
-                                        |> Decode.map LogReceived
-                                        |> Events.on "logReceived"
-                                    ]
-                                |> Unstyled.node "append-log"
-                                |> (|>) []
-                            , [ Decode.at [ "detail" ] Decode.string
+                                          else
+                                             []
+                                         )
+                                     |> (++)
+                                         [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
+                                     |> (++)
+                                         [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
+                                             |> Decode.map LogReceived
+                                             |> Events.on "logReceived"
+                                         ]
+                                     |> Unstyled.node "append-log"
+                                     |> (|>) []
+                                 ,
+                              -}
+                              [ Decode.at [ "detail" ] Decode.string
                                     |> Decode.map ScrolledTo
                                     |> Events.on "scrolledToA"
                               ]

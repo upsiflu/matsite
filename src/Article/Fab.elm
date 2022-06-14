@@ -1,4 +1,4 @@
-module Accordion.Article.Fab exposing
+module Article.Fab exposing
     ( Fab(..)
     , codec
     , default

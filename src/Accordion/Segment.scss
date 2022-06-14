@@ -1,0 +1,498 @@
+.A {
+
+    img.artist {
+        mix-blend-mode: overlay;
+        position: relative;
+        left: 1rem;
+        width: calc(100% - var(--bleed));
+    }
+
+    >a.segmentLabel {
+        &:hover {
+            background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%), linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%), linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
+            background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+            background-size: 3rem 3rem;
+            background-repeat: repeat;
+        }
+    }
+
+    >a {
+        background-image: linear-gradient(135deg, transparent 25%, transparent 25%), linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%), linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
+        background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+        background-size: 1.5rem 1.5rem;
+        background-repeat: repeat;
+        transition: all 0.2s;
+    }
+
+    a.segmentLabel {
+        &:link {
+            color: #eee;
+            background: rgba(255, 255, 255, 0.3);
+            color: #ccc;
+            background: transparent;
+        }
+
+        &:visited {
+            color: #eee;
+            background: rgba(255, 255, 255, 0.3);
+            color: #ccc;
+            background: transparent;
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+}
+
+.F {
+
+
+    >a.segmentLabel {
+        &:hover {
+            background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%), linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%), linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
+            background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+            background-size: 3rem 3rem;
+            background-repeat: repeat;
+        }
+    }
+
+    >a {
+        background-image: linear-gradient(135deg, transparent 25%, transparent 25%), linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%), linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
+        background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
+        background-size: 1.5rem 1.5rem;
+        background-repeat: repeat;
+        transition: all 0.2s;
+    }
+
+    a.segmentLabel {
+        &:link {
+            color: #ddd;
+            color: #eee;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        &:visited {
+            color: #ddd;
+            color: #eee;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    .info {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.focusIsBackground {
+    .segmentLabel {
+        h1 {
+            background: #4f8;
+            color: #008;
+            max-width: min-content;
+        }
+    }
+
+    >.🀱 {
+        width: var(--unit);
+
+        &:not(.F) {
+            >.body {
+                visibility: hidden;
+                max-height: 0rem;
+            }
+        }
+    }
+
+    >.🁣 {
+        height: var(--unit);
+
+        &:not(.F) {
+            >.body {
+                visibility: hidden;
+                max-height: 0rem;
+            }
+        }
+    }
+}
+
+.Ba {
+    >a.segmentLabel {
+        &:hover {
+            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
+        }
+    }
+
+    >a {
+        transition: all 0.2s;
+        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
+    }
+
+    a.segmentLabel {
+        &:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+}
+
+.B {
+    >a.segmentLabel {
+        &:hover {
+            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
+        }
+    }
+
+    >a {
+        transition: all 0.2s;
+        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
+        background: hsl(0, 0%, 10%);
+        height: fit-content;
+        outline: none;
+        mix-blend-mode: lighten;
+    }
+
+    a.segmentLabel {
+        &:link {
+            color: #fff;
+            background: white;
+            color: black;
+        }
+
+        &:visited {
+            color: #fff;
+            background: white;
+            color: black;
+        }
+    }
+}
+
+.P {
+    >a.segmentLabel {
+        &:hover {
+            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
+        }
+    }
+
+    >a {
+        transition: all 0.2s;
+        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
+    }
+
+    H1 {
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    a.segmentLabel {
+        &:link {
+            color: #fff;
+            background: white;
+            color: black;
+        }
+
+        &:visited {
+            color: #fff;
+            background: white;
+            color: black;
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    }
+
+    .info {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .info.toc {
+        li {
+            a {
+                padding: 0.25rem;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                &:active {
+                    background: black;
+                }
+            }
+
+            &:not(.focused) {
+                background: rgb(255, 255, 255, 0.1);
+            }
+        }
+
+        li.focused {
+            background: white;
+        }
+    }
+
+    >.fab {
+        position: absolute;
+        top: calc(var(--here-height) - 6rem);
+        right: calc(0px - var(--nearWest-width) - 3rem);
+        transition: right 0.5s, top 0.5s, transform 0.2s;
+        display: block;
+        background: #4f8;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 2rem;
+        color: blue;
+        z-index: 11;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &:hover {
+            transform: scale(1.1);
+        }
+
+        span.title {
+            line-height: 1ex;
+            font-family: "subaruheavy";
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-size: calc(7em / 8);
+        }
+    }
+
+    >.fab.subscribe {
+        right: -2rem;
+    }
+}
+
+.A.🁣 {
+    overflow-y: hidden;
+}
+
+
+
+.peek {
+    &:hover {
+        >.body {
+            transform: scale(1.05);
+        }
+    }
+}
+
+:not(.peek).illustration {
+    >.body {
+        overflow: visible;
+        width: calc(100% + 2 * var(--bleed));
+        margin-left: calc(0px - var(--bleed));
+        margin-top: calc(0px - var(--bleed));
+    }
+}
+
+
+
+.cache {
+    visibility: hidden;
+    opacity: 0;
+    transition: height 0.3s, width 0.3s, left 0.2s, top 0.5s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
+    left: var(--x);
+    top: var(--y);
+}
+
+.cache.🀱 {
+    width: var(--unit);
+}
+
+.cache.🁣 {
+    height: var(--unit);
+}
+
+.west {
+    width: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.east {
+    width: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.🀱.nearWest.hasBody {
+    width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
+}
+
+.🀱.nearEast.hasBody {
+    width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
+}
+
+.🀱.here.hasBody {
+    width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
+}
+
+.north {
+    height: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.south {
+    height: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.🁣.nearWest {
+    height: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.🁣.nearEast {
+    height: var(--unit);
+
+    >.body {
+        visibility: hidden;
+        max-height: 0rem;
+    }
+}
+
+.🁣.here.hasBody {
+    width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
+    height: var(--hereHeight);
+}
+
+
+
+
+.P.north {
+    >.fab {
+        right: calc(var(--column) - 6rem);
+        top: calc(var(--here-height) - 2rem);
+    }
+
+    >a.segmentLabel {
+        &::after {
+            content: "↓";
+            font-size: 1.8em;
+            display: block;
+            position: absolute;
+            right: 0.2em;
+            bottom: 0.275em;
+        }
+    }
+}
+
+
+.P.west {
+    >a.segmentLabel {
+        position: relative;
+        padding-bottom: 2.75em;
+
+        &::after {
+            content: "↑";
+            font-size: 1.8em;
+            display: block;
+            position: absolute;
+            right: 0.5em;
+            bottom: 0.125em;
+        }
+    }
+}
+
+.peekLink {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    &:link {
+        >ul {
+            position: absolute;
+            bottom: auto;
+            top: auto;
+            right: 0;
+            padding: 0.1rem 0.8rem;
+        }
+    }
+
+    &:visited {
+        >ul {
+            position: absolute;
+            bottom: auto;
+            top: auto;
+            right: 0;
+            padding: 0.1rem 0.8rem;
+        }
+    }
+
+    >h2 {
+        text-align: right;
+        background: rgb(132, 0, 132);
+        mix-blend-mode: color-burn;
+        font-size: 5rem;
+        overflow: hidden;
+        line-height: 4rem;
+        margin: 0;
+    }
+
+    >ul {
+        mix-blend-mode: screen;
+        color: orange;
+        transition: all 0.4s;
+    }
+
+    >ul+ul {
+        background: transparent;
+        mix-blend-mode: multiply;
+        color: white;
+        transition: all 0.1s;
+        text-shadow: 1px 1px black;
+    }
+
+    &:hover {
+        >ul+ul {
+            background: rgb(111, 0, 255);
+        }
+
+        >ul {
+            padding: 0.1rem 1.8rem;
+        }
+    }
+}
+
+
+.Accordion {
+    >li.P {
+        overflow: visible;
+        z-index: 9;
+    }
+
+    >.peek {
+        >.body {
+            transition: transform 0.2s;
+        }
+    }
+
+    padding-bottom: 4rem !important;
+}

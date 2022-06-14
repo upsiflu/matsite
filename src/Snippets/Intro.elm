@@ -1,6 +1,6 @@
 module Snippets.Intro exposing (..)
 
-import Accordion.Article as Article
+import Article
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 

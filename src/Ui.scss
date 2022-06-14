@@ -102,17 +102,17 @@
 }
 
 input[type="radio"]:focus+span {
-    outline: 2px solid rgba(0 0 255 0.5);
+    outline: 2px solid rgba(0, 0, 255, 0.5);
     outline-offset: 0.5px;
 }
 
 input[type="checkbox"]:focus+span {
-    outline: 2px solid rgba(0 0 255 0.5);
+    outline: 2px solid rgba(0, 0, 255, 0.5);
     outline-offset: 0.5px;
 }
 
 button.ui:focus {
-    outline: 2px solid rgba(0 0 255 0.5);
+    outline: 2px solid rgba(0, 0, 255, 0.5);
     outline-offset: 0.5px;
 }
 
@@ -525,4 +525,21 @@ label.ui {
     height: 0px;
     flex-grow: 1;
     border-top: 2px groove var(--bevel)
+}
+
+
+.sheet.ui {
+    &:not(:hover) {
+        opacity: 0.3;
+    }
+
+    transition: width 0.4s,
+    margin-left 0.4s,
+    opacity 0.2s;
+}
+
+#activityLog {
+    &:not(:hover) {
+        opacity: 0.3;
+    }
 }

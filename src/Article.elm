@@ -1,4 +1,4 @@
-module Accordion.Article exposing
+module Article exposing
     ( Article
     , defaultIllustration
     , empty, singleton
@@ -73,7 +73,7 @@ module Accordion.Article exposing
 
 -}
 
-import Accordion.Article.Fab as Fab exposing (Fab(..))
+import Article.Fab as Fab exposing (Fab(..))
 import Codec exposing (Codec, bool, field, string)
 import Css exposing (..)
 import Dict exposing (Dict)

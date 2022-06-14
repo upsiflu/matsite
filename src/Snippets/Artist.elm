@@ -1,6 +1,6 @@
 module Snippets.Artist exposing (..)
 
-import Accordion.Article as Article
+import Article
 import Html.Styled as Html exposing (Html, text)
 import Html.Styled.Attributes exposing (..)
 import Layout

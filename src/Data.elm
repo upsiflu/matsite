@@ -1,9 +1,8 @@
 module Data exposing (addTemplates, initial, initialActions, initialIntents, initialTemplates)
 
 import Accordion exposing (Accordion, Action(..))
-import Accordion.Article as Article exposing (Action(..), Orientation(..), Shape(..))
-import Accordion.Article.Fab as Fab
-import Accordion.Article.ViewModel as ViewArticle
+import Article as Article exposing (Action(..), Orientation(..), Shape(..))
+import Article.Fab as Fab
 import Dict
 import Fold exposing (Direction(..), Role(..))
 import Layout

@@ -71,9 +71,9 @@ module Accordion exposing
 
 -}
 
-import Accordion.Article as Article exposing (Article, Orientation(..), hasBody)
-import Accordion.Article.Fab as Fab
-import Accordion.Article.ViewModel as ViewArticle exposing (Region(..), ViewModel)
+import Accordion.Segment as Segment exposing (Region(..), Segment)
+import Article as Article exposing (Article, Orientation(..), hasBody)
+import Article.Fab as Fab
 import Codec exposing (Codec, encoder, int, string, variant0, variant1)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -699,18 +699,18 @@ view ({ zone, now, do, volatile } as mode) accordion =
                         Ui.none
                 ]
 
-        viewArticle : ViewModel -> Ui msg
+        viewArticle : Segment -> Ui msg
         viewArticle =
             (case accordion of
                 Log { editing } _ ->
                     if editing then
-                        ViewArticle.edit
+                        Segment.edit
 
                     else
-                        ViewArticle.view
+                        Segment.view
 
                 _ ->
-                    ViewArticle.view
+                    Segment.view
             )
                 { zone = zone
                 , now = now
@@ -779,7 +779,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
                                 (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
                             |> List.minimumBy (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
                             ---- 2. DIRECT CHILD
-                            |> Maybe.or (Just focusedBranch)
+                            |> Maybe.orElse (Just focusedBranch)
 
                 -- Find the closest illustration, among the nest, for a given branch of segments
                 peekTargetBranchToIllustration : Branch Article -> Maybe Article
@@ -801,13 +801,13 @@ view ({ zone, now, do, volatile } as mode) accordion =
                                         illu
                                         |> Maybe.withDefault nest
                             in
-                            ( { targetId = (Branch.node targetBranch).id, hint = "" }
+                            ( { targetId = (Branch.node targetBranch).id, hint = "" } |> Debug.log "PEEK found"
                             , Maybe.toList illu |> List.map (Tuple.pair Fold.fataMorganaPosition)
                             , cche
                             )
 
                         Nothing ->
-                            ( ViewArticle.defaultPeekConfig
+                            ( Segment.defaultPeekConfig |> Debug.log "PEEK Fallback Default"
                             , [ ( Fold.fataMorganaPosition, Article.defaultIllustration ) ]
                             , nest
                             )
@@ -842,15 +842,15 @@ view ({ zone, now, do, volatile } as mode) accordion =
                             , branch = branch segment.id
                             }
                     in
-                    ( ViewArticle.addWidth c model (Article.hasBody c segment) (Article.width segment) offset
+                    ( Segment.addWidth c model (Article.hasBody c segment) (Article.width segment) offset
                     , viewArticle model :: newList
                     )
                 )
-                ( ViewArticle.zeroOffset, [] )
+                ( Segment.zeroOffset, [] )
                 list
                 |> (\( totalOffset, renderedArticles ) ->
-                        ViewArticle.offsetToCssVariables totalOffset
-                            |> List.map (Tuple.mapFirst ((++) (ViewArticle.regionToString region ++ "-")) >> Var)
+                        Segment.offsetToCssVariables totalOffset
+                            |> List.map (Tuple.mapFirst ((++) (Segment.regionToString region ++ "-")) >> Var)
                             |> (++) (List.map Item renderedArticles)
                    )
 

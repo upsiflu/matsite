@@ -1,8 +1,8 @@
 module Snippets.Series exposing (..)
 
 import Accordion exposing (Action(..))
-import Accordion.Article as Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
-import Accordion.Article.Fab as Fab
+import Article as Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
+import Article.Fab as Fab
 import Fold exposing (Direction(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -160,7 +160,11 @@ Co-facilitated by choreographer/dancer Renae Shadler and objects that are silky,
 Can we move our thoughts as though they are tangible materials? Embracing the ease in movement, smooth transitions, graceful beginnings and soft touch.
 🌀🌀🌀
 """) "Gather-town + bUm, Kreuzberg" "Facilitator: Renae Shadler; Creative Companion: Susanne Schmitt" Nothing (Just <| Image 2 "https://lh4.googleusercontent.com/40KgYRksGUCkGBpx2Qe2GaM5i9viPDs4ozpl3ScL0DsZHgl3d5z6rzbmeZeoS2Vps0qGe14ChDybtg021YPFPsE-1SOtZo_eMAB_dqVT7P88Hm8ea1wPe-ovue91Bvau3M3uQaDYZZFL98W1TQ")
-        , Event 23 Jun 22 "t.b.a. (Queering #4)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
+        , Event 23 Jun 22 "Terri*stories" (Just """Birds are nesting all over Berlin still, creating, extending, shaping social colonies, and dwelling sites, setting boundaries, occupying aural space, moving materials.
+
+Facilitated by cultural anthropologist Susanne Schmitt, this event takes cues from crafty makers such as weaverbirds and local pigeons, and the plants dwelling at our gathering space in Kreuzberg and/or our Online Platform in order to move and experience facets of bird and other “terri*stories” together.
+
+We will play with habitats and territories (worlds with a vivid history that we will untangle together) as “establishers of new relationships, of other ways of ‘relating’ to others”, as philosopher Vinciane Despret proposes in her critical readings of animal behaviour scientific literature (“Living as a Bird”, Polity Press, 2022). This event invites you to bring experiences of habitat and territory and any material - large or small - that may co-facilitate nest making.""") "Gather-town + bUm, Kreuzberg" "Susanne Schmitt" Nothing (Just <| Image 1 "https://lh3.googleusercontent.com/iynR5zfnFMB0Y9oH8fuPsdNlFul0xROjWxjEVfUzXGyD6fIaDYRQosZ7_WNQqAXSBZlDq6gmvjWmbbCCwgL0ve3LCqvVdfe5uTLRAkds4F2pWHlaizeNcAX6jtHSwoYQE6em25VPw6bfCuu4cA")
         , Event 7 Jul 22 "t.b.a. (Queering #5)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
         , Event 21 Jul 22 "t.b.a. (Queering #6)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." Nothing Nothing
         ]

@@ -1,6 +1,6 @@
 module Snippets.Anarchive exposing (..)
 
-import Accordion.Article as Article
+import Article
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr exposing (class, css, href, src, title)

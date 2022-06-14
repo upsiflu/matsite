@@ -1,6 +1,6 @@
 module Snippets.Festival exposing (..)
 
-import Accordion.Article as Article exposing (Article, BodyTemplate)
+import Article exposing (Article, BodyTemplate)
 import Css exposing (..)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attr

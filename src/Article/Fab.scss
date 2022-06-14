@@ -1,0 +1,50 @@
+//------
+
+.subscribe.display {
+    background: #4F8;
+    padding: 1.5rem 0;
+    position: absolute;
+    top: 2rem;
+    z-index: 2;
+    border-radius: 2rem 0;
+    right: 0;
+
+    >h2 {
+        color: black;
+    }
+
+    >span {
+        padding: 0 1.25rem;
+    }
+
+    #mailTeam {
+        padding: 0 1.25rem;
+        background: white;
+        font-weight: bold;
+        font-size: 1.25em;
+    }
+}
+
+.fab summary {
+    list-style: none !important;
+    height: 100%;
+    display: flex;
+    align-items: center;
+
+    z-index: 11;
+
+    >span.title {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+.fab {
+    >details {
+        >summary {
+            list-style-type: none !important;
+        }
+    }
+}

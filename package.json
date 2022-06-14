@@ -2,6 +2,7 @@
   "license": "CC-BY-NC-SA-4.0",
   "devDependencies": {
     "@parcel/transformer-elm": "^2.5.0",
+    "@parcel/transformer-sass": "^2.5.0",
     "elm": "^0.19.1-5",
     "elm-review": "^2.7.0",
     "parcel": "^2.5.0",

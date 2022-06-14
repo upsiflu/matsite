@@ -1,6 +1,5 @@
-module Accordion.Article.ViewModel exposing
-    ( ViewModel
-    , Region(..)
+module Accordion.Segment exposing
+    ( Region(..)
     , regionToString
     , addWidth, Offset, cumulativeOffset
     , offsetToCssVariables, zeroOffset
@@ -9,6 +8,7 @@ module Accordion.Article.ViewModel exposing
     , toCssVariables
     , view, edit, toClass
     , defaultPeekConfig
+    , Segment
     )
 
 {-| Display Data as a Article within an `Accordion`.
@@ -45,8 +45,8 @@ module Accordion.Article.ViewModel exposing
 
 -}
 
-import Accordion.Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
-import Accordion.Article.Fab as Fab exposing (Fab)
+import Article.Fab as Fab exposing (Fab)
+import Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -73,7 +73,7 @@ import Zipper.Branch as Branch exposing (Branch)
     - neighbors (lazy)
 
 -}
-type alias ViewModel =
+type alias Segment =
     { ---- Position
       position : Position
     , region : Region
@@ -108,7 +108,7 @@ defaultPeekConfig =
 
 
 {-| -}
-path : ViewModel -> List Direction
+path : Segment -> List Direction
 path =
     .position >> .path
 
@@ -173,7 +173,7 @@ cumulativeOffset =
         |> List.foldl (.offset >> addOffset)
 
 
-isPeek : ViewModel -> Bool
+isPeek : Segment -> Bool
 isPeek { region } =
     case region of
         Peek _ ->
@@ -183,13 +183,13 @@ isPeek { region } =
             False
 
 
-isParent : ViewModel -> Bool
+isParent : Segment -> Bool
 isParent =
     path >> (==) [ Up ]
 
 
 {-| -}
-addWidth : { c | templates : Article.Templates } -> ViewModel -> Bool -> Width -> Offset -> Offset
+addWidth : { c | templates : Article.Templates } -> Segment -> Bool -> Width -> Offset -> Offset
 addWidth config model isExpanded width acc =
     let
         respectInfoLines : Bool
@@ -214,7 +214,7 @@ addWidth config model isExpanded width acc =
             { acc | headers = acc.headers + 1, units = acc.units + 1 + respectedInfoLines, infoLines = acc.infoLines + respectedInfoLines }
 
 
-toString : ViewModel -> String
+toString : Segment -> String
 toString mode =
     let
         pos =
@@ -234,13 +234,13 @@ toString mode =
 
 
 {-| -}
-toClass : ViewModel -> Html.Attribute msg
+toClass : Segment -> Html.Attribute msg
 toClass =
     toString >> class
 
 
 {-| -}
-toCssVariables : ViewModel -> Html.Attribute msg
+toCssVariables : Segment -> Html.Attribute msg
 toCssVariables =
     .offset >> offsetToCssVariables >> List.map Layout.toProperty >> css
 
@@ -267,7 +267,7 @@ offsetToCssVariables { screens, columns, units, headers, infoLines } =
 3.  INHERITED: The first occurrence encountered upward its ancestors
 
 -}
-occ : ViewModel -> Maybe Occurrence
+occ : Segment -> Maybe Occurrence
 occ { segment, branch, breadcrumbs } =
     segment.fab
         |> Maybe.andThen Fab.occurrence
@@ -289,7 +289,7 @@ This satisfies the Ui rule that an app's screen may at most show one Fab.
     3. INHERITED: Any upcoming
 
 -}
-fab : { c | now : Time.Posix } -> ViewModel -> Maybe Fab
+fab : { c | now : Time.Posix } -> Segment -> Maybe Fab
 fab config { position, branch, breadcrumbs } =
     if position.role == Parent then
         branch ()
@@ -318,7 +318,7 @@ In a future version of the algorithm, we my want to produce a details/summary th
 For now, we have a suboptimal solution.
 
 -}
-toc : { c | templates : Article.Templates } -> ViewModel -> Maybe ( Html Never, Int )
+toc : { c | templates : Article.Templates } -> Segment -> Maybe ( Html Never, Int )
 toc config { branch, position } =
     if position.role == Parent then
         branch ()
@@ -365,7 +365,7 @@ heading { templates } s =
 ---- View ----
 
 
-byline : { a | templates : Templates } -> ViewModel -> ( Html Never, Int )
+byline : { a | templates : Templates } -> Segment -> ( Html Never, Int )
 byline ({ templates } as config) model =
     case ( getTemplate .info model.segment templates, model.segment.info, model.position.role ) of
         ( Just Toc, _, Parent ) ->
@@ -397,7 +397,7 @@ edit :
     , rename : String -> msg
     , insert : Direction -> msg
     }
-    -> ViewModel
+    -> Segment
     -> Ui msg
 edit { zone, now, templates, do, delete, rename, insert } ({ position, segment } as model) =
     let
@@ -526,7 +526,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
 {-| -}
 view :
     { c | zone : ( String, Time.Zone ), templates : Templates, now : Time.Posix }
-    -> ViewModel
+    -> Segment
     -> Ui msg
 view config =
     view_ config (Ui.fromEmpty identity) []
@@ -536,7 +536,7 @@ view_ :
     { c | templates : Templates, zone : ( String, Time.Zone ), now : Time.Posix }
     -> Ui msg
     -> List (Html msg)
-    -> ViewModel
+    -> Segment
     -> Ui msg
 view_ ({ zone, templates } as config) ui overlays model =
     let
