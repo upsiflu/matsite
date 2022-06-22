@@ -31,5 +31,9 @@ incipit =
             [ text "“Creativity and innovation within soft limits is a general character of the MaT practice. Each session has a theme, a set of readings, proposed experiential practices and propositions, and often a co-facilitator. There is also a temporal limitation; the designated 90 minutes marks the boundaries of the event. This additionally makes the practice urgent, ephemeral and thus all the more precious.”" ]
         , p []
             [ text "--", a [ href "/balam-kenter" ] [ text "Balam Kenter" ] ]
+        , p []
+            [ a [ Attr.target "_blank", href "https://arena-attachments.s3.amazonaws.com/15227955/58dc7d974f3347933305b564051c6b09.pdf?1645189093" ]
+                [ text "📖 Read Balam's essay over at are.na!" ]
+            ]
         ]
         |> Article.Illustration
