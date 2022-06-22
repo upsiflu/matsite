@@ -1,0 +1,16 @@
+.Accordion {
+
+    >.nearWest {
+        left: calc(var(--x) - var(--nearWest-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
+        top: var(--y);
+        z-index: 3;
+
+        &:not(.hasBody) {
+            >.segmentLabel {
+                writing-mode: vertical-rl;
+                padding: 1.125rem 1rem;
+            }
+        }
+    }
+
+}

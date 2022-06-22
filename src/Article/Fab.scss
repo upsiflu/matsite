@@ -48,3 +48,36 @@
         }
     }
 }
+
+.P>.fab {
+    position: absolute;
+    top: calc(var(--here-height) - 6rem);
+    right: calc(0px - var(--nearWest-width) - 3rem);
+    transition: right 0.5s, top 0.5s, transform 0.2s;
+    display: block;
+    background: #4f8;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 2rem;
+    color: blue;
+    z-index: 11;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    span.title {
+        line-height: 1ex;
+        font-family: "subaruheavy";
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        font-size: calc(7em / 8);
+    }
+}
+
+.P>.fab.subscribe {
+    right: -2rem;
+}

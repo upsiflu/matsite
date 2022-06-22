@@ -1,3 +1,5 @@
+@use 'Accordion/Region';
+
 .Accordion {
     /* Cumulative measures */
     --west-width: calc(var(--west-units) * var(--unit));
@@ -6,39 +8,49 @@
     --south-height: calc(var(--south-units) * var(--unit));
     --info-height: calc(var(--north-infoLines) * var(--unit));
 
-    /* Cross stroke-widths */
+    --nearNorth-height: calc(var(--nearNorth-units) * var(--unit));
+    --nearSouth-height: calc(var(--nearSouth-units) * var(--unit));
 
+
+
+    /* What is the difference between 'center' and 'here'?
+    'here' includes the 'peek' region, which is "behind" the 
+    'center' region but has fixed, preset dimensions (see Layout.scss)
+    */
+
+
+    // `here` and `center` demensions depend on whether focus has body
     &.focusHasBody {
-        --here-width: calc(var(--center-columns) * var(--column) + var(--center-screens) * var(--screen));
+        --here-width: var(--center-width);
+        --here-height: var(--center-height);
+        --center-width: calc(var(--center-columns) * var(--column) + var(--center-screens) * var(--screen));
+        --center-height: var(--fit-height);
     }
 
     &:not(.focusHasBody) {
-        --here-width: var(--column);
+        --here-width: max(var(--peek-width), var(--center-width));
+        --here-height: max(var(--peek-height), var(--center-height));
 
         &.🪗🁣 {
             --center-height: calc(var(--unit) * var(--center-infoLines) + var(--unit));
+            --center-width: var(--column);
         }
 
         &.🪗🀱 {
-            --center-height: var(--here-height);
+            --center-height: var(--column);
+            --center-width: var(--unit);
         }
-    }
-
-    &.🪗🁣 {
-
-        /* Aisles stack headers */
-        --nearWest-height: calc(var(--nearWest-units) * var(--unit));
-        --nearEast-height: calc(var(--nearEast-units) * var(--unit));
     }
 
     position:relative;
     height: var(--height);
-    transition:height var(--animation-duration),
-    width var(--animation-duration);
+    width: var(--width);
+
+    /*---- focusIsBackground and not ----*/
+
 
     &.focusIsBackground {
         --here-height: var(--column);
-        // --x: calc(50vw - var(--column) / 2);
         --x: 0;
         --y: calc(50vh - var(--column) / 2);
         --width: 100vw;
@@ -48,307 +60,58 @@
         --nearWest-width: calc(var(--nearWest-units) * var(--unit));
         --nearEast-width: calc(var(--nearEast-units) * var(--unit));
 
+
         left: 0;
-        width: var(--width);
     }
 
     &:not(.focusIsBackground) {
-        /* Total extents plus 50vw empty room to select outmost segments by scrolling */
-        left: 50vw;
-        width: calc(var(--width) + 50vw);
-    }
-
-    &:not(.focusIsBackground) {
-        --here-height: max(var(--column), calc(var(--fit-height) - var(--info-height)));
-
-        &.🪗🁣 {
-            --x: calc(var(--west-width) + var(--here-width) / 2 - var(--column) / 2);
-            --y: calc(var(--north-height) + var(--nearWest-height));
-            --width: calc(var(--west-width) + var(--here-width) + var(--east-width));
-            --height: calc(var(--north-height) + var(--nearWest-height) + var(--here-height) + var(--nearEast-height) + var(--south-height));
+        --x: calc(50vw + var(--west-width) + var(--nearWest-width));
+        --y: calc(50vh + var(--north-height) + var(--nearNorth-height));
+        --width: calc(100vw + var(--west-width) + var(--nearWest-width) + var(--here-width) + var(--nearEast-width) + var(--east-width));
+        --height: calc(100vh + var(--north-height) + var(--nearNorth-height) + var(--here-height) + var(--nearSouth-height) + var(--south-height));
 
 
-            /* Compress height in main menu-like situation */
-            &.focusIsRoot:not(.focusHasBody) {
-                --here-height: max(var(--column), calc(100vh - var(--padding) * 2 - var(--north-height) - var(--info-height) - var(--nearEast-height) - var(--nearWest-height) - var(--south-height)));
-            }
-        }
-
-        &.🪗🀱 {
-            --x: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) / 2 - var(--column) / 2);
-            --y: calc(var(--north-height));
-            --width: calc(var(--west-width) + var(--nearWest-width) + var(--here-width) + var(--nearEast-width) + var(--east-width));
-            --height: calc(var(--north-height) + var(--here-height) + var(--south-height));
-
-            /* Aisles expand */
-            --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
-            --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
-        }
-    }
-
-    /*---- horizontal and vertical ----*/
-
-
-    .🀱 {
-        position: absolute;
-        transition: opacity 0s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
-        height: var(--hereHeight);
-
-        &:not(.hasBody) {
-            width: var(--unit);
-        }
-    }
-
-    .🁣 {
-        position: absolute;
-        transition: opacity 0s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
-        width: var(--column);
-        height: var(--unit);
-
-        &:not(.hasBody) {
-            height: var(--unit);
-        }
-    }
-
-
-
-    /* The extreme regions are tucked to the edges of the accordion */
-    >.north {
-        left: var(--x);
-        top: calc(var(--units) * var(--unit));
-        width: var(--column);
-        height: var(--unit);
-        z-index: 4;
-    }
-
-    >.south {
-        left: var(--x);
-        top: calc(var(--height) - var(--south-height) + var(--units) * var(--unit));
-        width: var(--column);
-        height: var(--unit);
-        z-index: 4;
-    }
-
-    >.west {
-        left: calc(var(--units) * var(--unit));
-        top: var(--y);
-        width: var(--unit);
-        // height: var(--here-height);
-        height: var(--column);
-
-        >.segmentLabel {
-            writing-mode: vertical-rl;
-            padding: 1.125rem 1rem;
-        }
-
-        z-index: 4;
-    }
-
-    >.east {
-        left: calc(var(--width) - var(--east-width) + var(--units) * var(--unit));
-        top: var(--y);
-        width: var(--unit);
-        // height: var(--here-height);
-        height: var(--column);
-
-        >.segmentLabel {
-            writing-mode: vertical-rl;
-            padding: 1.125rem 1rem;
-        }
-
-        z-index: 4;
-    }
-
-
-    &.🪗🁣>.nearWest {
-        left: var(--x);
-        top: calc(var(--north-height) + var(--units) * var(--unit));
-        z-index: 3;
-    }
-
-    &.🪗🀱>.nearWest {
-        left: calc(var(--west-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
-        top: var(--y);
-        z-index: 3;
-
-        &:not(.hasBody) {
-            height: var(--column);
-
-            >.segmentLabel {
-                writing-mode: vertical-rl;
-                padding: 1.125rem 1rem;
-            }
-        }
-    }
-
-
-
-    &.🪗🁣>.nearEast {
-        left: var(--x);
-        top: calc(var(--height) - var(--south-height) - var(--nearEast-height) + var(--units) * var(--unit));
-
-        z-index: 3;
-    }
-
-    &.🪗🀱>.nearEast {
-        left: calc(var(--width) - var(--east-width) - var(--nearEast-width) + var(--headers) * var(--unit) + var(--columns) * var(--column) + var(--screens) * var(--screen));
-        top: var(--y);
-        z-index: 3;
-
-        &:not(.hasBody) {
-            height: var(--column);
-
-            >.segmentLabel {
-                writing-mode: vertical-rl;
-                padding: 1.125rem 1rem;
-            }
-        }
+        /* Aisles expand around horizontal focus */
+        --nearWest-width: calc(var(--nearWest-headers) * var(--unit) + var(--nearWest-columns) * var(--column) + var(--nearWest-screens) * var(--screen));
+        --nearEast-width: calc(var(--nearEast-headers) * var(--unit) + var(--nearEast-columns) * var(--column) + var(--nearEast-screens) * var(--screen));
 
     }
 
-
-    >.center {
-        left: var(--x);
-    }
-
-    &.focusHasBody>.center {
-        top: var(--y);
-        height: var(--here-height);
-        width: var(--here-width);
-
-    }
-
-    &.focusHasBody.🪗🀱>.center {
-        left: calc(var(--west-width) + var(--nearWest-width));
-
-    }
-
-    &.focusIsBackground>.🀱:not(.center),
-    &.focusIsBackground>.🁣:not(.center) {
-        z-index: 2;
-    }
-
-    &.focusIsBackground>.🀱:not(.center):hover,
-    &.focusIsBackground>.🁣:not(.center):hover {
-        background: black;
-    }
-
-
-    &.focusIsBackground>.center {
-        width: 100vw;
-        height: 100vh;
-        left: 0px;
-        top: calc(0px - var(--padding));
-        z-index: 1;
-
-        >.body {
-            /* fullscreen background:
-            - behind content
-            - snaps to screen bottom left (so that play button is visible)
-            - height is 100vh
-            - width is either 16:9 portrait or 16:9 landscape, depending on device orientation
-            */
-            z-index: 0;
-            overflow: visible;
-            bottom: 0px;
-            left: 0;
-            position: fixed;
-            min-width: 100vw;
-            min-height: 100vh;
-
-            @media (orientation:portrait) {
-                width: calc(100vh / 16 * 9);
-                max-height: 100vh;
-            }
-
-            @media (orientation:landscape) {
-                width: calc(100vh / 9 * 16);
-                max-height: 100vh;
-            }
-
-            opacity: 1
-        }
-    }
-
-    &:not(.focusIsBackground)>.center {
-        z-index: 8;
-    }
-
-    &:not(.focusHasBody)>.center {
-
-
-        &.🁣 {
-            top: calc(var(--north-height) + var(--nearWest-height));
-            height: var(--unit);
-            width: var(--column);
-        }
-
-        &.🀱 {
-            top: var(--y);
-
-            >.segmentLabel {
-                writing-mode: vertical-rl;
-                padding: 1.125rem 1rem;
-            }
-
-            height: var(--center-height);
-            width: var(--unit);
-        }
-    }
-
-    >.peek {
-        overflow: hidden;
-    }
-
-    &.focusHasBody>.peek {
-        left: calc(var(--x) + var(--column) / 2);
-        top: calc(var(--y) + var(--here-height) / 2);
-        width: 0px;
-        height: 0px;
-    }
-
-
-
-    &.🪗🁣:not(.focusHasBody)>.peek {
-        left: var(--west-width);
-        top: calc(var(--y) + var(--center-height));
-        width: var(--here-width);
-        height: calc(var(--here-height) - var(--center-height));
-        background: #006;
-        border-top: 1px dashed black;
-        border-bottom: 1px dashed white;
-        box-sizing: border-box;
-
-        img {
-            object-fit: cover;
-            max-width: max(100vw, 100vh);
-            min-width: 100%;
-            height: 100%;
-        }
-    }
-
-    &.🪗🀱:not(.focusHasBody)>.peek {
-        left: calc(var(--west-width) + var(--nearWest-width) + var(--unit));
-        top: var(--y);
-        width: calc(var(--column) - var(--unit));
-        height: var(--here-height);
-        border-right: 1px dashed white;
-        box-sizing: border-box;
-
-        img {
-            max-width: 100vw;
-            width: auto;
-            height: 100%;
-        }
-    }
 }
 
 
 
 
 /* ================================================================================
-*                                  Decorative Lines 
+*                                  Rectangles 
 */
+
+/* closest-aisle.js makes sure margins correspond to the vector 
+from the focus-pivot to the top left edge of the screen.
+This means that #virtualScreen, if given a position that corresponds to the location of the .F-pivot relative to the Accordion,
+accurately fills the viewport at the moment the focus has changed, and can consequently be used to hard-scroll onto the new .F */
+#virtualScreen {
+    background: yellowgreen;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+
+    // left and top correspond to .F-pivot, on top of which the margins emulate scroll-offset
+    left: calc(var(--x) + 1.5rem);
+    top: calc(var(--y) + var(--center-height) * 0.4);
+    transition: none;
+}
+
+/* The pivot is the point that selects the focus through scrolling. It's glued to the viewport. */
+#pivot {
+    position: fixed;
+    top: 40vh;
+    left: 3.5rem;
+    border: 1rem solid transparent;
+    border-left: 1rem solid orangered;
+
+}
+
 
 .screenBackground {
     width: 100vw;
@@ -366,9 +129,7 @@
 .aisleBackground {
     width: calc(var(--width) - var(--west-width) - var(--east-width));
     height: calc(var(--height) - var(--north-height) - var(--south-height) + var(--info-height));
-    border: 0.5px solid grey;
-    border-left: 0.5px solid white;
-    border-top: 0.5px solid white;
+    border: none;
     box-sizing: border-box;
     pointer-events: none;
     position: absolute;

@@ -12,11 +12,14 @@
     --fit-height: calc(100vh - 6rem - var(--padding) * 2);
 
     /* How much the segments can bleed behind each other */
-    --bleed: calc(var(--unit) / 6);
+    --bleed: 0.5rem;
 
     /* spacing around top and bottom of the accordion */
-
     --padding: 2rem;
+
+    /* Dimensions of a peek */
+    --peek-height: 9rem;
+    --peek-width: 9rem;
 }
 
 

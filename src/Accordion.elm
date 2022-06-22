@@ -77,10 +77,11 @@ import Article.Fab as Fab
 import Codec exposing (Codec, encoder, int, string, variant0, variant1)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
-import Html.Styled as Html exposing (Html)
-import Html.Styled.Attributes exposing (class, classList, css, id)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled as Html exposing (Html, node)
+import Html.Styled.Attributes exposing (attribute, class, classList, css, id)
+import Html.Styled.Events as Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
+import Json.Decode as Decode
 import Json.Encode as Encode
 import Layout
 import Levenshtein
@@ -598,6 +599,7 @@ type alias ViewMode msg =
     , now : Time.Posix
     , do : (String -> Intent) -> msg
     , volatile : Msg -> msg
+    , scrolledTo : String -> msg
     }
 
 
@@ -606,7 +608,7 @@ view :
     ViewMode msg
     -> Accordion
     -> Ui msg
-view ({ zone, now, do, volatile } as mode) accordion =
+view ({ zone, now, do, scrolledTo, volatile } as mode) accordion =
     let
         c =
             config accordion
@@ -746,8 +748,8 @@ view ({ zone, now, do, volatile } as mode) accordion =
                         ]
                     ]
 
-        classes : Html.Attribute msg
-        classes =
+        statistics : Html.Attribute msg
+        statistics =
             classList
                 [ ( "\u{1FA97}" ++ Article.orientationToString (Article.orientation (Tree.focus c.tree)), True )
                 , ( "aisleHasBody", List.any (Article.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
@@ -788,7 +790,7 @@ view ({ zone, now, do, volatile } as mode) accordion =
                         >> List.filter (\a -> List.member a (List.map Tuple.second nest))
                         >> List.find (Article.isIllustration c)
 
-                ( peekConfig, peekList, cache ) =
+                ( peekConfig, maybePeek, cache ) =
                     case maybePeekTargetBranch of
                         Just targetBranch ->
                             let
@@ -801,53 +803,66 @@ view ({ zone, now, do, volatile } as mode) accordion =
                                         illu
                                         |> Maybe.withDefault nest
                             in
-                            ( { targetId = (Branch.node targetBranch).id, hint = "" } |> Debug.log "PEEK found"
-                            , Maybe.toList illu |> List.map (Tuple.pair Fold.fataMorganaPosition)
+                            ( { targetId = (Branch.node targetBranch).id, hint = "" }
+                            , illu |> Maybe.map (Tuple.pair Fold.fataMorganaPosition)
                             , cche
                             )
 
                         Nothing ->
-                            ( Segment.defaultPeekConfig |> Debug.log "PEEK Fallback Default"
-                            , [ ( Fold.fataMorganaPosition, Article.defaultIllustration ) ]
+                            ( Segment.defaultPeekConfig
+                            , Just ( Fold.fataMorganaPosition, Article.defaultIllustration )
                             , nest
                             )
             in
             [ ( North, List.reverse up )
             , ( West, List.reverse left )
-            , ( NearWest, List.reverse x )
             , ( Center, [ here ] )
-            , ( Peek peekConfig, peekList )
+            , ( Peek peekConfig, Maybe.toList maybePeek )
             , ( Cache, cache )
-            , ( NearEast, y )
             , ( East, right )
             , ( South, down )
             ]
+                ++ (case here |> Tuple.second |> Article.orientation of
+                        Horizontal ->
+                            [ ( NearWest, List.reverse x )
+                            , ( NearEast, y )
+                            , ( NearNorth, [] )
+                            , ( NearSouth, [] )
+                            ]
+
+                        Vertical ->
+                            [ ( NearNorth, List.reverse x )
+                            , ( NearSouth, y )
+                            , ( NearWest, [] )
+                            , ( NearEast, [] )
+                            ]
+                   )
 
         renderRegion : ( Region, List A ) -> List (Renderable msg)
         renderRegion ( region, list ) =
-            List.foldl
-                (\( position, segment ) ( offset, newList ) ->
-                    let
-                        model =
-                            { ---- Position
-                              position = position
-                            , region = region
-                            , offset = offset
+            list
+                |> List.foldl
+                    (\( position, article ) ( offset, newList ) ->
+                        let
+                            segment =
+                                { ---- Position
+                                  position = position
+                                , region = region
+                                , offset = offset
 
-                            ---- Data
-                            , segment = segment
+                                ---- Data
+                                , article = article
 
-                            ---- Lazy Neighbors
-                            , breadcrumbs = breadcrumbs segment.id
-                            , branch = branch segment.id
-                            }
-                    in
-                    ( Segment.addWidth c model (Article.hasBody c segment) (Article.width segment) offset
-                    , viewArticle model :: newList
+                                ---- Lazy Neighbors
+                                , breadcrumbs = breadcrumbs article.id
+                                , branch = branch article.id
+                                }
+                        in
+                        ( Segment.addWidth c segment (Article.hasBody c article) (Article.width article) offset
+                        , viewArticle segment :: newList
+                        )
                     )
-                )
-                ( Segment.zeroOffset, [] )
-                list
+                    ( Segment.zeroOffset, [] )
                 |> (\( totalOffset, renderedArticles ) ->
                         Segment.offsetToCssVariables totalOffset
                             |> List.map (Tuple.mapFirst ((++) (Segment.regionToString region ++ "-")) >> Var)
@@ -859,6 +874,16 @@ view ({ zone, now, do, volatile } as mode) accordion =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
             , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
+            , ( "scrollToAisle"
+              , node "closest-aisle"
+                    [ attribute "increment" (focusId accordion)
+                    , id "virtualScreen"
+                    , Decode.at [ "detail" ] Decode.string
+                        |> Decode.map scrolledTo
+                        |> Events.on "scrolledToA"
+                    ]
+                    []
+              )
             ]
                 ++ (if False then
                         [ ( "logMenu", viewLog ) ]
@@ -894,15 +919,15 @@ view ({ zone, now, do, volatile } as mode) accordion =
                 )
                 ( [], [] )
                 >> (\( items, attrs ) ->
-                        Ui.composeScenes
-                            (\scenes ->
-                                ( "Accordion"
-                                , Keyed.ul
-                                    (class "Accordion" :: classes :: attrs)
-                                    (List.sortBy Tuple.first (overlays ++ scenes))
+                        Ui.concat (propertySheet :: items)
+                            |> Ui.composeScenes
+                                (\scenes ->
+                                    ( "Accordion"
+                                    , Keyed.ul
+                                        (class "Accordion" :: statistics :: attrs)
+                                        (List.sortBy Tuple.first (overlays ++ scenes))
+                                    )
                                 )
-                            )
-                            (Ui.concat (propertySheet :: items))
                             |> Ui.composeControls
                                 (editAccordion
                                     >> Html.section [ class "ui sheet" ]
@@ -925,10 +950,14 @@ type alias A =
     ( Position, Article )
 
 
+{-| Branch accumulation
+-}
 type alias B =
     { orientation : Orientation, role : Role, here : A, nest : List A, left : List A, right : List A, down : List A }
 
 
+{-| Tree accumulation
+-}
 type alias C =
     { up : List A, left : List A, x : List A, here : A, nest : List A, y : List A, right : List A, down : List A }
 
@@ -977,6 +1006,8 @@ renderBranch =
     }
 
 
+{-| This fold sorts the segments, beginning at the focus, into `C`, comprising four direction, `here`, and a catchall `nest`
+-}
 renderTree : Tree.Fold {} A B C
 renderTree =
     let

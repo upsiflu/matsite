@@ -88,15 +88,27 @@ img {
     padding: 0.5rem 0.75rem;
 }
 
+
+.body h3 {
+    max-width: 21rem;
+    font-family: subarumedium, sans;
+    padding: 0;
+    font-size: 1em;
+    color: #4F8;
+    margin: 1.5rem 0 1.5rem 0;
+}
+
 .segment-heading {
     font-family: space_monoregular;
     color: white;
     font-size: 1.2rem;
     position: relative;
     left: -2px;
-    padding-right: 0;
-    padding-top: 1.5rem;
     letter-spacing: -0.5px;
+    max-width: 21rem;
+    padding: 0 1.125rem;
+    margin: 1.5rem 0 1.5rem 0;
+
 }
 
 

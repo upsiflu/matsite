@@ -1,0 +1,96 @@
+.Accordion {
+
+    >.center {
+        left: var(--x);
+        top: var(--y);
+    }
+
+    &.focusHasBody>.center {
+        height: var(--here-height);
+        width: var(--here-width);
+    }
+
+    &.focusHasBody.🪗🀱>.center {
+        left: calc(var(--west-width) + var(--nearWest-width));
+
+    }
+
+    &.focusIsBackground>.🀱:not(.center),
+    &.focusIsBackground>.🁣:not(.center) {
+        z-index: 2;
+    }
+
+    &.focusIsBackground>.🀱:not(.center):hover,
+    &.focusIsBackground>.🁣:not(.center):hover {
+        background: black;
+    }
+
+
+    &.focusIsBackground>.center {
+        width: 100vw;
+        height: 100vh;
+        left: 0px;
+        top: calc(0px - var(--padding));
+        z-index: 1;
+
+        >.body {
+            /* fullscreen background:
+            - behind content
+            - snaps to screen bottom left (so that play button is visible)
+            - height is 100vh
+            - width is either 16:9 portrait or 16:9 landscape, depending on device orientation
+            */
+            z-index: 0;
+            overflow: visible;
+            bottom: 0px;
+            left: 0;
+            position: fixed;
+            min-width: 100vw;
+            min-height: 100vh;
+
+            @media (orientation:portrait) {
+                width: calc(100vh / 16 * 9);
+                max-height: 100vh;
+            }
+
+            @media (orientation:landscape) {
+                width: calc(100vh / 9 * 16);
+                max-height: 100vh;
+            }
+
+            opacity: 1
+        }
+    }
+
+    &:not(.focusIsBackground)>.center {
+        z-index: 8;
+        mix-blend-mode: screen;
+        background: #2222FF;
+
+        a {
+            color: white;
+        }
+    }
+
+    &:not(.focusHasBody)>.center {
+        top: var(--y);
+
+
+        &.🁣 {
+            height: var(--unit);
+            width: var(--column);
+        }
+
+        &.🀱 {
+
+            >.segmentLabel {
+                writing-mode: vertical-rl;
+                padding: 1.125rem 1rem;
+            }
+
+            height: var(--center-height);
+            width: var(--center-width);
+        }
+    }
+
+}
