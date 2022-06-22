@@ -67,9 +67,9 @@ typography =
             [ fontFamilies [ "subarumedium", "sans" ]
             , fontSize (rem 1)
             ]
-        , Global.selector "p" pStyle
-        , Global.selector "a" aStyle
-        , Global.selector "h2" h2Style
+        --, Global.selector "p" pStyle
+        --, Global.selector "a" aStyle
+        --, Global.selector "h2" h2Style
         , Global.selector ".bleeding" bleedingStyle
         , Global.selector "img" bleedingStyle
         ]
@@ -156,16 +156,7 @@ anchoredLabel t =
         >> Html.a
             [ Attributes.href (sanitise t)
             , css
-                [ link
-                    [ textDecoration inherit
-                    , color theme.li
-                    ]
-                , visited
-                    [ color theme.li2
-                    ]
-
-                --, outline3 (px 1) dashed theme.li
-                , display block
+                [ display block
                 , padding2 rhythm.verticalPadding rhythm.padding
                 , maxWidth rhythm.columnWidth
                 ]
@@ -234,16 +225,7 @@ headerHelp query id =
                 )
             , Attributes.class "segmentLabel"
             , css
-                [ link
-                    [ textDecoration inherit
-                    , color theme.li
-                    ]
-                , visited
-                    [ color theme.li
-                    ]
-
-                --, outline3 (px 1) dashed theme.li
-                , display block
+                [ display block
                 , padding2 rhythm.verticalPadding rhythm.padding
                 ]
             ]

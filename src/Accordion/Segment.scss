@@ -1,87 +1,87 @@
-.A {
-
-    img.artist {
-        mix-blend-mode: overlay;
-        position: relative;
-        left: 1rem;
-        width: calc(100% - var(--bleed));
+@keyframes invert {
+    0% {
+        filter: invert(1);
     }
 
-    >a.segmentLabel {
-        &:hover {
-            background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%), linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%), linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
-            background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-            background-size: 3rem 3rem;
-            background-repeat: repeat;
-        }
+    20% {
+        filter: invert(1);
     }
 
-    >a {
-        background-image: linear-gradient(135deg, transparent 25%, transparent 25%), linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%), linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
-        background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-        background-size: 1.5rem 1.5rem;
-        background-repeat: repeat;
-        transition: all 0.2s;
+    21% {
+        filter: invert(0);
     }
 
-    a.segmentLabel {
-        &:link {
-            color: #eee;
-            background: rgba(255, 255, 255, 0.3);
-            color: #ccc;
-            background: transparent;
-        }
+    40% {
+        filter: invert(0);
+    }
 
-        &:visited {
-            color: #eee;
-            background: rgba(255, 255, 255, 0.3);
-            color: #ccc;
-            background: transparent;
-        }
+    41% {
+        filter: invert(1);
+    }
 
-        &:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
+    50% {
+        filter: invert(1);
+    }
+
+    51% {
+        filter: invert(0);
+    }
+
+    60% {
+        filter: invert(0);
+    }
+
+    61% {
+        filter: invert(1);
+    }
+
+    99% {
+        filter: invert(1);
+    }
+
+    100% {
+        filter: invert(0);
     }
 }
 
+a:active {
+    animation: invert 1s;
+}
+
+
+.segmentLabel:not(:hover) {
+    text-decoration: inherit;
+}
+
+
+.P .segmentLabel {
+    color: black;
+    text-decoration: inherit;
+}
+
+.Ba .segmentLabel {
+    color: #44F;
+}
+
+:is(.F, .A, .B) .segmentLabel {
+    color: #0000FF;
+}
+
+
+.multipleHeaders {
+    min-width: var(--column);
+}
+
+.byline {
+    height: calc(var(--ownInfoLines) * var(--unit));
+    background: white;
+    color: black;
+    display: flex;
+    align-items: center;
+    padding: 0 1.125rem;
+}
+
 .F {
-
-
-    >a.segmentLabel {
-        &:hover {
-            background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%), linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%), linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
-            background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-            background-size: 3rem 3rem;
-            background-repeat: repeat;
-        }
-    }
-
-    >a {
-        background-image: linear-gradient(135deg, transparent 25%, transparent 25%), linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%), linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
-        background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-        background-size: 1.5rem 1.5rem;
-        background-repeat: repeat;
-        transition: all 0.2s;
-    }
-
-    a.segmentLabel {
-        &:link {
-            color: #ddd;
-            color: #eee;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        &:visited {
-            color: #ddd;
-            color: #eee;
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        &:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-    }
 
     .info {
         opacity: 1;
@@ -89,122 +89,27 @@
     }
 }
 
-.focusIsBackground {
-    .segmentLabel {
-        h1 {
-            background: #4f8;
-            color: #008;
-            max-width: min-content;
-        }
-    }
+.A {
 
-    >.🀱 {
-        width: var(--unit);
-
-        &:not(.F) {
-            >.body {
-                visibility: hidden;
-                max-height: 0rem;
-            }
-        }
-    }
-
-    >.🁣 {
-        height: var(--unit);
-
-        &:not(.F) {
-            >.body {
-                visibility: hidden;
-                max-height: 0rem;
-            }
-        }
+    &.🁣 {
+        overflow-y: hidden;
     }
 }
 
-.Ba {
-    >a.segmentLabel {
-        &:hover {
-            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
-        }
-    }
 
-    >a {
-        transition: all 0.2s;
-        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
-    }
+.B {}
 
-    a.segmentLabel {
-        &:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-    }
-}
 
-.B {
-    >a.segmentLabel {
-        &:hover {
-            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
-        }
-    }
+.Ba {}
 
-    >a {
-        transition: all 0.2s;
-        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
-        background: hsl(0, 0%, 10%);
-        height: fit-content;
-        outline: none;
-        mix-blend-mode: lighten;
-    }
-
-    a.segmentLabel {
-        &:link {
-            color: #fff;
-            background: white;
-            color: black;
-        }
-
-        &:visited {
-            color: #fff;
-            background: white;
-            color: black;
-        }
-    }
-}
 
 .P {
-    >a.segmentLabel {
-        &:hover {
-            background-image: linear-gradient(135deg, #000 25%, transparent 25%), linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
-        }
-    }
-
-    >a {
-        transition: all 0.2s;
-        background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%), linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
-    }
 
     H1 {
         overflow: visible;
         white-space: nowrap;
     }
 
-    a.segmentLabel {
-        &:link {
-            color: #fff;
-            background: white;
-            color: black;
-        }
-
-        &:visited {
-            color: #fff;
-            background: white;
-            color: black;
-        }
-
-        &:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-    }
 
     .info {
         opacity: 1;
@@ -234,44 +139,8 @@
             background: white;
         }
     }
-
-    >.fab {
-        position: absolute;
-        top: calc(var(--here-height) - 6rem);
-        right: calc(0px - var(--nearWest-width) - 3rem);
-        transition: right 0.5s, top 0.5s, transform 0.2s;
-        display: block;
-        background: #4f8;
-        width: 4rem;
-        height: 4rem;
-        border-radius: 2rem;
-        color: blue;
-        z-index: 11;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        &:hover {
-            transform: scale(1.1);
-        }
-
-        span.title {
-            line-height: 1ex;
-            font-family: "subaruheavy";
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            font-size: calc(7em / 8);
-        }
-    }
-
-    >.fab.subscribe {
-        right: -2rem;
-    }
 }
 
-.A.🁣 {
-    overflow-y: hidden;
-}
 
 
 
@@ -294,32 +163,9 @@
 
 
 
-.cache {
-    visibility: hidden;
-    opacity: 0;
-    transition: height 0.3s, width 0.3s, left 0.2s, top 0.5s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
-    left: var(--x);
-    top: var(--y);
-}
 
-.cache.🀱 {
-    width: var(--unit);
-}
-
-.cache.🁣 {
-    height: var(--unit);
-}
-
+.east,
 .west {
-    width: var(--unit);
-
-    >.body {
-        visibility: hidden;
-        max-height: 0rem;
-    }
-}
-
-.east {
     width: var(--unit);
 
     >.body {
@@ -495,4 +341,58 @@
     }
 
     padding-bottom: 4rem !important;
+}
+
+
+/*--------------- Exceptions -----------------*/
+
+.focusIsBackground {
+    .segmentLabel {
+        h1 {
+            background: #4f8;
+            color: #008;
+            max-width: min-content;
+        }
+    }
+
+    >.🀱 {
+        width: var(--unit);
+
+        &:not(.F) {
+            >.body {
+                visibility: hidden;
+                max-height: 0rem;
+            }
+        }
+    }
+
+    >.🁣 {
+        height: var(--unit);
+
+        &:not(.F) {
+            >.body {
+                visibility: hidden;
+                max-height: 0rem;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/*----White area----*/
+
+.P,
+.B,
+.A:not(.hasBody),
+.F:not(.hasBody) {
+    background: white;
 }

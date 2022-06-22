@@ -141,9 +141,15 @@ iframe.traces {
     }
 }
 
-.F>img.artist {
+.F>img.artist,
+.A img.artist {
     mix-blend-mode: overlay;
     position: relative;
     left: 1rem;
     width: calc(100% - var(--bleed));
+}
+
+
+.generic.lab {
+    padding: 0 1.125rem;
 }

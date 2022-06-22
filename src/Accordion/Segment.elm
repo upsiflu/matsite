@@ -45,8 +45,8 @@ module Accordion.Segment exposing
 
 -}
 
-import Article.Fab as Fab exposing (Fab)
 import Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
+import Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -80,7 +80,7 @@ type alias Segment =
     , offset : Offset
 
     ---- Data
-    , segment : Article
+    , article : Article
 
     ---- Lazy Neighbors
     , breadcrumbs : () -> List Article
@@ -96,6 +96,8 @@ type Region
     | East
     | NearWest
     | NearEast
+    | NearNorth
+    | NearSouth
     | Center
     | Peek { targetId : String, hint : String }
     | Cache
@@ -138,6 +140,12 @@ regionToString region =
 
         NearEast ->
             "nearEast"
+
+        NearSouth ->
+            "nearSouth"
+
+        NearNorth ->
+            "nearNorth"
 
         Center ->
             "center"
@@ -268,8 +276,8 @@ offsetToCssVariables { screens, columns, units, headers, infoLines } =
 
 -}
 occ : Segment -> Maybe Occurrence
-occ { segment, branch, breadcrumbs } =
-    segment.fab
+occ { article, branch, breadcrumbs } =
+    article.fab
         |> Maybe.andThen Fab.occurrence
         |> Maybe.orElseLazy
             (\() ->
@@ -367,13 +375,13 @@ heading { templates } s =
 
 byline : { a | templates : Templates } -> Segment -> ( Html Never, Int )
 byline ({ templates } as config) model =
-    case ( getTemplate .info model.segment templates, model.segment.info, model.position.role ) of
+    case ( getTemplate .info model.article templates, model.article.info, model.position.role ) of
         ( Just Toc, _, Parent ) ->
             toc config model
                 |> Maybe.withDefault ( Html.text "", 0 )
 
         ( Just (Byline l b), _, Parent ) ->
-            ( b, l )
+            ( Html.div [ class "byline" ] [ span [] [ b ] ], l )
 
         ( Nothing, Just CustomToc, Parent ) ->
             toc config model
@@ -399,10 +407,10 @@ edit :
     }
     -> Segment
     -> Ui msg
-edit { zone, now, templates, do, delete, rename, insert } ({ position, segment } as model) =
+edit { zone, now, templates, do, delete, rename, insert } ({ position, article } as model) =
     let
         intend =
-            do segment.id
+            do article.id
 
         ( overlay, propertySheet ) =
             let
@@ -421,8 +429,8 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                         ]
 
                 template =
-                    { body = getTemplate .body segment templates
-                    , info = getTemplate .info segment templates
+                    { body = getTemplate .body article templates
+                    , info = getTemplate .info article templates
                     }
 
                 maybeNot whatNot whatThen =
@@ -437,7 +445,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                 Focus ->
                     let
                         activeOption =
-                            case ( template.body, segment.body ) of
+                            case ( template.body, article.body ) of
                                 ( Just _, _ ) ->
                                     "Preset"
 
@@ -467,7 +475,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                       ]
                     , Html.fieldset [ class "ui" ]
                         [ Html.legend [ class "fill-h" ]
-                            [ Ui.textInput "The Unique ID of this segment" segment.id (Just <| \newName -> rename newName), Ui.distanceHolder, overlaidDeleteButton ]
+                            [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName), Ui.distanceHolder, overlaidDeleteButton ]
                         , Ui.pick options
                         ]
                     )
@@ -475,7 +483,7 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                 Parent ->
                     let
                         activeOption =
-                            case ( template.info, segment.info ) of
+                            case ( template.info, article.info ) of
                                 ( Just _, _ ) ->
                                     "Preset"
 
@@ -498,19 +506,19 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, segment }
                                     )
 
                         originalCaption =
-                            model.segment.caption
+                            model.article.caption
                     in
                     ( []
                     , Html.fieldset [ class "ui" ]
                         [ Html.legend [ class "editCaption" ]
-                            [ Ui.textInput "Caption" segment.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
-                            , Ui.singlePickOrNot segment.caption.showsDate
+                            [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
+                            , Ui.singlePickOrNot article.caption.showsDate
                                 ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
-                                , Just (intend (WithCaption { originalCaption | showsDate = not model.segment.caption.showsDate }))
+                                , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
                                 )
                             ]
                         , Ui.pick options
-                        , Fab.edit { zone = zone, save = WithFab >> intend } model.segment.fab
+                        , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
                         ]
                     )
 
@@ -549,24 +557,24 @@ view_ ({ zone, templates } as config) ui overlays model =
                 |> Maybe.withDefault Ui.none
 
         template =
-            { body = getTemplate .body model.segment templates
-            , info = getTemplate .info model.segment templates
+            { body = getTemplate .body model.article templates
+            , info = getTemplate .info model.article templates
             }
 
         viewCaption cc =
             let
                 oneEntry =
-                    Layout.header "" model.segment.id cc.text
+                    Layout.header "" model.article.id cc.text
 
                 secondEntry o =
                     Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
                         [ oneEntry
                         , Occurrence.view (Occurrence.Short (Tuple.second zone) Occurrence.Days) o
-                            |> Layout.htmlHeader "" model.segment.id
+                            |> Layout.htmlHeader "" model.article.id
                         ]
             in
             if cc.showsDate then
-                model.segment.fab
+                model.article.fab
                     |> Maybe.andThen Fab.occurrence
                     |> Maybe.map secondEntry
                     |> Maybe.withDefault oneEntry
@@ -595,7 +603,7 @@ view_ ({ zone, templates } as config) ui overlays model =
         viewBody body =
             let
                 bodyIsVisible =
-                    Article.isIllustration { templates = templates } model.segment
+                    Article.isIllustration { templates = templates } model.article
                         || model.position.role
                         == Focus
                         || model.position.role
@@ -607,9 +615,9 @@ view_ ({ zone, templates } as config) ui overlays model =
             in
             (if bodyIsVisible then
                 [ Tuple.pair "heading" <|
-                    case heading config model.segment of
+                    case heading config model.article of
                         Just h ->
-                            Html.a [ href (Layout.sanitise model.segment.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+                            Html.a [ href (Layout.sanitise model.article.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
 
                         Nothing ->
                             Html.text ""
@@ -625,26 +633,26 @@ view_ ({ zone, templates } as config) ui overlays model =
                             Html.text ""
 
                         ( Nothing, CustomIllustration ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.segment.id) ] []
+                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
 
                         ( Nothing, CustomContent _ ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.segment.id) ] []
+                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
                 ]
 
              else
                 []
             )
-                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", Article.isIllustration config model.segment ) ] ]
+                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", Article.isIllustration config model.article ) ] ]
 
         ( viewByline, bylineHeight ) =
             byline config model
 
         additionalAttributes =
-            model.segment.additionalClasses
+            model.article.additionalClasses
                 |> List.map class
 
         ownWidthAsVars =
-            (case Article.width model.segment of
+            (case Article.width model.article of
                 Columns c ->
                     ( c, 0 )
 
@@ -660,7 +668,7 @@ view_ ({ zone, templates } as config) ui overlays model =
                               , scr
                               )
                             , ( "ownHeaders"
-                              , Article.hasBody config model.segment |> ifElse 1 0
+                              , Article.hasBody config model.article |> ifElse 1 0
                               )
                             , ( "ownInfoLines"
                               , bylineHeight
@@ -670,44 +678,44 @@ view_ ({ zone, templates } as config) ui overlays model =
     in
     if hideBecauseVeryFarAway then
         List.indexedMap (\i -> Html.map never >> Tuple.pair (String.fromInt i))
-            [ model.segment.caption |> viewCaption
+            [ model.article.caption |> viewCaption
             , Html.div [ class "body waiting" ] []
             ]
             |> Keyed.node "li"
-                (id model.segment.id
+                (id model.article.id
                     :: toClass model
-                    :: class (Article.orientationToString (Article.orientation model.segment))
-                    :: class (bodyTypeToString model.segment.body)
-                    :: Article.structureClass config model.segment
+                    :: class (Article.orientationToString (Article.orientation model.article))
+                    :: class (bodyTypeToString model.article.body)
+                    :: Article.structureClass config model.article
                     :: toCssVariables model
                     :: css ownWidthAsVars
                     :: additionalAttributes
                 )
-            |> Tuple.pair model.segment.id
+            |> Tuple.pair model.article.id
             |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
 
     else
         List.map (Html.map never)
-            [ model.segment.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.segment && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
-            , model.segment.body |> viewBody
+            [ model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
+            , model.article.body |> viewBody
             , viewPeekLink
             , viewByline
-            , Article.orientation model.segment |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
+            , Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
             , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
             ]
             ++ overlays
             ++ [ Html.map never viewFab ]
             |> List.indexedMap (String.fromInt >> Tuple.pair)
             |> Keyed.node "li"
-                (id model.segment.id
+                (id model.article.id
                     :: toClass model
-                    :: class (Article.orientationToString (Article.orientation model.segment))
-                    :: class (bodyTypeToString model.segment.body)
-                    :: Article.structureClass config model.segment
+                    :: class (Article.orientationToString (Article.orientation model.article))
+                    :: class (bodyTypeToString model.article.body)
+                    :: Article.structureClass config model.article
                     :: toCssVariables model
                     :: css ownWidthAsVars
                     :: additionalAttributes
                 )
-            |> Tuple.pair model.segment.id
+            |> Tuple.pair model.article.id
             |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
             |> Ui.with ui

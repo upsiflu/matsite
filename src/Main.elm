@@ -3,17 +3,13 @@ port module Main exposing (..)
 import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
-import Codec exposing (decoder, encoder)
 import Css exposing (..)
 import Data
 import Html as Unstyled
 import Html.Attributes as UnstyledAttributes
-import Html.Events as Events
 import Html.Styled as Html
 import Html.Styled.Attributes as Attributes exposing (href)
 import Html.Styled.Keyed as Keyed
-import Json.Decode as Decode
-import Json.Encode as Encode
 import Layout exposing (..)
 import Task
 import Time
@@ -85,9 +81,7 @@ main =
 ---- Update ----
 
 
-type
-    Msg
-    -- Navigation
+type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
       -- Client View
@@ -262,7 +256,12 @@ view model =
     let
         viewAccordion m =
             Accordion.view
-                { zone = m.zone, now = m.now, do = (|>) "initialSession" >> IntentGenerated, volatile = AccordionMessageReceived }
+                { zone = m.zone
+                , now = m.now
+                , do = (|>) "initialSession" >> IntentGenerated
+                , volatile = AccordionMessageReceived
+                , scrolledTo = ScrolledTo
+                }
                 m.accordion
                 |> Ui.composeScenes
                     (Keyed.node "li" [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
@@ -279,41 +278,35 @@ view model =
                             |> Keyed.ul [ Attributes.class "model" ]
                             |> Html.toUnstyled
                         , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
-                            [ {- m.backlog
-                                     |> Maybe.map
-                                         (encoder Accordion.intentCodec
-                                             >> Encode.encode 0
-                                             >> UnstyledAttributes.attribute "backlog"
-                                             >> List.singleton
-                                         )
-                                     |> Maybe.withDefault []
-                                     |> (++)
-                                         (if overwrite then
-                                             [ encoder Accordion.historyCodec m.overwrite
-                                                 |> Encode.encode 0
-                                                 |> UnstyledAttributes.attribute "overwrite"
-                                             ]
+                            [{- m.backlog
+                                    |> Maybe.map
+                                        (encoder Accordion.intentCodec
+                                            >> Encode.encode 0
+                                            >> UnstyledAttributes.attribute "backlog"
+                                            >> List.singleton
+                                        )
+                                    |> Maybe.withDefault []
+                                    |> (++)
+                                        (if overwrite then
+                                            [ encoder Accordion.historyCodec m.overwrite
+                                                |> Encode.encode 0
+                                                |> UnstyledAttributes.attribute "overwrite"
+                                            ]
 
-                                          else
-                                             []
-                                         )
-                                     |> (++)
-                                         [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
-                                     |> (++)
-                                         [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
-                                             |> Decode.map LogReceived
-                                             |> Events.on "logReceived"
-                                         ]
-                                     |> Unstyled.node "append-log"
-                                     |> (|>) []
-                                 ,
-                              -}
-                              [ Decode.at [ "detail" ] Decode.string
-                                    |> Decode.map ScrolledTo
-                                    |> Events.on "scrolledToA"
-                              ]
-                                |> Unstyled.node "closest-aisle"
-                                |> (|>) []
+                                         else
+                                            []
+                                        )
+                                    |> (++)
+                                        [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
+                                    |> (++)
+                                        [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
+                                            |> Decode.map LogReceived
+                                            |> Events.on "logReceived"
+                                        ]
+                                    |> Unstyled.node "append-log"
+                                    |> (|>) []
+                                ,
+                             -}
                             ]
                         ]
                )

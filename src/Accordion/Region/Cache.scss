@@ -1,0 +1,47 @@
+.Accordion {
+
+    >.cache {
+        position: absolute;
+        visibility: hidden;
+        opacity: 0;
+        transition: height 0.3s, width 0.3s, left 0.2s, top 0.5s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
+        left: var(--x);
+        top: var(--y);
+    }
+
+    >.cache.🀱 {
+        width: var(--unit);
+    }
+
+    >.cache.🁣 {
+        height: var(--unit);
+    }
+
+    >:not(.cache) {
+        position: absolute;
+        transition: opacity 0s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
+
+    }
+
+    >.🀱:not(.cache) {
+        height: var(--hereHeight);
+
+        &:not(.hasBody) {
+            width: var(--unit);
+        }
+    }
+
+    >.🁣:not(.cache) {
+        height: var(--unit);
+
+        &:not(.hasBody) {
+            height: var(--unit);
+        }
+
+    }
+
+
+
+
+
+}

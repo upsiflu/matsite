@@ -1,0 +1,16 @@
+.Accordion {
+
+    >.west {
+        left: calc(var(--x) - var(--nearWest-width) - var(--west-width) + var(--units) * var(--unit));
+        top: var(--y);
+        width: var(--unit);
+
+        >.segmentLabel {
+            writing-mode: vertical-rl;
+            padding: 1.125rem 1rem;
+        }
+
+        z-index: 4;
+    }
+
+}
