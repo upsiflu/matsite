@@ -198,7 +198,7 @@ update msg model =
                         |> (\_ -> ( model, Cmd.none ))
 
         ( ScrolledTo id, Model m ) ->
-            ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
+            ( Model { m | accordion = Accordion.goToId id m.accordion }, pleaseCenter id )
 
         ---- Volatile Data
         ( AccordionMessageReceived accMsg, Model m ) ->

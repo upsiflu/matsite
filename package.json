@@ -16,8 +16,8 @@
   "browserslist": "> 15%",
   "scripts": {
     "clear-build-cache": "rm -rf .cache/ dist/ && mkdir dist && cp -r ./static/* dist",
-    "local": "parcel index.html",
-    "dev": "parcel --host=192.168.178.93 index.html",
+    "local": "rm -rf .cache/ dist/ && mkdir dist && parcel index.html",
+    "dev": "rm -rf .cache/ dist/ && mkdir dist && parcel --host=192.168.178.93 index.html",
     "build": "cross-env NODE_ENV=production parcel build ./index.html --public-url ./",
     "format": "prettier --write \"./**/*.{js,jsx}\"",
     "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",

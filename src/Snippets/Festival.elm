@@ -31,6 +31,7 @@ tidalShifts =
             ]
         , p []
             [ text "in the frame of the Perform[d]ance Mini-festival at Stralsund; 26 + 27 November" ]
+        , Ui.cacheImg "Tidal Shifts" 1 "" "https://lh4.googleusercontent.com/KhvCcb1f63tCgNBDATLEip6KTZ3LPpXwaTo99Ho4ibQ8dpXgW2tJbKyompDD4Qq5l13O1G_qF2RmZac0SVhLrWnQv--w-4lfaW66gIFN9hD0qmQjy1wKWdz3Rr7hk88_ks3PlPMlRGedRTxSbA"
         ]
         |> Article.Content (Just "Moving across Thresholds:")
 

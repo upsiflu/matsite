@@ -802,8 +802,11 @@ view ({ zone, now, do, scrolledTo, volatile } as mode) accordion =
                                         (\ill -> List.filter (Tuple.second >> (/=) ill) nest)
                                         illu
                                         |> Maybe.withDefault nest
+
+                                head =
+                                    Branch.node targetBranch
                             in
-                            ( { targetId = (Branch.node targetBranch).id, hint = "" }
+                            ( { targetId = head.id, hint = Article.hint zone head }
                             , illu |> Maybe.map (Tuple.pair Fold.fataMorganaPosition)
                             , cche
                             )
@@ -873,8 +876,11 @@ view ({ zone, now, do, scrolledTo, volatile } as mode) accordion =
         overlays =
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
+            , ( "xy", Html.div [ id "xy" ] [] )
             , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
-            , ( "scrollToAisle"
+
+            --the following will be sorted to be the first element so it can influence the others via css ~
+            , ( " "
               , node "closest-aisle"
                     [ attribute "increment" (focusId accordion)
                     , id "virtualScreen"

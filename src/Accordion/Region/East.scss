@@ -1,7 +1,7 @@
 .Accordion {
 
     >.east {
-        left: calc(var(--width) - var(--east-width) + var(--units) * var(--unit));
+        left: calc(var(--x) + var(--here-width) + var(--units) * var(--unit));
         top: var(--y);
         width: var(--unit);
         // height: var(--here-height);
