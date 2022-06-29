@@ -83,6 +83,8 @@ import Html.Styled.Attributes exposing (..)
 import Layout exposing (..)
 import List.Extra as List
 import Maybe.Extra as Maybe
+import Occurrence
+import Time exposing (Zone)
 
 
 {-| only contains user-editable properties
@@ -397,11 +399,14 @@ defaultIllustration =
 
 {-| Title for peeks and images. May be extended later to include A11y captions.
 -}
-hint : Article -> String
-hint s =
+hint : ( String, Zone ) -> Article -> String
+hint z s =
     s.caption.text
         ++ (if s.caption.showsDate then
-                ""
+                s.fab
+                    |> Maybe.andThen Fab.occurrence
+                    |> Maybe.map (\d -> "; on " ++ Occurrence.toString z Occurrence.Days d)
+                    |> Maybe.withDefault ""
 
             else
                 ""

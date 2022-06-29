@@ -15,12 +15,13 @@
 
 
     &.🪗🁣:not(.focusHasBody)>.peek {
-        left: var(--c);
+        left: var(--x);
         top: var(--y);
         width: var(--here-width);
         height: var(--peek-height);
         background: #44F;
         box-sizing: border-box;
+        z-index: 1;
 
         img {
             object-fit: cover;

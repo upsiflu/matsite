@@ -13,7 +13,13 @@ app.ports.pleaseCenter.subscribe(function (message) {
   // document.getElementsByClassName("Center")[0]
   // 	?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   // setTimeout(focus, 0);
-  setTimeout(screen, 15);
+  setTimeout(
+    () =>
+      document
+        .getElementsByClassName("screenBackground")[0]
+        ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" }),
+    15
+  );
 });
 app.ports.pleaseConfirm.subscribe(function (message) {
   document.getElementById(message)?.classList.add("blink");

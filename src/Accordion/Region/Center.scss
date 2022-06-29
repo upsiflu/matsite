@@ -11,7 +11,7 @@
     }
 
     &.focusHasBody.🪗🀱>.center {
-        left: calc(var(--west-width) + var(--nearWest-width));
+        left: var(--x);
 
     }
 
@@ -62,22 +62,63 @@
         }
     }
 
-    &:not(.focusIsBackground)>.center {
-        z-index: 8;
-        mix-blend-mode: screen;
-        background: #2222FF;
+    &:not(.focusIsBackground) {
+        >.center {
+            z-index: 8;
+
+            transition: all .7s;
+        }
+
+        >.center::before,
+        >.A::before {
+
+            content: " ";
+            display: block;
+            width: 100%;
+            height: var(--here-height);
+            position: absolute;
+            top: 0;
+            left: 0;
+            mix-blend-mode: multiply;
+            background: transparent;
+            z-index: -1;
+            pointer-events: none;
+            transition: all .7s;
+        }
+    }
+
+
+
+
+
+    &:not(.focusIsBackground)>.center:not(.hasBody) {
+
 
         a {
             color: white;
         }
+
+        mix-blend-mode:hard-light;
+
+        &::before {
+            background: #2222FF;
+        }
+
     }
+
+
 
     &:not(.focusHasBody)>.center {
         top: var(--y);
 
 
         &.🁣 {
-            height: var(--unit);
+            height: var(--center-height);
+
+            >*:not(.body) {
+                height: var(--center-height);
+            }
+
             width: var(--column);
         }
 
@@ -91,6 +132,8 @@
             height: var(--center-height);
             width: var(--center-width);
         }
+
+
     }
 
 }

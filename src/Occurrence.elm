@@ -281,7 +281,7 @@ occasionToString zone precision { from, until } =
                     from
                     ++ format
                         [ DateFormat.text " + "
-                        , DateFormat.yearNumber
+                        , DateFormat.yearNumberLastTwo
                         ]
                         zone
                         until
@@ -293,7 +293,7 @@ occasionToString zone precision { from, until } =
                     from
                     ++ format
                         [ DateFormat.text " - "
-                        , DateFormat.yearNumber
+                        , DateFormat.yearNumberLastTwo
                         ]
                         zone
                         until
@@ -303,9 +303,9 @@ occasionToString zone precision { from, until } =
                 format
                     [ DateFormat.monthNameAbbreviated
                     , DateFormat.text " "
-                    , DateFormat.dayOfMonthSuffix
-                    , DateFormat.text ", "
-                    , DateFormat.yearNumber
+                    , DateFormat.dayOfMonthNumber
+                    , DateFormat.text ", '"
+                    , DateFormat.yearNumberLastTwo
                     ]
                     zone
                     from
@@ -321,7 +321,7 @@ occasionToString zone precision { from, until } =
                     ++ format
                         [ DateFormat.text " + "
                         , DateFormat.dayOfMonthNumber
-                        , DateFormat.text " '"
+                        , DateFormat.text ", '"
                         , DateFormat.yearNumberLastTwo
                         ]
                         zone
@@ -331,15 +331,15 @@ occasionToString zone precision { from, until } =
                 format
                     [ DateFormat.monthNameAbbreviated
                     , DateFormat.text " "
-                    , DateFormat.dayOfMonthSuffix
+                    , DateFormat.dayOfMonthNumber
                     ]
                     zone
                     from
                     ++ format
                         [ DateFormat.text " - "
-                        , DateFormat.dayOfMonthSuffix
-                        , DateFormat.text ", "
-                        , DateFormat.yearNumber
+                        , DateFormat.dayOfMonthNumber
+                        , DateFormat.text ", '"
+                        , DateFormat.yearNumberLastTwo
                         ]
                         zone
                         until
@@ -348,9 +348,9 @@ occasionToString zone precision { from, until } =
                 format
                     [ DateFormat.monthNameAbbreviated
                     , DateFormat.text " "
-                    , DateFormat.dayOfMonthSuffix
-                    , DateFormat.text ", "
-                    , DateFormat.yearNumber
+                    , DateFormat.dayOfMonthNumber
+                    , DateFormat.text ", '"
+                    , DateFormat.yearNumberLastTwo
                     ]
                     zone
                     from
@@ -358,9 +358,9 @@ occasionToString zone precision { from, until } =
                         [ DateFormat.text " - "
                         , DateFormat.monthNameAbbreviated
                         , DateFormat.text " "
-                        , DateFormat.dayOfMonthSuffix
-                        , DateFormat.text ", "
-                        , DateFormat.yearNumber
+                        , DateFormat.dayOfMonthNumber
+                        , DateFormat.text ", '"
+                        , DateFormat.yearNumberLastTwo
                         ]
                         zone
                         until

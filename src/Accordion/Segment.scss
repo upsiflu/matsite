@@ -81,6 +81,10 @@ a:active {
     padding: 0 1.125rem;
 }
 
+.west .byline {
+    color: #4F8;
+}
+
 .F {
 
     .info {
@@ -224,7 +228,7 @@ a:active {
 
 .🁣.here.hasBody {
     width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
-    height: var(--hereHeight);
+    height: var(--here-height);
 }
 
 
@@ -232,8 +236,8 @@ a:active {
 
 .P.north {
     >.fab {
-        right: calc(var(--column) - 6rem);
-        top: calc(var(--here-height) - 2rem);
+        left: -2rem;
+        top: calc(var(--nearNorth-height) + var(--here-height) - 2rem);
     }
 
     >a.segmentLabel {
@@ -242,8 +246,9 @@ a:active {
             font-size: 1.8em;
             display: block;
             position: absolute;
-            right: 0.2em;
+            right: -0.8em;
             bottom: 0.275em;
+            color: white;
         }
     }
 }
@@ -294,7 +299,6 @@ a:active {
 
     >h2 {
         text-align: right;
-        background: rgb(132, 0, 132);
         mix-blend-mode: color-burn;
         font-size: 5rem;
         overflow: hidden;
