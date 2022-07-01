@@ -98,6 +98,27 @@ a:active {
     &.🁣 {
         overflow-y: hidden;
     }
+
+    >.bounds {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        // outline: 0.5px dashed magenta;
+        outline-offset: -.5px;
+        pointer-events: none;
+    }
+
+    &.🁣>.bounds {
+        width: 200vw;
+        left: -50vw;
+    }
+
+    &.🀱>.bounds {
+        height: 200vw;
+        top: -50vh;
+    }
 }
 
 
@@ -250,6 +271,10 @@ a:active {
             bottom: 0.275em;
             color: white;
         }
+
+        &:hover::after {
+            content: "↑";
+        }
     }
 }
 
@@ -266,6 +291,10 @@ a:active {
             position: absolute;
             right: 0.5em;
             bottom: 0.125em;
+        }
+
+        &:hover::after {
+            content: "↓";
         }
     }
 }
@@ -396,7 +425,6 @@ a:active {
 
 .P,
 .B,
-.A:not(.hasBody),
-.F:not(.hasBody) {
+.A:not(.hasBody) {
     background: white;
 }

@@ -20,43 +20,5 @@
 
   <body>
     <div id="app"></div>
-    <script>
-      history.scrollRestoration = "manual";
-      center = () =>
-        document
-          .getElementsByClassName("hereBackground")[0]
-          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-
-      focus = () =>
-        document
-          .getElementsByClassName("F")[0]
-          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-
-      screen = () =>
-        document
-          .getElementsByClassName("screenBackground")[0]
-          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-
-      makeIntroVideoPlay = () => {
-        var iframe = document.getElementById("intro-player");
-        var player = new Vimeo.Player(iframe);
-
-        console.log(player);
-
-        iframe.onClick = function () {
-          player.play();
-        };
-
-        player.on("play", function () {
-          console.log("Played the video");
-        });
-
-        player.getVideoTitle().then(function (title) {
-          console.log("title:", title);
-        });
-      };
-      setTimeout(makeIntroVideoPlay, 800);
-    </script>
-    <script src="https://player.vimeo.com/api/player.js"></script>
   </body>
 </html>

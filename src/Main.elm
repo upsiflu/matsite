@@ -134,7 +134,7 @@ update msg model =
             <|
                 -- TODO: handle query and fragment
                 if destination url == Accordion.parentId m.accordion && url.query == Nothing then
-                    ( Model { m | accordion = Accordion.exit m.accordion }, Cmd.none )
+                    ( Model { m | accordion = Accordion.exit m.accordion }, Accordion.parentId m.accordion |> pleaseCenter )
 
                 else
                     ( Model m, Url.toString url |> Nav.pushUrl m.key )
@@ -198,7 +198,7 @@ update msg model =
                         |> (\_ -> ( model, Cmd.none ))
 
         ( ScrolledTo id, Model m ) ->
-            ( Model { m | accordion = Accordion.goToId id m.accordion }, pleaseCenter id )
+            ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
 
         ---- Volatile Data
         ( AccordionMessageReceived accMsg, Model m ) ->
