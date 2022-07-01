@@ -163,7 +163,19 @@ Can we move our thoughts as though they are tangible materials? Embracing the ea
         , Event 23 Jun 22 "Terri*stories" (Just """Birds are nesting all over Berlin still, creating, extending, shaping social colonies, and dwelling sites, setting boundaries, occupying aural space, moving materials.
 Facilitated by cultural anthropologist Susanne Schmitt, this event takes cues from crafty makers such as weaverbirds and local pigeons, and the plants dwelling at our gathering space in Kreuzberg and/or our Online Platform in order to move and experience facets of bird and other “terri*stories” together.
 We will play with habitats and territories (worlds with a vivid history that we will untangle together) as “establishers of new relationships, of other ways of ‘relating’ to others”, as philosopher Vinciane Despret proposes in her critical readings of animal behaviour scientific literature (“Living as a Bird”, Polity Press, 2022). This event invites you to bring experiences of habitat and territory and any material - large or small - that may co-facilitate nest making.""") "Gather-town + bUm, Kreuzberg" "Susanne Schmitt" "" Nothing (Just <| Image 2 "https://lh3.googleusercontent.com/iynR5zfnFMB0Y9oH8fuPsdNlFul0xROjWxjEVfUzXGyD6fIaDYRQosZ7_WNQqAXSBZlDq6gmvjWmbbCCwgL0ve3LCqvVdfe5uTLRAkds4F2pWHlaizeNcAX6jtHSwoYQE6em25VPw6bfCuu4cA")
-        , Event 7 Jul 22 "t.b.a. (Queering #5)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
+        , Event 7
+            Jul
+            22
+            "Known to Unknown, Alienation"
+            (Just """Facilitated by Robert Ssempijja - a Ugandan contemporary artist and dance researcher, this gathering asks “what is home and what is it not?”
+Based on Ssempijja's research project “Alienation”, the gathering takes you on a journey of self-discovery of what a home is and where we belong. It reflects on knowledge about one self through the lens of colonialism and decolonization, sharing Ssempijja's personal experiences and inviting participants to reflect on their own. “Alienation” questions the paths that have been chosen and what has been taken for granted.
+Ssempijja focuses on the colonial foundations which underpinned the architecture of Kampala City and its contemporary impacts. As a young child, Ssempijja used to know this city inside out. This was home, this was where he belonged and this was his world. The older he became the more questions he started to have and the less he could feel connected to the city. The streets had names which he couldn't relate to. The neighbourhoods were divided by the size of your wallet and often because of it also by the color of your skin. The weight of the city’s colonial years and the people’s endurance, formed by its structural design, had started to build up. For Ssempijja the question started to crystallize; how can we expect to grow and thrive as a city and as a people when the foundation we have was not built for us?
+https://www.robertssempijja.com/""")
+            "Gather-town + bUm, Kreuzberg"
+            "Robert Ssempijja"
+            "-"
+            Nothing
+            (Just <| Image 2 "https://lh6.googleusercontent.com/rc6wGHzTBev9pAnBUWaRYSN8gtx0qviUyBPNjseI9foLL5F2RxDYTINnTGd0wlPKhny-6cuzMY3xGWWgmtN3PWFDb0q5h_hgYAC5j5rT8pbxCaY0pBEDsWIuiLZAg3gukA44xLQed86zeifYAwU")
         , Event 21 Jul 22 "t.b.a. (Queering #6)" Nothing "Gather-town + bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
         ]
     , Series 6

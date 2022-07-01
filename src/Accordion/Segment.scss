@@ -145,18 +145,28 @@ a:active {
         li {
             a {
                 padding: 0.25rem;
+                text-decoration: none;
 
-                &:hover {
-                    text-decoration: underline;
+                font-weight: bold;
+                color: #5555ff;
+
+                &:visited {
+                    color: #4f4fff;
                 }
 
                 &:active {
-                    background: black;
+                    color: black;
                 }
             }
 
             &:not(.focused) {
                 background: rgb(255, 255, 255, 0.1);
+
+                a:hover {
+                    text-decoration: underline;
+                    background: blue;
+                    color: white !important;
+                }
             }
         }
 

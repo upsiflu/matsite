@@ -775,12 +775,13 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         Nothing
 
                     else
-                        ---- 1. UPCOMING
                         focusedBranch
+                            ---- 1. UPCOMING
                             |> Branch.subBranches
                             |> List.filter
                                 (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
-                            |> List.minimumBy (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
+                            |> List.minimumBy
+                                (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
                             ---- 2. DIRECT CHILD
                             |> Maybe.orElse (Just focusedBranch)
 
@@ -796,7 +797,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         Just targetBranch ->
                             let
                                 illu =
-                                    peekTargetBranchToIllustration targetBranch
+                                    peekTargetBranchToIllustration (Debug.log (focusedArticle.id ++ " - found target:") targetBranch)
 
                                 cche =
                                     Maybe.map
@@ -878,7 +879,6 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
             [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
             , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
             , ( "xy", Html.div [ id "xy" ] [] )
-            , ( "hamburgerMenu", Layout.hamburgerMenu "/" )
 
             --the following will be sorted to be the first element so it can influence the others via css ~
             , ( " "
@@ -899,6 +899,21 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                     else
                         []
                    )
+
+        globalToolbar : Ui msg
+        globalToolbar =
+            Ui.fromEmpty
+                (\ui ->
+                    { ui
+                        | handle =
+                            Layout.hamburgerMenu <|
+                                if isRoot accordion then
+                                    Just "/"
+
+                                else
+                                    Nothing
+                    }
+                )
 
         propertySheet : Ui msg
         propertySheet =
@@ -940,6 +955,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                 (editAccordion
                                     >> Html.section [ class "ui sheet" ]
                                 )
+                            |> Ui.with globalToolbar
                    )
     in
     c.tree

@@ -367,7 +367,8 @@ getRightmostLeaf =
         >> Result.unpack identity node
 
 
-{-| -}
+{-| All partial branches including this one
+-}
 subBranches : Branch a -> List (Branch a)
 subBranches b =
     nextGeneration b

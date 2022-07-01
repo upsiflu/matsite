@@ -31,13 +31,11 @@ customElements.define(
          * 4. App is responsible to scroll such that the real screen matches this element's bounding box
          */
 
-        console.log("scrolling has ended");
-
-        let pivotOf = rect => ({ x: rect.x + rect.width * 0.4, y: rect.y + rect.height * 0.4 });
+        let pivotOf = rect => ({ x: rect.x + rect.width * 0.5, y: rect.y + rect.height * 0.4 });
         let isInside = (point, rect) =>
           point.x > rect.x && point.x < rect.x + rect.width && point.y > rect.y && point.y < rect.y + rect.height;
         let manhattanDistance = (p, q) => Math.abs(p.x - q.x) + Math.abs(p.y - q.y);
-        let centerOf = rect => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+        let centerOf = rect => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height * 0.4 });
         let difference = (point0, point1) => ({ x: point1.x - point0.x, y: point1.y - point0.y });
         let middleOffset = (rect0, rect1) => difference(centerOf(rect0), centerOf(rect1));
         let bottom = rect => rect.y + rect.height;
@@ -61,7 +59,7 @@ customElements.define(
         };
 
         let focusRect = document.querySelector(".F>.bounds").getBoundingClientRect();
-        let pivot = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let pivot = { x: window.innerWidth / 2, y: window.innerHeight * 0.4 };
 
         let focusPoint = pivotOf(focusRect);
         let minimumDistance = manhattanDistance(focusPoint, pivot);
@@ -70,10 +68,7 @@ customElements.define(
 
         for (let a of document.querySelectorAll(".A>.bounds")) {
           let aisleSegmentRect = a.getBoundingClientRect();
-          console.log("is inside?", pivot, aisleSegmentRect);
           if (isInside(pivot, aisleSegmentRect)) {
-            console.log("YES!");
-
             let dist = manhattanDistance(pivotOf(aisleSegmentRect), pivot);
 
             if (dist < minimumDistance) {
@@ -88,7 +83,6 @@ customElements.define(
 
           closestAisle.vector = boundOffset(closestAisleSegment, focusRect);
 
-          console.log(closestAisleSegment.id, "has been scrolled close to the viewport pivot by", closestAisle.vector);
           closestAisle.dispatchEvent(
             new CustomEvent("scrolledToA", {
               detail: closestAisleSegment.id,
@@ -112,7 +106,6 @@ customElements.define(
       );
     }
     attributeChangedCallback(_name, _oldValue, _newValue) {
-      console.log("attribute changed:", _name, ":", _oldValue, "->", _newValue);
       var closestAisle = this;
       if (closestAisle.timeout) window.clearTimeout(closestAisle.timeout);
 
@@ -129,12 +122,8 @@ customElements.define(
           y: previousOffset.y + closestAisle.vector.y,
         };
 
-        console.log("move x/y by:", closestAisle.vector);
-        console.log("--x-offset before", previousOffset.x);
-        console.log("scrollLeft", closestAisle.parentElement?.scrollLeft);
         root.style.setProperty("--x-offset", `${newOffset.x}px`);
         root.style.setProperty("--y-offset", `${newOffset.y}px`);
-        console.log("--x-offset after", parseInt(getComputedStyle(root).getPropertyValue("--x-offset")));
 
         /*
       

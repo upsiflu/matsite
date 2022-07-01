@@ -5,11 +5,13 @@
     --y-offset: 0px;
 }
 
+/* The pivot circle that appears when scrolling */
+
 .model::after {
     --radius: 5rem;
     position: fixed;
     left: calc(50vw - var(--radius));
-    top: calc(50vh - var(--radius));
+    top: calc(40vh - var(--radius));
     border: var(--radius) solid white;
     mix-blend-mode: difference;
     content: ".";
@@ -97,7 +99,7 @@
         --x: calc(var(--width) / 2 - 50vw + var(--x-offset));
         --y: calc(var(--height) / 2 - 50vh + var(--y-offset));
         --width: calc(var(--column) * 97);
-        --height: 500vh;
+        --height: 1100vh;
 
 
         /* Aisles expand around horizontal focus */
@@ -151,11 +153,11 @@ accurately fills the viewport at the moment the focus has changed, and can conse
 
     #xy {
         background: #ad3;
-        width: .1rem;
-        height: .1rem;
+        width: .4rem;
+        height: .4rem;
         transform: rotate(45deg);
-        left: calc(var(--x) - 0.0705rem);
-        top: calc(var(--y) - 0.0705rem);
+        left: calc(var(--x) - .2rem);
+        top: calc(var(--y) - .2rem);
         z-index: 40;
         position: absolute;
 
@@ -188,11 +190,11 @@ accurately fills the viewport at the moment the focus has changed, and can conse
     .screenBackground {
         position: absolute;
         width: 100vw;
-        height: 100vh;
-        outline-offset: -1.5rem;
+        height: 80vh;
+        outline-offset: -0.5rem;
         pointer-events: none;
         left: calc(var(--x) + var(--here-width) / 2 - 50vw);
-        top: calc(var(--y) - var(--info-height) / 2 + var(--here-height) / 2 - 50vh);
+        top: calc(var(--y) + var(--unit) / 2 - var(--info-height) * 0.5 + var(--here-height) *0.5 - 40vh);
         pointer-events: none;
         background: transparent;
     }
@@ -274,15 +276,13 @@ accurately fills the viewport at the moment the focus has changed, and can conse
     border-top-right-radius: 0;
 }
 
+.hamburgerMenu.hidden {
+    opacity: 0;
+    transform: scale(5);
+    pointer-events: none;
+}
+
 .focusIsRoot {
-
-    >.hamburgerMenu {
-        opacity: 0;
-        transform: scale(5);
-        pointer-events: none;
-
-    }
-
     >.aisleBackground {
         opacity: 0;
     }

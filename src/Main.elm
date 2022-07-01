@@ -134,6 +134,7 @@ update msg model =
             )
             <|
                 -- TODO: handle query and fragment
+                -- case: the destination url is the same as before, so we want to go up
                 if destination url == Accordion.parentId m.accordion && url.query == Nothing then
                     ( Model { m | accordion = Accordion.exit m.accordion }, Accordion.parentId m.accordion |> pleaseCenter )
 
@@ -268,8 +269,6 @@ view model =
                 , scrolledIntoNowhere = ScrolledIntoNowhere
                 }
                 m.accordion
-                |> Ui.composeScenes
-                    (Keyed.node "li" [ Attributes.class "overflow" ] >> Tuple.pair "overflow")
     in
     { title = "Moving across Thresholds"
     , body =

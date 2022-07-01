@@ -1,0 +1,17 @@
+a:link,
+a:visited {
+    color: #77F;
+}
+
+a:visited {
+    text-decoration-color: blue;
+}
+
+a:link {
+    text-decoration-color: white;
+}
+
+a:link:not(:hover),
+a:visited:not(:hover) {
+    text-decoration: none;
+}

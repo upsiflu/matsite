@@ -10,7 +10,6 @@ var app = Elm.Main.init({
   node: document.getElementById("app"),
 });
 app.ports.pleaseCenter.subscribe(function (message) {
-  console.log("smoothly center: ", message);
   requestAnimationFrame(() =>
     document
       .querySelector(".screenBackground")
