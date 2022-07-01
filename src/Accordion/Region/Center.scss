@@ -3,6 +3,28 @@
     >.center {
         left: var(--x);
         top: var(--y);
+
+        >.bounds {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: var(--here-width);
+            height: var(--here-height);
+            // outline: 0.5px dashed #77f;
+            outline-offset: -0.5px;
+            pointer-events: none;
+        }
+
+        &.🁣>.bounds {
+            width: 200vw;
+            left: -50vw;
+        }
+
+        &.🀱>.bounds {
+            height: 200vw;
+            top: -50vh;
+        }
+
     }
 
     &.focusHasBody>.center {
@@ -12,7 +34,6 @@
 
     &.focusHasBody.🪗🀱>.center {
         left: var(--x);
-
     }
 
     &.focusIsBackground>.🀱:not(.center),
@@ -71,11 +92,8 @@
 
         >.center::before,
         >.A::before {
-
             content: " ";
             display: block;
-            width: 100%;
-            height: var(--here-height);
             position: absolute;
             top: 0;
             left: 0;
@@ -84,6 +102,12 @@
             z-index: -1;
             pointer-events: none;
             transition: all .7s;
+            width: 100%;
+            height: var(--here-height);
+        }
+
+        >.center::before {
+            width: var(--here-width);
         }
     }
 
@@ -101,7 +125,11 @@
         mix-blend-mode:hard-light;
 
         &::before {
-            background: #2222FF;
+            background: #3322Fe;
+        }
+
+        &:hover::before {
+            background: #0000ff;
         }
 
     }
@@ -115,7 +143,7 @@
         &.🁣 {
             height: var(--center-height);
 
-            >*:not(.body) {
+            >*:not(.body):not(.bounds) {
                 height: var(--center-height);
             }
 
@@ -129,7 +157,6 @@
                 padding: 1.125rem 1rem;
             }
 
-            height: var(--center-height);
             width: var(--center-width);
         }
 

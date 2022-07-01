@@ -20,9 +20,6 @@ customElements.define(
     connectedCallback() {
       var closestAisle = this;
       closestAisle.allowScroll = true;
-      var pivot = document.createElement("div");
-      pivot.id = "pivot";
-      this.parentNode.appendChild(pivot);
       const dispatchClosestAisle = () => {
         /**
          * The `#pivot` is a fixed point on the viewport (sort of a cursor).
@@ -40,54 +37,70 @@ customElements.define(
         let isInside = (point, rect) =>
           point.x > rect.x && point.x < rect.x + rect.width && point.y > rect.y && point.y < rect.y + rect.height;
         let manhattanDistance = (p, q) => Math.abs(p.x - q.x) + Math.abs(p.y - q.y);
+        let centerOf = rect => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+        let difference = (point0, point1) => ({ x: point1.x - point0.x, y: point1.y - point0.y });
+        let middleOffset = (rect0, rect1) => difference(centerOf(rect0), centerOf(rect1));
+        let bottom = rect => rect.y + rect.height;
+        let right = rect => rect.x + rect.width;
+        let topLeft = rect => rect;
+        let topRight = rect => ({ x: rect.x + rect.width, y: rect.y });
+        let bottomLeft = rect => ({ x: rect.x, y: rect.y + rect.height });
+        let boundOffset = (to, from) => {
+          if (to.x < from.x || to.y < from.y) {
+            return difference(topLeft(from), topLeft(to));
+          } else if (right(to) > right(from)) {
+            return difference(topRight(from), topRight(to));
+          } else if (bottom(to) > bottom(from)) {
+            return difference(bottomLeft(from), bottomLeft(to));
+          } else return { x: 0, y: 0 };
+        };
 
-        let pivot = document.querySelector("#pivot").getBoundingClientRect();
+        let focusRect = document.querySelector(".F>.bounds").getBoundingClientRect();
+        let pivot = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-        let focusPoint = pivotOf(document.querySelector(".F").getBoundingClientRect());
+        let focusPoint = pivotOf(focusRect);
         let minimumDistance = manhattanDistance(focusPoint, pivot);
 
         var closestAisleSegment = null;
 
-        for (let a of document.querySelectorAll(".A")) {
+        for (let a of document.querySelectorAll(".A>.bounds")) {
           let aisleSegmentRect = a.getBoundingClientRect();
+          console.log("is inside?", pivot, aisleSegmentRect);
           if (isInside(pivot, aisleSegmentRect)) {
+            console.log("YES!");
+
             let dist = manhattanDistance(pivotOf(aisleSegmentRect), pivot);
 
             if (dist < minimumDistance) {
               minimumDistance = dist;
               console.log("aisleSegmentRect", aisleSegmentRect);
-              closestAisleSegment = { x: aisleSegmentRect.x, y: aisleSegmentRect.y, id: a.id };
+              closestAisleSegment = aisleSegmentRect;
+              closestAisleSegment.id = a.parentElement.id;
               console.log("closestAisleSegment", closestAisleSegment);
             }
           }
         }
         if (closestAisleSegment) {
           closestAisle.allowScroll = false;
-          console.log(closestAisleSegment.id, "has been scrolled close to the viewport pivot");
 
-          closestAisle.vector = { x: pivot.x - closestAisleSegment.x, y: pivot.y - closestAisleSegment.y };
+          closestAisle.vector = boundOffset(closestAisleSegment, focusRect);
 
-          closestAisle.style.transform = `translate(${closestAisle.vector.x}px, ${closestAisle.vector.y}px)`;
-
-          console.log("PIVOT", pivot);
-          console.log("closestAisleSegment", closestAisleSegment);
-          console.log("VECTOR", closestAisle.vector);
-
-          closestAisle.classList.add("navigatingByScroll");
-
+          console.log(closestAisleSegment.id, "has been scrolled close to the viewport pivot by", closestAisle.vector);
           closestAisle.dispatchEvent(
             new CustomEvent("scrolledToA", {
               detail: closestAisleSegment.id,
             })
           );
         }
+        document.documentElement.classList.remove("is-scrolling");
       };
       window.addEventListener(
         "scroll",
         function () {
           if (closestAisle.timeout) window.clearTimeout(closestAisle.timeout);
           if (closestAisle.allowScroll) {
-            closestAisle.timeout = window.setTimeout(dispatchClosestAisle, 80);
+            closestAisle.timeout = window.setTimeout(dispatchClosestAisle, 250);
+            document.documentElement.classList.add("is-scrolling");
           }
         },
         { passive: true }
@@ -98,9 +111,27 @@ customElements.define(
       var closestAisle = this;
       if (closestAisle.timeout) window.clearTimeout(closestAisle.timeout);
 
-      console.log("now scroll into view:", closestAisle);
-      console.log("scroll parent by:", closestAisle.vector);
-      /*
+      if (closestAisle.vector) {
+        let root = document.documentElement;
+
+        let previousOffset = {
+          x: parseInt(getComputedStyle(root).getPropertyValue("--x-offset") || 0),
+          y: parseInt(getComputedStyle(root).getPropertyValue("--y-offset") || 0),
+        };
+
+        let newOffset = {
+          x: previousOffset.x + closestAisle.vector.x,
+          y: previousOffset.y + closestAisle.vector.y,
+        };
+
+        console.log("move x/y by:", closestAisle.vector);
+        console.log("--x-offset before", previousOffset.x);
+        console.log("scrollLeft", closestAisle.parentElement?.scrollLeft);
+        root.style.setProperty("--x-offset", `${newOffset.x}px`);
+        root.style.setProperty("--y-offset", `${newOffset.y}px`);
+        console.log("--x-offset after", parseInt(getComputedStyle(root).getPropertyValue("--x-offset")));
+
+        /*
       
       if (closestAisle.vector) {
         closestAisle.parentElement.scrollBy({
@@ -110,14 +141,11 @@ customElements.define(
         });
       }
       */
+      }
       //closestAisle.scrollIntoView({ behavior: "auto", block: "start", inline: "start" });
-      window.requestAnimationFrame(() => closestAisle.classList.remove("navigatingByScroll"));
-      window.requestAnimationFrame(() => {
-        closestAisle.scrollIntoView({ behavior: "auto", block: "start", inline: "start" });
-        window.requestAnimationFrame(() => {
-          closestAisle.allowScroll = true;
-        });
-      });
+      window.setTimeout(() => {
+        closestAisle.allowScroll = true;
+      }, 500);
     }
     static get observedAttributes() {
       return ["increment"];

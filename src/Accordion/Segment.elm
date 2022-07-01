@@ -675,11 +675,15 @@ view_ ({ zone, templates } as config) ui overlays model =
                               )
                             ]
                    )
+
+        viewBounds =
+            div [ class "bounds" ] []
     in
     if hideBecauseVeryFarAway then
         List.indexedMap (\i -> Html.map never >> Tuple.pair (String.fromInt i))
             [ model.article.caption |> viewCaption
             , Html.div [ class "body waiting" ] []
+            , viewBounds
             ]
             |> Keyed.node "li"
                 (id model.article.id
@@ -702,6 +706,7 @@ view_ ({ zone, templates } as config) ui overlays model =
             , viewByline
             , Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
             , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
+            , viewBounds
             ]
             ++ overlays
             ++ [ Html.map never viewFab ]
