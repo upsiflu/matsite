@@ -600,6 +600,7 @@ type alias ViewMode msg =
     , do : (String -> Intent) -> msg
     , volatile : Msg -> msg
     , scrolledTo : String -> msg
+    , scrolledIntoNowhere : msg
     }
 
 
@@ -608,7 +609,7 @@ view :
     ViewMode msg
     -> Accordion
     -> Ui msg
-view ({ zone, now, do, scrolledTo, volatile } as mode) accordion =
+view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) accordion =
     let
         c =
             config accordion
@@ -887,6 +888,7 @@ view ({ zone, now, do, scrolledTo, volatile } as mode) accordion =
                     , Decode.at [ "detail" ] Decode.string
                         |> Decode.map scrolledTo
                         |> Events.on "scrolledToA"
+                    , Events.on "scrolledIntoNowhere" (Decode.succeed scrolledIntoNowhere)
                     ]
                     []
               )

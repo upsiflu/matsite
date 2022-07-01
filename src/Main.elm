@@ -88,6 +88,7 @@ type Msg
     | ZoneReceived (Result TimeZone.Error ( String, Time.Zone ))
     | NowReceived (Result () Time.Posix)
     | ScrolledTo String
+    | ScrolledIntoNowhere
       -- Volatile Data
     | AccordionMessageReceived Accordion.Msg
       -- Persistent Data
@@ -200,6 +201,9 @@ update msg model =
         ( ScrolledTo id, Model m ) ->
             ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
 
+        ( ScrolledIntoNowhere, Model m ) ->
+            ( Model m, Accordion.focusId m.accordion |> pleaseCenter )
+
         ---- Volatile Data
         ( AccordionMessageReceived accMsg, Model m ) ->
             ( Model { m | accordion = Accordion.update accMsg m.accordion }, Cmd.none )
@@ -261,6 +265,7 @@ view model =
                 , do = (|>) "initialSession" >> IntentGenerated
                 , volatile = AccordionMessageReceived
                 , scrolledTo = ScrolledTo
+                , scrolledIntoNowhere = ScrolledIntoNowhere
                 }
                 m.accordion
                 |> Ui.composeScenes

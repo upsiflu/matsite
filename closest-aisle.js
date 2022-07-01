@@ -33,7 +33,7 @@ customElements.define(
 
         console.log("scrolling has ended");
 
-        let pivotOf = rect => ({ x: rect.x + 24, y: rect.y + rect.height * 0.4 });
+        let pivotOf = rect => ({ x: rect.x + rect.width * 0.4, y: rect.y + rect.height * 0.4 });
         let isInside = (point, rect) =>
           point.x > rect.x && point.x < rect.x + rect.width && point.y > rect.y && point.y < rect.y + rect.height;
         let manhattanDistance = (p, q) => Math.abs(p.x - q.x) + Math.abs(p.y - q.y);
@@ -43,6 +43,11 @@ customElements.define(
         let bottom = rect => rect.y + rect.height;
         let right = rect => rect.x + rect.width;
         let topLeft = rect => rect;
+        let outOfScope = rect =>
+          rect.x > window.innerWidth ||
+          rect.y > window.innerHeight ||
+          rect.x + rect.width < 0 ||
+          rect.y + rect.height < 0;
         let topRight = rect => ({ x: rect.x + rect.width, y: rect.y });
         let bottomLeft = rect => ({ x: rect.x, y: rect.y + rect.height });
         let boundOffset = (to, from) => {
@@ -73,10 +78,8 @@ customElements.define(
 
             if (dist < minimumDistance) {
               minimumDistance = dist;
-              console.log("aisleSegmentRect", aisleSegmentRect);
               closestAisleSegment = aisleSegmentRect;
               closestAisleSegment.id = a.parentElement.id;
-              console.log("closestAisleSegment", closestAisleSegment);
             }
           }
         }
@@ -91,6 +94,8 @@ customElements.define(
               detail: closestAisleSegment.id,
             })
           );
+        } else {
+          if (outOfScope(focusRect)) closestAisle.dispatchEvent(new CustomEvent("scrolledIntoNowhere"));
         }
         document.documentElement.classList.remove("is-scrolling");
       };
