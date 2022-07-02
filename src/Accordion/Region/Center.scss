@@ -50,9 +50,10 @@
     &.focusIsBackground>.center {
         width: 100vw;
         height: 100vh;
-        left: 0px;
-        top: calc(0px - var(--padding));
+        // left: 0px;
+        // top: calc(0px - var(--padding));
         z-index: 1;
+        top: calc(var(--y) - 50vh + 12rem);
 
         >.body {
             /* fullscreen background:
@@ -65,9 +66,9 @@
             overflow: visible;
             bottom: 0px;
             left: 0;
-            position: fixed;
             min-width: 100vw;
             min-height: 100vh;
+            position: absolute;
 
             @media (orientation:portrait) {
                 width: calc(100vh / 16 * 9);

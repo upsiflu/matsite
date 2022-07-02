@@ -797,7 +797,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         Just targetBranch ->
                             let
                                 illu =
-                                    peekTargetBranchToIllustration (Debug.log (focusedArticle.id ++ " - found target:") targetBranch)
+                                    peekTargetBranchToIllustration targetBranch
 
                                 cche =
                                     Maybe.map
@@ -908,10 +908,10 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         | handle =
                             Layout.hamburgerMenu <|
                                 if isRoot accordion then
-                                    Just "/"
+                                    Nothing
 
                                 else
-                                    Nothing
+                                    Just "/"
                     }
                 )
 

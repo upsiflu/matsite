@@ -82,24 +82,26 @@
 
     &.focusIsBackground {
         --here-height: var(--column);
-        --x: calc(0px + var(--x-offset));
-        --y: calc(50vh - var(--column) / 2 + var(--y-offset));
-        --width: 100vw;
-        --height: calc(100vh - var(--padding) * 2);
+        // --x: 0px;
+        // --y: calc(50vh - var(--column) / 2);
+        // --width: 100vw;
+        // --height: calc(200vh - var(--padding) * 2);
 
         /* Aisles are collapsed to their headers */
         --nearWest-width: calc(var(--nearWest-units) * var(--unit));
         --nearEast-width: calc(var(--nearEast-units) * var(--unit));
 
 
-        left: 0;
+        // left: 0;
     }
 
+    --x: calc(var(--width) / 2 - 50vw + var(--x-offset));
+    --y: calc(var(--height) / 2 - 50vh + var(--y-offset));
+    --width: calc(var(--column) * 97);
+    --height: 1100vh;
+
     &:not(.focusIsBackground) {
-        --x: calc(var(--width) / 2 - 50vw + var(--x-offset));
-        --y: calc(var(--height) / 2 - 50vh + var(--y-offset));
-        --width: calc(var(--column) * 97);
-        --height: 1100vh;
+
 
 
         /* Aisles expand around horizontal focus */
@@ -191,6 +193,7 @@ accurately fills the viewport at the moment the focus has changed, and can conse
         position: absolute;
         width: 100vw;
         height: 80vh;
+        outline: 2px dashed violet;
         outline-offset: -0.5rem;
         pointer-events: none;
         left: calc(var(--x) + var(--here-width) / 2 - 50vw);
@@ -212,10 +215,6 @@ accurately fills the viewport at the moment the focus has changed, and can conse
         z-index: 5;
     }
 
-    .focusIsBackground>.screenBackground {
-        left: 0px;
-        top: calc(0px - var(--padding));
-    }
 
 }
 
@@ -266,7 +265,7 @@ accurately fills the viewport at the moment the focus has changed, and can conse
     width: 3rem;
     height: 3rem;
     background: rgba(0, 0, 0, .5);
-    transition: all .4s;
+    transition: all 1.4s;
 }
 
 .hamburgerMenu:hover {
@@ -319,29 +318,28 @@ ul:not(.body ul) {
 .Accordion.focusIsBackground.focusIsRoot .A {
     animation: scrollIn 2s ease-out 2s;
     animation-delay: calc(5s - 0.2s * var(--units));
-    top: calc(var(--units) * var(--unit) + 90vh);
 }
 
 
 @keyframes scrollIn {
     0% {
         transform: translateX(calc(-300px * var(--units) - 800px));
-        top: calc(var(--units) * var(--unit) + 10vh);
+        margin-top: calc(var(--units) * var(--unit) + 10vh);
 
     }
 
 
     20% {
         transform: translateX(0px);
-        top: calc(var(--units) * var(--unit) + 20vh);
+        margin-top: calc(var(--units) * var(--unit) + 20vh);
     }
 
     60% {
-        top: calc(var(--units) * var(--unit) * 1.02 + 20vh);
+        margin-top: calc(var(--units) * var(--unit) * 1.02 + 20vh);
     }
 
 
     100% {
-        top: calc(var(--units) * var(--unit) + 90vh);
+        margin-top: calc(var(--units) * var(--unit) + 90vh);
     }
 }

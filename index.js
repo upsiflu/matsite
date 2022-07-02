@@ -9,11 +9,16 @@ history.scrollRestoration = "manual";
 var app = Elm.Main.init({
   node: document.getElementById("app"),
 });
-app.ports.pleaseCenter.subscribe(function (message) {
-  requestAnimationFrame(() =>
-    document
-      .querySelector(".screenBackground")
-      ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" })
+app.ports.pleaseCenter.subscribe(message => {
+  console.log("CENTERING");
+  window.setTimeout(
+    () =>
+      requestAnimationFrame(() =>
+        document
+          .querySelector(".screenBackground")
+          ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" })
+      ),
+    250
   );
 });
 app.ports.pleaseConfirm.subscribe(function (message) {
