@@ -10,7 +10,7 @@ var app = Elm.Main.init({
   node: document.getElementById("app"),
 });
 app.ports.pleaseCenter.subscribe(message => {
-  console.log("CENTERING");
+  // console.log("CENTERING");
   window.setTimeout(
     () =>
       requestAnimationFrame(() =>

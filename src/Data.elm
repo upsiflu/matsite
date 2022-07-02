@@ -59,8 +59,10 @@ addTemplates zone =
 
         addOtherTemplates =
             presetBody "Collage" Festival.collage
-                >> presetBody "Video" Festival.video
+                >> presetBody "Video1" Festival.video1
+                >> presetBody "Video2" Festival.video2
                 >> presetBody "Description" Festival.description
+                >> presetBody "Credits" Festival.radialsystemCredits
                 >> presetBody "Home" Intro.intro
                 >> presetBody "Incipit" Anarchive.incipit
                 >> presetBody "Archive" Anarchive.anarchive
@@ -160,8 +162,8 @@ initialActions timezone =
                 :: Modify (WithCaption { text = "Radialsystem Berlin", showsDate = True })
                 :: registerTwoDays 23 Apr 2022 1
                 :: Go Down
-                :: Name "Info"
-                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                :: Name "Video2"
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
                 :: Go Right
                 :: Name "Collage"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
@@ -169,7 +171,7 @@ initialActions timezone =
                 :: Name "Description"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Right
-                :: Name "Video"
+                :: Name "Video1"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
                 :: Go Right
                 :: Name "Credits"
