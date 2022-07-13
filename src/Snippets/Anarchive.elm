@@ -17,6 +17,7 @@ anarchive =
         , title "Moving Across Thresholds - Library"
         ]
         []
+        |> always
         |> Article.Content Nothing
 
 
@@ -36,4 +37,5 @@ incipit =
                 [ text "📖 Read Balam's essay over at are.na!" ]
             ]
         ]
+        |> always
         |> Article.Illustration

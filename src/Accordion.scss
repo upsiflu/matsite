@@ -194,7 +194,7 @@ accurately fills the viewport at the moment the focus has changed, and can conse
         position: absolute;
         width: 100vw;
         height: 80vh;
-        outline: 2px dashed violet;
+        // outline: 2px dashed violet;
         outline-offset: -0.5rem;
         pointer-events: none;
         left: calc(var(--x) + var(--here-width) / 2 - 50vw);
@@ -316,31 +316,21 @@ ul:not(.body ul) {
 
 //--------
 
-.Accordion.focusIsBackground.focusIsRoot .A {
+.Accordion.focusIsBackground.focusIsRoot>.A {
     animation: scrollIn 2s ease-out 2s;
     animation-delay: calc(5s - 0.2s * var(--units));
+    top: calc(var(--y) + 70vh + var(--units) * var(--unit))
 }
 
 
 @keyframes scrollIn {
     0% {
-        transform: translateX(calc(-300px * var(--units) - 800px));
-        margin-top: calc(var(--units) * var(--unit) + 10vh);
+        margin-top: calc(0px + var(--units) * var(--unit) - 100vh);
 
-    }
-
-
-    20% {
-        transform: translateX(0px);
-        margin-top: calc(var(--units) * var(--unit) + 20vh);
-    }
-
-    60% {
-        margin-top: calc(var(--units) * var(--unit) * 1.02 + 20vh);
     }
 
 
     100% {
-        margin-top: calc(var(--units) * var(--unit) + 90vh);
+        margin-top: 0px;
     }
 }

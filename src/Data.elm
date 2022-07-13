@@ -4,6 +4,7 @@ import Accordion exposing (Accordion, Action(..))
 import Article as Article exposing (Action(..), Orientation(..), Shape(..))
 import Article.Fab as Fab
 import Dict
+import Directory exposing (Directory)
 import Fold exposing (Direction(..), Role(..))
 import Layout
 import List.Extra as List
@@ -111,7 +112,7 @@ initialActions timezone =
             Artist.artists
                 |> List.sortBy (\{ name } -> String.words name |> List.last |> Maybe.withDefault name)
                 |> List.map
-                    (\({ name, wide } as artist) ->
+                    (\{ name, wide } ->
                         [ Name (name ++ "(photo)")
                         , Modify
                             (WithShape
@@ -181,30 +182,6 @@ initialActions timezone =
                 :: Go Up
                 :: Go Up
                 :: []
-
-        {- subtreeForLabs =
-           go Down
-               >> set2 Horizontal "Series 1" "2020"
-               >> appendSubtree
-               >> go Right
-               >> set2 Horizontal "Series 2" "2021"
-               >> appendSubtree
-               >> go Right
-               >> set2 Horizontal "Series 3" "2021"
-               >> appendSubtree
-               >> go Right
-               >> set2 Horizontal "Series 4" "2022"
-               >> appendSubtree
-               >> go Right
-               >> set2 Horizontal "Series 5" "2022"
-               >> appendSubtree
-               >> go Right
-               >> set2 Horizontal "Series 6" "2022"
-               >> appendSubtree
-               >> go Left
-               >> go Left
-               >> go Up
-        -}
     in
     Name "Home"
         :: Modify (WithShape Article.Background)

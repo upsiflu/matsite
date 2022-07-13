@@ -23,7 +23,7 @@ module Zipper.Tree exposing
     , path, breadcrumbs
     , circumference
     , petrify
-    , flatten
+    , flatten, flatMap
     , toDict
     , Fold, defold, fold
     , foldr, defoldr
@@ -102,7 +102,7 @@ module Zipper.Tree exposing
 @docs path, breadcrumbs
 @docs circumference
 @docs petrify
-@docs flatten
+@docs flatten, flatMap
 @docs toDict
 
 
@@ -1305,3 +1305,9 @@ view viewMode =
     case viewMode of
         Uniform f config ->
             fold defold >> fold f >> config.toHtml
+
+
+{-| -}
+flatMap : (a -> b) -> Tree a -> List b
+flatMap fu =
+    map fu >> flatten

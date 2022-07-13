@@ -49,6 +49,7 @@ import Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTem
 import Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
+import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -400,6 +401,7 @@ edit :
     { zone : ( String, Time.Zone )
     , now : Time.Posix
     , templates : Templates
+    , directory : Directory
     , do : String -> Action -> msg
     , delete : msg
     , rename : String -> msg
@@ -407,7 +409,7 @@ edit :
     }
     -> Segment
     -> Ui msg
-edit { zone, now, templates, do, delete, rename, insert } ({ position, article } as model) =
+edit { zone, now, templates, directory, do, delete, rename, insert } ({ position, article } as model) =
     let
         intend =
             do article.id
@@ -528,12 +530,17 @@ edit { zone, now, templates, do, delete, rename, insert } ({ position, article }
         ui =
             Ui.fromEmpty <| \e -> { e | control = propertySheet }
     in
-    view_ { zone = zone, templates = templates, now = now } ui overlay model
+    view_ { zone = zone, directory = directory, templates = templates, now = now } ui overlay model
 
 
 {-| -}
 view :
-    { c | zone : ( String, Time.Zone ), templates : Templates, now : Time.Posix }
+    { c
+        | zone : ( String, Time.Zone )
+        , now : Time.Posix
+        , directory : Directory
+        , templates : Templates
+    }
     -> Segment
     -> Ui msg
 view config =
@@ -541,12 +548,17 @@ view config =
 
 
 view_ :
-    { c | templates : Templates, zone : ( String, Time.Zone ), now : Time.Posix }
+    { c
+        | templates : Templates
+        , directory : Directory
+        , zone : ( String, Time.Zone )
+        , now : Time.Posix
+    }
     -> Ui msg
     -> List (Html msg)
     -> Segment
     -> Ui msg
-view_ ({ zone, templates } as config) ui overlays model =
+view_ ({ zone, templates, directory } as config) ui overlays model =
     let
         hideBecauseVeryFarAway =
             model.position.role == Aisle && List.length model.position.path > 5
@@ -624,10 +636,10 @@ view_ ({ zone, templates } as config) ui overlays model =
                 , Tuple.pair "content" <|
                     case ( template.body, body ) of
                         ( Just (Content _ c), _ ) ->
-                            c
+                            c directory
 
                         ( Just (Illustration i), _ ) ->
-                            i
+                            i directory
 
                         ( Nothing, PeekThrough ) ->
                             Html.text ""

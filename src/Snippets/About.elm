@@ -38,6 +38,7 @@ mat =
                        ]
            )
         |> article []
+        |> always
         |> Article.Content (Just "Moving across Thresholds")
 
 
@@ -60,6 +61,7 @@ team =
                 )
             |> ul []
         ]
+        |> always
         |> Article.Content (Just "Team")
 
 
@@ -81,4 +83,5 @@ contact =
             [ text "To join our e-newsletter, send an email with 'Subscribe' in the subject to movingacrossthresholds@gmail.com"
             ]
         ]
+        |> always
         |> Article.Content (Just "Contact")

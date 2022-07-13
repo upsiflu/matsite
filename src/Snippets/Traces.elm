@@ -19,4 +19,5 @@ traces =
             ]
             []
         ]
+        |> always
         |> Article.Illustration

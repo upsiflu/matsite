@@ -77,6 +77,7 @@ import Article.Fab as Fab exposing (Fab(..))
 import Codec exposing (Codec, bool, field, string)
 import Css exposing (..)
 import Dict exposing (Dict)
+import Directory exposing (Directory)
 import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
@@ -279,8 +280,8 @@ bodyCodec =
 
 {-| -}
 type BodyTemplate
-    = Content Heading (Html Never)
-    | Illustration (Html Never)
+    = Content Heading (Directory -> Html Never)
+    | Illustration (Directory -> Html Never)
 
 
 {-| akin to update, but with serializable `Action` instead of `Msg`

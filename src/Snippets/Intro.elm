@@ -25,4 +25,5 @@ intro =
            ]
         -}
         ]
+        |> always
         |> Article.Illustration

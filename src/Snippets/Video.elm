@@ -56,6 +56,7 @@ trailers =
             |> List.map makeTrailer
             |> ul [ class "video-carousel" ]
         ]
+        |> always
         |> Article.Content (Just "Trailer")
 
 
@@ -80,4 +81,5 @@ videochannel =
                 )
             |> ul [ class "video-carousel dense" ]
         ]
+        |> always
         |> Article.Content Nothing

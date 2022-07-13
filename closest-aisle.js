@@ -21,8 +21,6 @@ customElements.define(
       var closestAisle = this;
       closestAisle.allowScroll = true;
       const dispatchClosestAisle = () => {
-        if (closestAisle.parentElement.classList.contains("focusIsBackground")) return;
-
         /**
          * The `#pivot` is a fixed point on the viewport (sort of a cursor).
          * 1. Calculate the manhattan distance from the the pivot to the .F (focus segment) center
@@ -80,7 +78,7 @@ customElements.define(
             }
           }
         }
-        if (closestAisleSegment) {
+        if (closestAisleSegment && !closestAisle.parentElement.classList.contains("focusIsBackground")) {
           closestAisle.allowScroll = false;
 
           closestAisle.vector = boundOffset(closestAisleSegment, focusRect);

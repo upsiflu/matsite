@@ -11,6 +11,7 @@ module Accordion exposing
     , isRoot
     , closestId
     , view
+    , directory
     )
 
 {-|
@@ -76,6 +77,7 @@ import Article as Article exposing (Article, Orientation(..), hasBody)
 import Article.Fab as Fab
 import Codec exposing (Codec, encoder, int, string, variant0, variant1)
 import Css exposing (..)
+import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (Html, node)
 import Html.Styled.Attributes exposing (attribute, class, classList, css, id)
@@ -142,6 +144,12 @@ config accordion =
 
         Log _ c ->
             c
+
+
+{-| -}
+tree : Accordion -> Tree Article
+tree =
+    config >> .tree
 
 
 {-| -}
@@ -484,8 +492,8 @@ setArticle segment accordion =
         id =
             segment.id
 
-        { tree } =
-            config accordion
+        t =
+            tree accordion
 
         autoSuffix : Int -> String
         autoSuffix int =
@@ -493,14 +501,14 @@ setArticle segment accordion =
                 testId =
                     id ++ "-(" ++ String.fromInt int ++ ")"
             in
-            if Tree.any (.id >> (==) testId) tree then
+            if Tree.any (.id >> (==) testId) t then
                 autoSuffix (int + 1)
 
             else
                 testId
 
         uniqueId =
-            if Tree.any (.id >> (==) id) tree then
+            if Tree.any (.id >> (==) id) t then
                 autoSuffix 0
 
             else
@@ -520,6 +528,11 @@ mapFocus =
 
 {-| can be used to generate links, for example in Toc or Search;
 defaults to ""
+
+---
+
+better use Directory!
+
 -}
 closestId : String -> Accordion -> String
 closestId searchString =
@@ -531,6 +544,13 @@ closestId searchString =
         >> Maybe.withDefault ""
 
 
+directory : Accordion -> Directory
+directory =
+    tree
+        >> Tree.flatMap (.id >> (\id -> ( id, id )))
+        >> Directory.fromList
+
+
 
 ---- Decompose ----
 
@@ -539,20 +559,20 @@ closestId searchString =
 -}
 parentId : Accordion -> String
 parentId =
-    config
-        >> (\{ tree } ->
-                if Tree.isRoot tree then
+    tree
+        >> (\t ->
+                if Tree.isRoot t then
                     ""
 
                 else
-                    Tree.up tree |> Tree.focus |> .id
+                    Tree.up t |> Tree.focus |> .id
            )
 
 
 {-| -}
 focusId : Accordion -> String
 focusId =
-    config >> .tree >> Tree.focus >> .id
+    tree >> Tree.focus >> .id
 
 
 
@@ -717,6 +737,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
             )
                 { zone = zone
                 , now = now
+                , directory = directory accordion
                 , templates = c.templates
                 , do = \location -> Modify >> generateIntent location >> do
                 , delete = Delete |> atFocus
