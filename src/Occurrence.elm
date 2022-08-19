@@ -8,6 +8,7 @@ module Occurrence exposing
     , bounds
     , beginning
     , ViewMode(..), view, edit, toString
+    , Occasion
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -58,7 +59,7 @@ import Html.Styled.Events exposing (onClick, onInput)
 import Iso8601
 import List.Extra as List
 import String.Extra as String
-import Time exposing (Month(..), Zone)
+import Time exposing (Zone)
 
 
 {-| An event has a single Occurrence which may comprise Occasions of varying precision.
@@ -245,23 +246,8 @@ occasionToString zone precision { from, until } =
         ( localFrom, localUntil ) =
             ( localDateTime zone from, localDateTime zone until )
 
-        isSameTime =
-            Time.posixToMillis from - Time.posixToMillis until == 0
-
         isSameDay =
             DateTime.getDayDiff localFrom localUntil == 0
-
-        isSubsequentDay =
-            DateTime.getDayDiff localFrom localUntil
-                == 1
-                && isSameMonth
-                && isSameYear
-
-        isSubsequentYear =
-            DateTime.getYear localFrom + 1 == DateTime.getYear localUntil
-
-        isSameMonth =
-            isSameYear && DateTime.getMonth localFrom == DateTime.getMonth localUntil
 
         isSameYear =
             DateTime.getYear localFrom == DateTime.getYear localUntil
@@ -274,29 +260,34 @@ occasionToString zone precision { from, until } =
                     zone
                     from
 
-            else if isSubsequentYear then
-                format
-                    [ DateFormat.yearNumber ]
-                    zone
-                    from
-                    ++ format
-                        [ DateFormat.text " + "
-                        , DateFormat.yearNumberLastTwo
-                        ]
-                        zone
-                        until
-
             else
-                format
-                    [ DateFormat.yearNumber ]
-                    zone
-                    from
-                    ++ format
-                        [ DateFormat.text " - "
-                        , DateFormat.yearNumberLastTwo
-                        ]
+                let
+                    isSubsequentYear =
+                        DateTime.getYear localFrom + 1 == DateTime.getYear localUntil
+                in
+                if isSubsequentYear then
+                    format
+                        [ DateFormat.yearNumber ]
                         zone
-                        until
+                        from
+                        ++ format
+                            [ DateFormat.text " + "
+                            , DateFormat.yearNumberLastTwo
+                            ]
+                            zone
+                            until
+
+                else
+                    format
+                        [ DateFormat.yearNumber ]
+                        zone
+                        from
+                        ++ format
+                            [ DateFormat.text " - "
+                            , DateFormat.yearNumberLastTwo
+                            ]
+                            zone
+                            until
 
         Days ->
             if isSameDay then
@@ -310,62 +301,77 @@ occasionToString zone precision { from, until } =
                     zone
                     from
 
-            else if isSubsequentDay then
-                format
-                    [ DateFormat.monthNameAbbreviated
-                    , DateFormat.text " "
-                    , DateFormat.dayOfMonthNumber
-                    ]
-                    zone
-                    from
-                    ++ format
-                        [ DateFormat.text " + "
-                        , DateFormat.dayOfMonthNumber
-                        , DateFormat.text ", '"
-                        , DateFormat.yearNumberLastTwo
-                        ]
-                        zone
-                        until
-
-            else if isSameMonth then
-                format
-                    [ DateFormat.monthNameAbbreviated
-                    , DateFormat.text " "
-                    , DateFormat.dayOfMonthNumber
-                    ]
-                    zone
-                    from
-                    ++ format
-                        [ DateFormat.text " - "
-                        , DateFormat.dayOfMonthNumber
-                        , DateFormat.text ", '"
-                        , DateFormat.yearNumberLastTwo
-                        ]
-                        zone
-                        until
-
             else
-                format
-                    [ DateFormat.monthNameAbbreviated
-                    , DateFormat.text " "
-                    , DateFormat.dayOfMonthNumber
-                    , DateFormat.text ", '"
-                    , DateFormat.yearNumberLastTwo
-                    ]
-                    zone
-                    from
-                    ++ format
-                        [ DateFormat.text " - "
-                        , DateFormat.monthNameAbbreviated
+                let
+                    isSameMonth =
+                        isSameYear && DateTime.getMonth localFrom == DateTime.getMonth localUntil
+
+                    isSubsequentDay =
+                        DateTime.getDayDiff localFrom localUntil
+                            == 1
+                            && isSameMonth
+                            && isSameYear
+                in
+                if isSubsequentDay then
+                    format
+                        [ DateFormat.monthNameAbbreviated
+                        , DateFormat.text " "
+                        , DateFormat.dayOfMonthNumber
+                        ]
+                        zone
+                        from
+                        ++ format
+                            [ DateFormat.text " + "
+                            , DateFormat.dayOfMonthNumber
+                            , DateFormat.text ", '"
+                            , DateFormat.yearNumberLastTwo
+                            ]
+                            zone
+                            until
+
+                else if isSameMonth then
+                    format
+                        [ DateFormat.monthNameAbbreviated
+                        , DateFormat.text " "
+                        , DateFormat.dayOfMonthNumber
+                        ]
+                        zone
+                        from
+                        ++ format
+                            [ DateFormat.text " - "
+                            , DateFormat.dayOfMonthNumber
+                            , DateFormat.text ", '"
+                            , DateFormat.yearNumberLastTwo
+                            ]
+                            zone
+                            until
+
+                else
+                    format
+                        [ DateFormat.monthNameAbbreviated
                         , DateFormat.text " "
                         , DateFormat.dayOfMonthNumber
                         , DateFormat.text ", '"
                         , DateFormat.yearNumberLastTwo
                         ]
                         zone
-                        until
+                        from
+                        ++ format
+                            [ DateFormat.text " - "
+                            , DateFormat.monthNameAbbreviated
+                            , DateFormat.text " "
+                            , DateFormat.dayOfMonthNumber
+                            , DateFormat.text ", '"
+                            , DateFormat.yearNumberLastTwo
+                            ]
+                            zone
+                            until
 
         Minutes ->
+            let
+                isSameTime =
+                    Time.posixToMillis from - Time.posixToMillis until == 0
+            in
             if isSameTime then
                 format
                     [ DateFormat.monthNameAbbreviated

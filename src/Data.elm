@@ -1,11 +1,10 @@
 module Data exposing (addTemplates, initial, initialActions, initialIntents, initialTemplates)
 
 import Accordion exposing (Accordion, Action(..))
-import Article as Article exposing (Action(..), Orientation(..), Shape(..))
+import Article exposing (Action(..), Orientation(..), Shape(..))
 import Article.Fab as Fab
 import Dict
-import Directory exposing (Directory)
-import Fold exposing (Direction(..), Role(..))
+import Fold exposing (Direction(..))
 import Layout
 import List.Extra as List
 import Occurrence exposing (Occurrence)
@@ -17,7 +16,6 @@ import Snippets.Intro as Intro
 import Snippets.Series as Series
 import Snippets.Traces as Traces
 import Snippets.Video as Video
-import String.Extra as String
 import Time exposing (Month(..))
 
 
@@ -250,6 +248,4 @@ initialActions timezone =
         :: Go Left
         :: Go Left
         :: Go Left
-        :: Go Left
-        :: Go Left
-        :: []
+        :: [ Go Left, Go Left ]

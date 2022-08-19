@@ -20,6 +20,7 @@ module Zipper.Branch exposing
     , DirBranch
     , defoldWithDirections, zipDirections
     , flatFold
+    , PosBranch
     )
 
 {-|

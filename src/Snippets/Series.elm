@@ -1,7 +1,7 @@
-module Snippets.Series exposing (..)
+module Snippets.Series exposing (Collage(..), Event, Series, allCaptions, closeEvent, collageColumns, collageToIllustration, data, eventDate, eventbriteLink, presetInfos, presets, structure)
 
 import Accordion exposing (Action(..))
-import Article as Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
+import Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
 import Article.Fab as Fab
 import Directory
 import Fold exposing (Direction(..))
@@ -12,7 +12,6 @@ import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
-import Snippets.Artist as Artist
 import Snippets.Video as Video
 import Time exposing (Month(..))
 import Ui exposing (cacheImg)

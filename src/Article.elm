@@ -15,6 +15,7 @@ module Article exposing
     , structureClass
     , templatesAreOn
     , getTemplate
+    , Heading
     )
 
 {-| _To render (view|edit) Articles and format them based on their position in the tree
@@ -70,17 +71,13 @@ and on the screen, use [`Accordion.Segment`](Accordion.Segment)_
 
 -}
 
-import Article.Fab as Fab exposing (Fab(..))
+import Article.Fab as Fab exposing (Fab)
 import Codec exposing (Codec, bool, field, string)
-import Css exposing (..)
 import Dict exposing (Dict)
 import Directory exposing (Directory)
-import Fold exposing (Direction(..), Role(..))
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
-import Layout exposing (..)
-import List.Extra as List
-import Maybe.Extra as Maybe
+import Layout
 import Occurrence
 import Time exposing (Zone)
 

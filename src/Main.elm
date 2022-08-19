@@ -1,4 +1,4 @@
-port module Main exposing (..)
+port module Main exposing (Model(..), Msg(..), Route(..), SessionId, destination, main, overwrite, pleaseCenter, pleaseConfirm, route, update, upgradeIfPossible, view)
 
 import Accordion exposing (Accordion)
 import Browser
@@ -8,9 +8,9 @@ import Data
 import Html as Unstyled
 import Html.Attributes as UnstyledAttributes
 import Html.Styled as Html
-import Html.Styled.Attributes as Attributes exposing (href)
+import Html.Styled.Attributes as Attributes
 import Html.Styled.Keyed as Keyed
-import Layout exposing (..)
+import Layout
 import Task
 import Time
 import TimeZone
@@ -94,7 +94,6 @@ type Msg
       -- Persistent Data
     | IntentGenerated Accordion.Intent
     | LogReceived Accordion.History
-    | NoteReceived String
 
 
 type Route
@@ -215,11 +214,6 @@ update msg model =
 
         ( IntentGenerated intent, Model m ) ->
             ( Model { m | backlog = Just intent }, Cmd.none )
-
-        ( NoteReceived str, _ ) ->
-            {- Debug.log "NOTE RECEIVED" -}
-            str
-                |> (\_ -> ( model, Cmd.none ))
 
         _ ->
             ( model, Cmd.none )

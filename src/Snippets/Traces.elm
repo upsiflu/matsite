@@ -1,4 +1,4 @@
-module Snippets.Traces exposing (..)
+module Snippets.Traces exposing (foldernumber, traces)
 
 import Article
 import Html.Styled exposing (..)

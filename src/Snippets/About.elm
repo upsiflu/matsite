@@ -1,4 +1,4 @@
-module Snippets.About exposing (..)
+module Snippets.About exposing (contact, mat, team)
 
 import Article
 import Html.Styled exposing (..)

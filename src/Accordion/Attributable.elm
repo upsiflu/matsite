@@ -1,6 +1,5 @@
 module Accordion.Attributable exposing
     ( Att
-    , create
     , Renderer, AcceptsAttributes
     , withAttributes
     , view, viewWith
@@ -9,16 +8,13 @@ module Accordion.Attributable exposing
 {-| Builder that allows for adding attributes _after_ supplying a renderer
 
 @docs Att
-@docs create
 @docs Renderer, AcceptsAttributes
 @docs withAttributes
 @docs view, viewWith
 
 -}
 
-import Css exposing (..)
 import Html.Styled as Html
-import Html.Styled.Attributes exposing (..)
 
 
 {-| where `a` is the render target, for example `Html msg`

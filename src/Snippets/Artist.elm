@@ -1,4 +1,4 @@
-module Snippets.Artist exposing (..)
+module Snippets.Artist exposing (Artist, artists, view, viewPhoto)
 
 import Article
 import Directory exposing (Directory)
@@ -6,7 +6,6 @@ import Html.Styled as Html exposing (Html, text)
 import Html.Styled.Attributes exposing (..)
 import Layout
 import List.Extra as List
-import Maybe.Extra as Maybe
 import Ui exposing (cacheImg)
 
 

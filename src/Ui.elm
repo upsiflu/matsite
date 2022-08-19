@@ -1,4 +1,4 @@
-module Ui exposing (..)
+module Ui exposing (Edge(..), Face, Field(..), Item, Ui(..), ViewModel, cacheImg, check, composeControls, composeScenes, concat, debugOnly, disclose, distanceHolder, fromEmpty, ifJust, isDebugging, map, none, notIf, overlay, pick, pickHelp, pickOrNot, quadState, radio, sheet, singlePickOrNot, singleton, squareToggleButton, textInput, toggleButton, toggleModeButton, triState, view, with)
 
 {-| Gui Helpers
 -}
@@ -8,7 +8,6 @@ import Css exposing (..)
 import Html.Styled as Html exposing (Attribute, Html, details, div, input, label, span, summary)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick, onInput)
-import Occurrence exposing (Occurrence)
 import Zipper exposing (Zipper)
 
 
@@ -237,13 +236,6 @@ type alias ViewModel msg =
 type Field msg
     = OneOf String (Zipper ( Html msg, msg ))
     | ZeroOrOneOf String Bool msg (Zipper ( Html msg, msg ))
-    | ManyOccurrences
-        String
-        { data : List Occurrence
-        , edit : Occurrence -> Occurrence -> msg
-        , add : Occurrence -> msg
-        , remove : Occurrence -> msg
-        }
     | StringInput String { data : String, save : String -> msg }
 
 

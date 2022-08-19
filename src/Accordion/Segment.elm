@@ -45,7 +45,7 @@ module Accordion.Segment exposing
 
 -}
 
-import Article as Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
+import Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
 import Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
@@ -411,24 +411,13 @@ edit :
     -> Ui msg
 edit { zone, now, templates, directory, do, delete, rename, insert } ({ position, article } as model) =
     let
-        intend =
-            do article.id
-
         ( overlay, propertySheet ) =
             let
+                intend =
+                    do article.id
+
                 overlaidButton dir hint_ symbol =
                     button [ onClick (insert dir), title hint_ ] [ span [] [ text symbol ] ]
-
-                overlaidDeleteButton =
-                    details [ class "deleteArticle fly-orientation" ]
-                        [ summary [] [ Html.span [] [ Html.text "" ] ]
-                        , div [ class "ui flying right-aligned bottom-aligned" ]
-                            [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
-                            , Ui.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
-                            , Ui.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
-                            , Ui.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
-                            ]
-                        ]
 
                 template =
                     { body = getTemplate .body article templates
@@ -446,6 +435,17 @@ edit { zone, now, templates, directory, do, delete, rename, insert } ({ position
             case position.role of
                 Focus ->
                     let
+                        overlaidDeleteButton =
+                            details [ class "deleteArticle fly-orientation" ]
+                                [ summary [] [ Html.span [] [ Html.text "" ] ]
+                                , div [ class "ui flying right-aligned bottom-aligned" ]
+                                    [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
+                                    ]
+                                ]
+
                         activeOption =
                             case ( template.body, article.body ) of
                                 ( Just _, _ ) ->
@@ -563,11 +563,6 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
         hideBecauseVeryFarAway =
             model.position.role == Aisle && List.length model.position.path > 5
 
-        viewFab =
-            fab config model
-                |> Maybe.map (Fab.view config)
-                |> Maybe.withDefault Ui.none
-
         template =
             { body = getTemplate .body model.article templates
             , info = getTemplate .info model.article templates
@@ -595,14 +590,14 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
                 oneEntry
 
         viewPeekLink =
-            let
-                previewOccurrences =
-                    occ model
-                        |> Maybe.map (Occurrence.view (Occurrence.AsList (Tuple.second zone) Occurrence.Days))
-                        |> Maybe.withDefault Ui.none
-            in
             case model.region of
                 Peek c ->
+                    let
+                        previewOccurrences =
+                            occ model
+                                |> Maybe.map (Occurrence.view (Occurrence.AsList (Tuple.second zone) Occurrence.Days))
+                                |> Maybe.withDefault Ui.none
+                    in
                     Html.a [ class "peekLink", href c.targetId, title c.hint ]
                         [ Html.h2 [] [ Html.text c.hint ]
                         , previewOccurrences
@@ -711,6 +706,12 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
             |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
 
     else
+        let
+            viewFab =
+                fab config model
+                    |> Maybe.map (Fab.view config)
+                    |> Maybe.withDefault Ui.none
+        in
         List.map (Html.map never)
             [ model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
             , model.article.body |> viewBody

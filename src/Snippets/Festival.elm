@@ -1,8 +1,7 @@
-module Snippets.Festival exposing (..)
+module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, video1, video2, view)
 
 import Article exposing (Article, BodyTemplate)
-import Css exposing (..)
-import Html.Styled as Html exposing (..)
+import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr
 import Layout
 import Ui exposing (cacheImg)

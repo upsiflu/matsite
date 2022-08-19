@@ -1,4 +1,4 @@
-module Snippets.Video exposing (..)
+module Snippets.Video exposing (trailers, videochannel, vimeoVideo)
 
 import Article
 import Html.Styled exposing (..)

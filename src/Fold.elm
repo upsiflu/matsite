@@ -51,7 +51,6 @@ module Fold exposing
 -}
 
 import Codec exposing (Codec)
-import Json.Decode exposing (Decoder, Value)
 
 
 {-| The generic type for folding any recursive structure
@@ -191,7 +190,7 @@ positionToString pos =
             )
 
         pth =
-            List.map directionToString pos.path |> String.join ""
+            List.map directionToString pos.path |> String.concat
     in
     String.join " " [ role, leaf, root, pth ]
 
@@ -246,18 +245,6 @@ directionFromString str =
 
         _ ->
             Nothing
-
-
-{-| -}
-decodeDirection : Decoder Direction
-decodeDirection =
-    Codec.decoder directionCodec
-
-
-{-| -}
-encodeDirection : Direction -> Value
-encodeDirection =
-    Codec.encoder directionCodec
 
 
 {-| -}

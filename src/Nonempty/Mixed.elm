@@ -10,6 +10,7 @@ module Nonempty.Mixed exposing
     , justSingleton, isSingleton
     , Fold, fold, defold
     , foldl, foldr
+    , Error
     )
 
 {-|

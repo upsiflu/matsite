@@ -49,7 +49,6 @@ import Codec exposing (Codec, string)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (onInput)
-import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
 import Time

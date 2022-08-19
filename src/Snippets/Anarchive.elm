@@ -1,4 +1,4 @@
-module Snippets.Anarchive exposing (..)
+module Snippets.Anarchive exposing (anarchive, incipit)
 
 import Article
 import Css exposing (..)

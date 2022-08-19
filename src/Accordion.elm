@@ -1,16 +1,15 @@
 module Accordion exposing
     ( Accordion
-    , History, historyCodec
-    , Intent, intentCodec
+    , History
+    , Intent
     , create
-    , exit, reviseHistory, mapTemplates
+    , exit, reviseHistory
     , Msg, update
-    , Action(..), actionCodec
+    , Action(..)
     , goToId, goToParentId
     , parentId, focusId
-    , isRoot
-    , closestId, directory
     , view
+    , IntentId, ViewMode
     )
 
 {-|
@@ -24,8 +23,8 @@ module Accordion exposing
 
 @docs Accordion
 
-@docs History, historyCodec
-@docs Intent, intentCodec
+@docs History
+@docs Intent
 
 
 # Create
@@ -35,7 +34,7 @@ module Accordion exposing
 
 # Modify
 
-@docs exit, reviseHistory, mapTemplates
+@docs exit, reviseHistory
 
 
 # Update
@@ -45,7 +44,7 @@ module Accordion exposing
 
 # Persist
 
-@docs Action, actionCodec
+@docs Action
 
 
 # Navigate
@@ -57,12 +56,8 @@ module Accordion exposing
 
 @docs parentId, focusId
 
-@docs isRoot
-
 
 # Query
-
-@docs closestId, directory
 
 
 # View
@@ -72,9 +67,9 @@ module Accordion exposing
 -}
 
 import Accordion.Segment as Segment exposing (Region(..), Segment)
-import Article as Article exposing (Article, Orientation(..), hasBody)
+import Article exposing (Article, Orientation(..), hasBody)
 import Article.Fab as Fab
-import Codec exposing (Codec, encoder, int, string, variant0, variant1)
+import Codec exposing (Codec, encoder, string, variant0, variant1)
 import Css exposing (..)
 import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -93,7 +88,7 @@ import Time
 import Ui exposing (Ui)
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
-import Zipper.Tree as Tree exposing (Edge(..), EdgeOperation(..), Tree, Walk(..))
+import Zipper.Tree as Tree exposing (EdgeOperation(..), Tree, Walk(..))
 
 
 {-|
@@ -685,8 +680,8 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                     Log { history, viewingHistory } _ ->
                         if viewingHistory then
                             markUndones history
-                                |> List.indexedMap
-                                    (\_ ( { isUndone, by }, intent ) ->
+                                |> List.map
+                                    (\( { isUndone, by }, intent ) ->
                                         Html.li []
                                             [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
                                             , Ui.singlePickOrNot (not isUndone)
@@ -786,9 +781,6 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 focusedArticle =
                     Tree.focus c.tree
 
-                focusedBranch =
-                    Tree.focusedBranch c.tree
-
                 ---- PEEK ----
                 maybePeekTargetBranch : Maybe (Branch Article)
                 maybePeekTargetBranch =
@@ -796,6 +788,10 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         Nothing
 
                     else
+                        let
+                            focusedBranch =
+                                Tree.focusedBranch c.tree
+                        in
                         focusedBranch
                             ---- 1. UPCOMING
                             |> Branch.subBranches
@@ -914,12 +910,6 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                     []
               )
             ]
-                ++ (if False then
-                        [ ( "logMenu", viewLog ) ]
-
-                    else
-                        []
-                   )
 
         globalToolbar : Ui msg
         globalToolbar =

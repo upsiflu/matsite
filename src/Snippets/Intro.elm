@@ -1,4 +1,4 @@
-module Snippets.Intro exposing (..)
+module Snippets.Intro exposing (intro)
 
 import Article
 import Html.Styled exposing (..)
