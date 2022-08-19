@@ -23,5 +23,7 @@ ehthumbs.db
 Thumbs.db
 # firebase
 .firebase/
+
+.firebase/*.cache
 # vscodium
 .vscode
