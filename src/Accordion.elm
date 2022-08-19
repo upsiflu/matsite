@@ -9,9 +9,8 @@ module Accordion exposing
     , goToId, goToParentId
     , parentId, focusId
     , isRoot
-    , closestId
+    , closestId, directory
     , view
-    , directory
     )
 
 {-|
@@ -63,7 +62,7 @@ module Accordion exposing
 
 # Query
 
-@docs closestId
+@docs closestId, directory
 
 
 # View
@@ -544,6 +543,7 @@ closestId searchString =
         >> Maybe.withDefault ""
 
 
+{-| -}
 directory : Accordion -> Directory
 directory =
     tree

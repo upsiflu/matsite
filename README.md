@@ -1,49 +1,16 @@
 This is the new Moving Across Thresholds website.
 
-Right now, you can't see anything yet.
-This week, I'll create the prototype, and a link to test it will appear here.
+For an up-to-date documentation, install `yarn` and `elm-doc-preview`, then run `yarn doc` and navigate to `<dev IP>:8000`
 
-Until then, check out the [DESIGN Document](./DESIGN.md) to see what I'm currently implementing. For more details, consult the [SPECIFICATION document](SPECIFICATION.md).
+The [DESIGN](./DESIGN.md) and [SPECIFICATION document](SPECIFICATION.md)s are out of date.
+
 
 ## Progress
 
-### This Week
-
-- [ ] Ingest initial content
-    - [x] are.na embed
-    - [x] vimeo embed (with tracking disabled to comply with EU laws)
-    - [ ] Hypertext content
-    - [ ] Images (initially served via Google Docs)
-- [x] Arrange initial content into `Zipper` structure
-- [x] Create simple theme
-- [x] Display `Zipper` as Accordion
-- [x] Allow linking to any Article inside the Accordion
-- [ ] Animate moving across Articles
-- [ ] Deploy to [movingAcrossThresholds.com](movingAcrossThresholds.com)
-
------------------- Milestone #1: MVP done ------------------
-
-### March
-
-- [ ] Add User Login for `movingacrossthresholds@gmail.com`
-- [ ] Make data editable
-- [ ] Add Photo Upload feature with automatic compression
-
------------------- Milestone #2: Backend done ------------------
-
-### April and beyond
-
-- [ ] Fine-tune Layout features and add toolbar for WYSIWYG editing
-
------------------- Milestone #3: WYSIWYG done ------------------
-
-- [ ] Improve animations
-- [ ] Improve Colors
-
------------------- Milestone #4: Usability improvements done ------------------
+Since May, all issues are tracked on [github issues](https://github.com/upsiflu/matsite/issues).
 
 
-## Prior work
+## Inspiration and Thought process
 
 For more concrete discussion of content and structure, check out these **collaborative docs:**
 
@@ -60,9 +27,13 @@ Sketch of Measures (vertical and horizontal rhythm) and potential Colors, by Flu
 Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
 
 
-# Development
+# Run it
+
+Install `yarn` to execute the scripts defined in [package.json](package.json)
 
 ## Code Documentation
+
+`yarn doc`
 
 Install elm-doc-preview and run `edp` to launch a local documentation server.
 
@@ -82,7 +53,13 @@ elm-verify-examples && elm-test
 elm-verify-examples --run-tests
 ```
 
-## Run
+## Run on the local network
+
+`yarn dev`
+
+will run the development version on port 1234 of your development computer
+
+----
 
 ```sh
 npm install -g elm-live
@@ -91,3 +68,13 @@ npm install -g elm-live
 ```sh
 elm-live src/Main.elm -v --host=192.168.178.93 --pushstate --port=8000 -- --output=main.js --debug
 ```
+
+
+# Deployment
+
+Install `firebase` and deploy via
+
+```sh
+yarn clear-build-cache && yarn build && firebase deploy
+```
+

@@ -11,9 +11,9 @@
         "Nonempty.Mixed",
         "Fold",
         "Accordion",
-        "Accordion.Article",
-        "Accordion.Article.ViewModel",
-        "Accordion.Article.Fab",
+        "Accordion.Segment",
+        "Article",
+        "Article.Fab",
         "Accordion.Attributable",
         "Occurrence"
     ]

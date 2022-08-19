@@ -123,7 +123,7 @@ type alias Shuffler f a =
         |> insertRight "Y"
         |> insertRight "Z"
         |> insertRight "A"
-        |> rightmost
+        |> rightmost (identity, identity)
         |> focus
 
         --> "Y"
@@ -133,7 +133,7 @@ type alias Shuffler f a =
         |> insertRight "Y"
         |> insertRight "Z"
         |> insertRight "A"
-        |> rightmost
+        |> rightmost (identity, identity)
         |> length
 
         --> 4
@@ -153,14 +153,14 @@ rightmost ( fa, af ) z =
 
     singleton "x"
         |> insertLeft "Y"
-        |> left
+        |> left (identity, identity)
         |> focus
 
         --> "Y"
 
     singleton "x"
         |> insertRight "Y"
-        |> left
+        |> left (identity, identity)
         |> focus
 
         --> "Y"
@@ -197,7 +197,7 @@ leftmost ( fa, af ) z =
 
 {-|
 
-    right (singleton "x") |> focus --> "x"
+    right ( identity, identity ) (singleton "x") |> focus --> "x"
 
 -}
 right : Shuffler f a -> MixedZipper f a -> MixedZipper f a
@@ -268,7 +268,7 @@ deleteFocus af z =
 
     singleton 5
         |> prepend [0, 1, 2, 3, 4]
-        |> leftmost
+        |> leftmost (identity, identity)
         |> focus
 
         --> 0
@@ -283,7 +283,7 @@ prepend s z =
 
     singleton 0
         |> append [1, 2, 3, 4, 5]
-        |> rightmost
+        |> rightmost (identity, identity)
         |> focus
 
         --> 5
@@ -429,10 +429,13 @@ fold f zipper =
 
 {-|
 
-    fold defold
-        (Zipper [0, 1] 2 [3, 4])
+    import Zipper
 
-        --> (Zipper [0, 1] 2 [3, 4])
+    Zipper.create 2 [0, 1] [3, 4]
+        |> fold defold
+        |> focus
+
+        --> 2
 
 -}
 defold : Fold {} h a (MixedZipper h a)

@@ -1,5 +1,6 @@
 module Accordion.Segment exposing
-    ( Region(..)
+    ( Segment
+    , Region(..)
     , regionToString
     , addWidth, Offset, cumulativeOffset
     , offsetToCssVariables, zeroOffset
@@ -8,12 +9,11 @@ module Accordion.Segment exposing
     , toCssVariables
     , view, edit, toClass
     , defaultPeekConfig
-    , Segment
     )
 
 {-| Display Data as a Article within an `Accordion`.
 
-@docs ViewModel
+@docs Segment
 
 ---
 

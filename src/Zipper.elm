@@ -497,7 +497,7 @@ which then `cons` along the aisles.
         |> foldl
             { cons = Nonempty.grow
             , join = \(l, r) ->
-                Zipper.join
+                Zipper.create
                     (Nonempty.head l)
                     (Nonempty.tail l)
                     (Nonempty.tail r)

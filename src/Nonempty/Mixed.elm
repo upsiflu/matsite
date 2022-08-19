@@ -252,7 +252,7 @@ foldr f ( h, t ) =
 {-|
 
     foldl
-        { cons = appendItem
+        { cons = grow
         , init = singleton
         }
         ("a", [1, 2])

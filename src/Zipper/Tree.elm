@@ -581,7 +581,7 @@ go w =
     import Zipper exposing (Zipper)
 
     fromPath (Zipper [1, 2] 3 [4])
-        |> foldr defold
+        |> foldr defoldr
         |> focus
 
         --> 3

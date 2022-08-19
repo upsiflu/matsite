@@ -17,11 +17,8 @@ module Article exposing
     , getTemplate
     )
 
-{-| _To render (view|edit) Articles, use
-[`Article.Viewmodel`](Accordion.Article.ViewModel)_
-
-  - `ViewModel` adds classes based on the position in the tree AND on the screen
-  - `Article` adds classes based on the intended config, independent from the position
+{-| _To render (view|edit) Articles and format them based on their position in the tree
+and on the screen, use [`Accordion.Segment`](Accordion.Segment)_
 
 @docs Article
 

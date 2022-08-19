@@ -552,28 +552,25 @@ defoldr =
     import Nonempty
     import Zipper
 
-    [ [singleton ("a")]
-    , [fromPath ("b", ["c"])]
-    ]
-        |> List.indexedMap (\i -> Zipper.Mixed.join node (singleton (String.fromInt i)) [])
-        |> merge "root"
+    ["", "", "*", ""]
+        |> List.indexedMap (String.fromInt >> Zipper.Mixed.singleton >> always)
+        |> create "root"
         |> foldl
             { init = \n->
                 ( Nonempty.singleton (singleton n), Nonempty.singleton (singleton n) )
-            , consAisle = Nonempty.Mixed.appendItem
+            , consAisle = Nonempty.Mixed.grow
             , join = \(l, r) ->
-                Zipper.join
+                Zipper.create
                     ( Nonempty.Mixed.head l )
                     ( Nonempty.Mixed.tail l )
                     ( Nonempty.Mixed.tail r )
-                    |> Zipper.Mixed.fromZipper
-                    |> Zipper.Mixed.deviateBy node
-            , consTrunk = Nonempty.Mixed.appendItem
+                    |> Zipper.Mixed.mapFocus node
+            , consTrunk = Nonempty.Mixed.grow
             , root = Nonempty.Mixed.singleton
-            , merge = \(h, t) -> merge h t
+            , merge = \(h, aa) -> create h aa
             }
         |> path
-        --> ("root", ["0", "1"])
+        --> ("root", ["0", "1", "2", "3"])
 
 -}
 foldl :

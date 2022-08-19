@@ -252,7 +252,7 @@ defold =
 derived from the head.
 
     foldl
-        { cons = appendItem
+        { cons = grow
         , init = singleton
         }
         (0, [1, 2])
