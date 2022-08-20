@@ -6,7 +6,7 @@ module Article exposing
     , actionCodec
     , apply
     , Orientation(..), Shape(..)
-    , BodyChoice(..), InfoChoice(..), Width(..)
+    , BodyChoice(..), InfoChoice(..), Width(..), Heading
     , initialTemplates
     , Templates, BodyTemplate(..), InfoTemplate(..)
     , toggleTemplates
@@ -15,7 +15,6 @@ module Article exposing
     , structureClass
     , templatesAreOn
     , getTemplate
-    , Heading
     )
 
 {-| _To render (view|edit) Articles and format them based on their position in the tree
@@ -40,7 +39,7 @@ and on the screen, use [`Accordion.Segment`](Accordion.Segment)_
 ## Field types
 
 @docs Orientation, Shape
-@docs BodyChoice, InfoChoice, Width
+@docs BodyChoice, InfoChoice, Width, Heading
 
 
 ## Template types
@@ -172,6 +171,7 @@ type alias Caption =
     { text : String, showsDate : Bool }
 
 
+{-| -}
 type alias Heading =
     Maybe String
 

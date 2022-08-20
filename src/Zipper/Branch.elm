@@ -17,10 +17,9 @@ module Zipper.Branch exposing
     , Fold, fold, defold
     , foldl
     , Foldr, foldr, defoldr
-    , DirBranch
+    , DirBranch, PosBranch
     , defoldWithDirections, zipDirections
     , flatFold
-    , PosBranch
     )
 
 {-|
@@ -71,7 +70,7 @@ module Zipper.Branch exposing
 
 ---
 
-@docs DirBranch
+@docs DirBranch, PosBranch
 @docs defoldWithDirections, zipDirections
 
 @docs flatFold

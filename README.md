@@ -1,13 +1,13 @@
-This is the new Moving Across Thresholds website.
+This is the code for the new _Moving Across Thresholds_ website. Go to [MovingAcrossThresholds.com](movingAcrossThresholds.com) to see the current live version. Some updates may not yet been published.
 
-For an up-to-date documentation, install `yarn` and `elm-doc-preview`, then run `yarn doc` and navigate to `<dev IP>:8000`
+For an up-to-date code documentation, install `yarn` and `elm-doc-preview`, then run `yarn doc` and navigate to `<dev IP>:8000`
 
 The [DESIGN](./DESIGN.md) and [SPECIFICATION document](SPECIFICATION.md)s are out of date.
 
 
 ## Progress
 
-Since May, all issues are tracked on [github issues](https://github.com/upsiflu/matsite/issues).
+Since May 2022, all issues are tracked on [github issues](https://github.com/upsiflu/matsite/issues).
 
 
 ## Inspiration and Thought process
@@ -78,3 +78,32 @@ Install `firebase` and deploy via
 yarn clear-build-cache && yarn build && firebase deploy
 ```
 
+
+
+# Code organisation
+
+Elm, scss and js modules are ordered under [src](src/) in a type-centric order.
+
+**Canvas**: We leverage the native scroll facilities. Unfortunately, mobile and desktop browsers behave very differently and very, very weirdly. 
+
+Which web platform APIs can we safely use?
+
+- Each segment of the Accordion must be focusable so that one can edit it. Since they are about screen-sized, we simply define that _the segment under the screen-cursor has focus_.
+- While scrolling, the screen-cursor should be visible.
+- When ending a scroll, 
+  - in case a segment other than the focus is under the screen-cursor, fire `scrolledToA <id>`.
+  - in case there is no segment visible on screen, fire a `scrolledIntoNowhere` event.
+  - otherwise, do nothing
+
+**Hypertext content**: A custom element that connects to a data-node, reading and writing HTML. For editing purposes, we use the squire which relies on browser implementations. To enable global undo, we want to route any change through an ACTION. The costom element node is only renewed when a remote client changes the...
+QUESTION: Should the custom element connect directly to the firestore, or through elm? We can definitely implement global UNDO through a central registry list of user-initiated actions and stuff. This would make the elm-state orthogonal to each data-state, which is desireable because elm doesn't display the HTML itself.
+
+![Data](asset/22-08-20-Data.svg)
+
+_Dataflows:_
+- Url determines Viewport;
+- Global undo and time&zone affect elm model;
+- Each Html editor syncs with the database;
+- Browser authorizes the database
+- Elm reads and writes histories per item, and database persists these
+- Config is volatile (not persisted)

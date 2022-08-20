@@ -22,8 +22,8 @@ node_modules
 ehthumbs.db
 Thumbs.db
 # firebase
+.firebase
 .firebase/
-
 .firebase/*.cache
 # vscodium
 .vscode

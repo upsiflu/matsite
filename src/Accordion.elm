@@ -1,15 +1,13 @@
 module Accordion exposing
     ( Accordion
-    , History
-    , Intent
     , create
     , exit, reviseHistory
     , Msg, update
-    , Action(..)
+    , Action(..), History
+    , Intent, IntentId
     , goToId, goToParentId
     , parentId, focusId
-    , view
-    , IntentId, ViewMode
+    , ViewMode, view
     )
 
 {-|
@@ -22,9 +20,6 @@ module Accordion exposing
 ---
 
 @docs Accordion
-
-@docs History
-@docs Intent
 
 
 # Create
@@ -44,7 +39,8 @@ module Accordion exposing
 
 # Persist
 
-@docs Action
+@docs Action, History
+@docs Intent, IntentId
 
 
 # Navigate
@@ -62,7 +58,7 @@ module Accordion exposing
 
 # View
 
-@docs view
+@docs ViewMode, view
 
 -}
 
@@ -315,6 +311,7 @@ create templates history =
         |> injectHistory history
 
 
+{-| -}
 type alias IntentId =
     { sessionId : String, ordinal : Int }
 
@@ -609,6 +606,7 @@ type Renderable msg
     | Class String
 
 
+{-| -}
 type alias ViewMode msg =
     { zone : ( String, Time.Zone )
     , now : Time.Posix
@@ -966,7 +964,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                 (editAccordion
                                     >> Html.section [ class "ui sheet" ]
                                 )
-                            |> Ui.with globalToolbar
+                            |> Ui.append globalToolbar
                    )
     in
     c.tree

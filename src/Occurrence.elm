@@ -1,5 +1,5 @@
 module Occurrence exposing
-    ( Occurrence
+    ( Occurrence, Occasion
     , codec
     , Precision(..)
     , moment
@@ -8,7 +8,6 @@ module Occurrence exposing
     , bounds
     , beginning
     , ViewMode(..), view, edit, toString
-    , Occasion
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -17,7 +16,7 @@ timezones and canonical format.
 We are storing all dates as POSIX for interoperability, and add precision markers for
 improved humaneness.
 
-@docs Occurrence
+@docs Occurrence, Occasion
 @docs codec
 
 @docs Precision

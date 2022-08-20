@@ -15,6 +15,7 @@
         "Article",
         "Article.Fab",
         "Accordion.Attributable",
-        "Occurrence"
+        "Occurrence",
+        "Ui"
     ]
 }

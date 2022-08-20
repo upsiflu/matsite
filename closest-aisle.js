@@ -2,8 +2,7 @@ import _ from "lodash";
 
 /*---- Custom Element ----
  * This is a scroll cursor,
- * - dispatching the closest aisle id when scrolled over it
- * - adjusting its own margins to match the
+ * dispatching the closest aisle id when scrolled over it
  * Attributes: [increment]
  * Events: "scrolledToA"
  *          details: { id : .A segment closer than .F and closest to viewport-center

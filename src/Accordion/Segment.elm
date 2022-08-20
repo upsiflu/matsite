@@ -736,4 +736,4 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
                 )
             |> Tuple.pair model.article.id
             |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
-            |> Ui.with ui
+            |> Ui.append ui
