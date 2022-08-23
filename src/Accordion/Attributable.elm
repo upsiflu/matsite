@@ -1,5 +1,5 @@
 module Accordion.Attributable exposing
-    ( Att
+    ( Att, create
     , Renderer, AcceptsAttributes
     , withAttributes
     , view, viewWith
@@ -7,7 +7,7 @@ module Accordion.Attributable exposing
 
 {-| Builder that allows for adding attributes _after_ supplying a renderer
 
-@docs Att
+@docs Att, create
 @docs Renderer, AcceptsAttributes
 @docs withAttributes
 @docs view, viewWith

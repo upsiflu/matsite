@@ -266,8 +266,22 @@ eventbriteLink =
     "https://www.eventbrite.de/e/moving-across-thresholds-tickets-255265715627"
 
 
+eventbriteLinkSeries5 : String
+eventbriteLinkSeries5 =
+    "https://www.eventbrite.com.au/e/moving-across-thresholds-tickets-400812199077"
+
+
 structure : Time.Zone -> List Action
 structure timezone =
+    let
+        linkFromSeries : Int -> String
+        linkFromSeries i =
+            if i < 5 then
+                eventbriteLink
+
+            else
+                eventbriteLinkSeries5
+    in
     data
         |> List.map
             (\series ->
@@ -278,7 +292,7 @@ structure timezone =
                             (\event ->
                                 let
                                     addFab =
-                                        Modify <| Article.WithFab (Just <| Fab.Register { link = eventbriteLink, occurrence = eventDate timezone event })
+                                        Modify <| Article.WithFab (Just <| Fab.Register { link = linkFromSeries series.number, occurrence = eventDate timezone event })
                                 in
                                 [ Name event.title
                                 , addFab
