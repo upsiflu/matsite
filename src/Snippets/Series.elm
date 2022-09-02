@@ -193,7 +193,29 @@ In this gathering, facilitated by filmmaker and gardener - Ella von der Haide, w
         ]
     , Series 6
         "LOCALITY"
-        [ Event 8 Sep 22 "Locality 1" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
+        [ Event 8 Sep 22 "Unplanting the seeds of hatred" 
+          (Just """“Since the beginning of the Russian invasion of Ukraine, I couldn’t think of art, neither create it nor proceed with my artworks
+art seemed pointless
+only real tangible actions work
+helping, structuring, supporting those who are in need
+slowly I started to recognise in myself something that blocks
+something that doesn’t allow me to connect
+something that separates me from them, you from me, us from others
+Yuval Noah Harari in one of his talks has a perfect metaphor for that - "planting the seeds of hatred"
+Someone else can plant them in me.
+But also I can plant them in myself.
+And, do so repeatedly.
+Every emotion is just a comet tail of energy
+Every tree is just a feedback of a seed to the environment
+What if we change the feedback?”
+- Vera Shchelkina -
+
+Facilitated by Vera Shchelkina - a Russian somatic dance artist, this workshop is a playground where we can touch seeds of hatred in our bodies, take them into our hands, hold them, and grow them into something else - developing individual and collective artistic practice from our bodily sensations. The gathering will begin with a guided practice led by Vera, followed by an invitation to create your own practice and to share it with others. 
+https://www.movingtouch.space/
+""") 
+          "Gather-town + at bUm, Kreuzberg" "Vera Shchelkina" "-"
+           Nothing 
+           (Just <| Image 2 "https://lh5.googleusercontent.com/ZbJrTYQQ-N6LqPMlOVwrNVoeUmCXVuFttjA-qhnN0lFezUaEO9VmgHnZhquQgguAs-cJ2wFrc9rJOjSY4X94miS6JjdA82mAe7UtRzHU8YpqbUxe1o9AJEOHlsOs5rfIuwibYNEbCY6bBKKcJMrbtmNFPKMVaz07LxBKmtx6vzmXAEQcpT2D-mKkug")
         , Event 22 Sep 22 "Locality 2" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/8ty1IW3kx04YMqKk-xnWt4XGZ5YgxIesJPvSMZvJrxdYmzTb4SqoJTj-BXTfkAUJ2VkNc0x7Boo3DnAK9N89zYWv2ketrr0YmUR-Bhd9n_ThR2kdu2Bmcd7Ct8CQiWQ8cpXEq02bxkuXXmMz1A")
         , Event 6 Oct 22 "Locality 3" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
         , Event 20 Oct 22 "Locality 4" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
@@ -324,7 +346,7 @@ structure timezone =
                             |> List.intersperse [ Go Right ]
                             |> List.concat
                        )
-                    ++ [ Go Left, Go Left, Go Up ]
+                    ++ [ Go Left, Go Left, Go Left, Go Left, Go Left, Go Up ]
             )
         |> List.intersperse [ Go Right ]
         |> List.concat

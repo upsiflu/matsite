@@ -1,41 +1,42 @@
 .info {
   pointer-events: none;
 }
+
 .multipleHeaders {
   overflow: hidden;
-  width: 100%;
+  width   : 100%;
 }
 
-.multipleHeaders > :first-child {
+.multipleHeaders> :first-child {
   /* First header will always display full content and grow to fill headerspace */
-  flex-shrink: 0;
-  flex-grow: 1;
+  flex-shrink  : 0;
+  flex-grow    : 1;
   padding-right: 0rem;
 }
 
-.multipleHeaders > :not(:first-child) {
-  overflow: hidden;
+.multipleHeaders> :not(:first-child) {
+  overflow     : hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  padding-left: 0.2rem;
+  white-space  : nowrap;
+  padding-left : 0.2rem;
 }
 
 .multipleHeaders h1 {
   text-overflow: ellipsis;
-  overflow: hidden;
+  overflow     : hidden;
 }
 
 .opening {
   --accordionOffset: calc(50vw - (var(--width) / 2));
-  margin-left: calc(0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth));
-  width: 100vw;
-  position: relative;
-  min-height: 0px;
-  margin-top: 3rem;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: all 0.5s;
-  z-index: -4;
+  margin-left      : calc(0px - var(--accordionOffset) - var(--westWidth) - var(--nearWestWidth));
+  width            : 100vw;
+  position         : relative;
+  min-height       : 0px;
+  margin-top       : 3rem;
+  overflow         : hidden;
+  opacity          : 0.5;
+  transition       : all 0.5s;
+  z-index          : -4;
 }
 
 .A .opening {
@@ -45,28 +46,29 @@
 .F .opening {
   min-height: calc(var(--hereHeight) - var(--nearWestHeight));
   margin-top: -3rem;
-  opacity: 1;
+  opacity   : 1;
 }
 
 .segmentLabel {
   --border-color: #0ff;
   --border-color: transparent;
-  text-shadow: 1px 1px 0px var(--border-color), -1px -1px 0px var(--border-color), -1px 1px 0px var(--border-color),
+  text-shadow   : 1px 1px 0px var(--border-color), -1px -1px 0px var(--border-color), -1px 1px 0px var(--border-color),
     1px -1px 0px var(--border-color);
 }
+
 .focusIsBackground .segmentLabel h1 {
   background: #4f8;
-  color: #008;
-  max-width: min-content;
+  color     : #008;
+  max-width : min-content;
 }
 
 .artist .weblink {
-  display: block;
-  margin-left: -7rem;
+  display      : block;
+  margin-left  : -7rem;
   border-bottom: 0.5px solid #8c8cfc;
-  padding-left: 7rem;
-  margin-top: 1.5rem;
-  width: fit-content;
+  padding-left : 7rem;
+  margin-top   : 1.5rem;
+  width        : fit-content;
 }
 
 .richtext {
@@ -76,95 +78,103 @@
 .A img.artist,
 .F img.artist {
   mix-blend-mode: overlay;
-  position: relative;
-  left: 1rem;
-  width: calc(100% - var(--bleed));
+  position      : relative;
+  left          : 1rem;
+  width         : calc(100% - var(--bleed));
 }
 
 .fg {
   z-index: 9;
 }
 
-.F > a.segmentLabel:hover,
-.A > a.segmentLabel:hover {
+.F>a.segmentLabel:hover,
+.A>a.segmentLabel:hover {
   background-image: linear-gradient(135deg, #8c8cff 25%, transparent 25%),
     linear-gradient(225deg, #8c8cff 25%, transparent 25%), linear-gradient(45deg, #8c8cff 25%, transparent 25%),
     linear-gradient(315deg, #8c8cff 25%, rgba(0, 0, 0, 0) 25%);
   background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-  background-size: 3rem 3rem;
-  background-repeat: repeat;
+  background-size    : 3rem 3rem;
+  background-repeat  : repeat;
 }
 
-.F > a,
-.A > a {
+.F>a,
+.A>a {
   background-image: linear-gradient(135deg, transparent 25%, transparent 25%),
     linear-gradient(225deg, transparent 25%, transparent 25%), linear-gradient(45deg, transparent 25%, transparent 25%),
     linear-gradient(315deg, transparent 25%, rgba(0, 0, 0, 0) 25%);
   background-position: 1.5rem 1.5rem, 1.5rem 1.5rem, 0 1.5rem, 0 1.5rem;
-  background-size: 1.5rem 1.5rem;
-  background-repeat: repeat;
-  transition: all 0.2s;
+  background-size    : 1.5rem 1.5rem;
+  background-repeat  : repeat;
+  transition         : all 0.2s;
 }
 
-.Ba > a.segmentLabel:hover,
-.B > a.segmentLabel:hover,
-.P > a.segmentLabel:hover,
+.Ba>a.segmentLabel:hover,
+.B>a.segmentLabel:hover,
+.P>a.segmentLabel:hover,
 a.weblink:hover {
   background-image: linear-gradient(135deg, #000 25%, transparent 25%),
     linear-gradient(225deg, #000 25%, transparent 25%), linear-gradient(45deg, #000 25%, transparent 25%),
     linear-gradient(315deg, #000 25%, rgba(0, 0, 0, 0) 25%);
 }
 
-.Ba > a,
-.B > a,
-.P > a {
+.Ba>a,
+.B>a,
+.P>a {
   transition: all 0.2s;
   background-image: linear-gradient(135deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(225deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(45deg, rgba(0, 0, 255, 0) 25%, transparent 25%),
     linear-gradient(315deg, rgba(0, 0, 255, 0) 25%, rgba(0, 0, 0, 0) 25%);
 }
+
 img {
   transform-origin: center;
-  transform: translateZ(-0.08px);
+  transform       : translateZ(-0.08px);
 }
-.B > a {
-  background: hsl(0, 0%, 10%);
-  height: fit-content;
-  outline: none;
+
+.B>a {
+  background    : hsl(0, 0%, 10%);
+  height        : fit-content;
+  outline       : none;
   mix-blend-mode: lighten;
 }
+
 .P H1 {
-  overflow: visible;
+  overflow   : visible;
   white-space: nowrap;
 }
-.Accordion > li.P {
+
+.Accordion>li.P {
   /* background: #4f8; */
   overflow: visible;
-  z-index: 9;
+  z-index : 9;
 }
+
 .P a.segmentLabel:link,
 .P a.segmentLabel:visited,
 .B a.segmentLabel:link,
 .B a.segmentLabel:visited {
-  color: #fff;
+  color     : #fff;
   background: white;
-  color: black;
+  color     : black;
 }
+
 .F a.segmentLabel:link,
 .F a.segmentLabel:visited {
   color: #ddd;
 }
+
 .A a.segmentLabel:link,
 .A a.segmentLabel:visited,
 .F a.segmentLabel:link,
 .F a.segmentLabel:visited {
-  color: #eee;
+  color     : #eee;
   background: rgba(255, 255, 255, 0.3);
 }
+
 .A a.segmentLabel:link,
 .A a.segmentLabel:visited {
-  color: #ccc;
+  color     : #ccc;
   background: transparent;
 }
 
@@ -178,53 +188,61 @@ img {
 .A.🁣 {
   overflow-y: hidden;
 }
-.Accordion > .peek > .body {
+
+.Accordion>.peek>.body {
   transition: transform 0.2s;
 }
-.peek:hover > .body {
+
+.peek:hover>.body {
   transform: scale(1.05);
 }
-:not(.peek).illustration > .body {
-  overflow: visible;
-  width: calc(100% + 2 * var(--bleed));
+
+:not(.peek).illustration>.body {
+  overflow   : visible;
+  width      : calc(100% + 2 * var(--bleed));
   margin-left: calc(0px - var(--bleed));
-  margin-top: calc(0px - var(--bleed));
+  margin-top : calc(0px - var(--bleed));
 }
 
 .info {
   inline-size: 21rem;
 }
+
 .F .info,
 .P .info {
-  opacity: 1;
+  opacity       : 1;
   pointer-events: auto;
 }
 
 .info {
-  opacity: 0;
-  padding: 0.75rem;
+  opacity       : 0;
+  padding       : 0.75rem;
   padding-inline: 0.75rem;
-  padding-block: 1.125rem;
-  color: silver;
-  transition: opacity 0.5s;
-  font-size: 0.85em;
+  padding-block : 1.125rem;
+  color         : silver;
+  transition    : opacity 0.5s;
+  font-size     : 0.85em;
 }
 
 .info.toc li {
   display: inline-block;
 }
+
 .info.toc {
-  margin: -0.75rem;
+  margin    : -0.75rem;
   margin-top: -0.5rem;
-  display: block;
-  padding: 0.5rem 0.75rem;
+  display   : block;
+  padding   : 0.5rem 0.75rem;
 }
+
 .P .info.toc li a {
   padding: 0.25rem;
 }
+
 .P .info.toc li a:hover {
   text-decoration: underline;
 }
+
 .P .info.toc li a:active {
   background: black;
 }
@@ -232,9 +250,11 @@ img {
 .P .info.toc li.focused {
   background: white;
 }
+
 .P .info.toc li:not(.focused) {
   background: rgb(255, 255, 255, 0.1);
 }
+
 /*
 *  ==============================================================
 *                  Article widths and animations
@@ -245,19 +265,22 @@ img {
 */
 .🀱,
 .🁣 {
-  position: absolute;
+  position  : absolute;
   transition: opacity 0s, height 0.5s, width 0.5s, left 0.2s, top 0.7s;
 }
+
 .cache {
   visibility: hidden;
-  opacity: 0;
+  opacity   : 0;
   transition: height 0.3s, width 0.3s, left 0.2s, top 0.5s, opacity 0.3s linear 0.2s, visibility 0s linear 0.5s;
-  left: var(--x);
-  top: var(--y);
+  left      : var(--x);
+  top       : var(--y);
 }
+
 .cache.🀱 {
   width: var(--unit);
 }
+
 .cache.🁣 {
   height: var(--unit);
 }
@@ -273,12 +296,13 @@ img {
 .west,
 .east,
 .🀱:not(.hasBody),
-.focusIsBackground > .🀱 {
+.focusIsBackground>.🀱 {
   width: var(--unit);
 }
-.west > .body,
-.east > .body,
-.focusIsBackground > .🀱:not(.F) > .body {
+
+.west>.body,
+.east>.body,
+.focusIsBackground>.🀱:not(.F)>.body {
   visibility: hidden;
   max-height: 0rem;
 }
@@ -294,7 +318,7 @@ img {
 */
 
 .🁣 {
-  width: var(--column);
+  width : var(--column);
   height: var(--unit);
 }
 
@@ -304,213 +328,240 @@ img {
 .🁣.nearWest,
 .🁣.nearEast,
 .🁣:not(.hasBody),
-.focusIsBackground > .🁣 {
+.focusIsBackground>.🁣 {
   height: var(--unit);
 }
-.north > .body,
-.south > .body,
-.🁣.nearWest > .body,
-.🁣.nearEast > .body,
-.focusIsBackground > .🁣:not(.F) > .body {
+
+.north>.body,
+.south>.body,
+.🁣.nearWest>.body,
+.🁣.nearEast>.body,
+.focusIsBackground>.🁣:not(.F)>.body {
   visibility: hidden;
   max-height: 0rem;
 }
 
 /* expanded */
 .🁣.here.hasBody {
-  width: calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
+  width : calc(var(--ownColumns) * var(--column) + var(--ownScreens) * var(--screen));
   height: var(--hereHeight);
 }
 
 .segment-heading {
-  font-family: space_monoregular;
-  color: white;
-  font-size: 1.2rem;
-  position: relative;
-  left: -2px;
-  padding-right: 0;
-  padding-top: 1.5rem;
+  font-family   : space_monoregular;
+  color         : white;
+  font-size     : 1.2rem;
+  position      : relative;
+  left          : -2px;
+  padding-right : 0;
+  padding-top   : 1.5rem;
   letter-spacing: -0.5px;
 }
 
-#Archive > .body {
-  height: var(--here-height);
+#Archive>.body {
+  height  : var(--here-height);
   overflow: visible;
 }
 
 #Archive body,
 #Archive #root,
-#Archive #root > div {
-  border: none;
+#Archive #root>div {
+  border    : none;
   background: transparent;
 }
 
-.role + a.person {
+.role+a.person {
   margin-left: 0.5rem;
-  transition: all 0.2s;
+  transition : all 0.2s;
 }
-.role + a.person:hover,
+
+.role+a.person:hover,
 a.medium:hover {
   letter-spacing: 0.5px;
 }
 
 ul.stretch-horizontally {
   display: flex;
-  width: 100%;
+  width  : 100%;
 }
-ul.stretch-horizontally > li {
+
+ul.stretch-horizontally>li {
   flex-grow: 1;
 }
+
 ul.video-carousel {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  padding   : 0;
+  margin    : 0;
 }
+
 ul.video-carousel li {
   display: inline-block;
-  width: var(--column);
+  width  : var(--column);
   padding: 0;
-  margin: 0;
+  margin : 0;
 }
+
 .traces-container {
-  position: absolute;
-  left: calc(var(--column) / 2);
-  top: 0;
-  height: 100%;
-  width: 100%;
+  position   : absolute;
+  left       : calc(var(--column) / 2);
+  top        : 0;
+  height     : 100%;
+  width      : 100%;
   margin-left: -50%;
 }
+
 iframe.traces {
-  width: 100%;
-  height: 100%;
+  width   : 100%;
+  height  : 100%;
   position: absolute;
-  left: 0;
-  border: none;
+  left    : 0;
+  border  : none;
 }
 
 .motto {
-  position: absolute;
-  right: 0.25rem;
+  position   : absolute;
+  right      : 0.25rem;
   font-weight: bold;
   font-family: space_monoregular;
 }
-.P > .fab {
-  position: absolute;
-  top: calc(var(--here-height) - 6rem);
-  right: calc(0px - var(--nearWest-width) - 3rem);
-  transition: right 0.5s, top 0.5s, transform 0.2s;
-  display: block;
-  background: #4f8;
-  width: 4rem;
-  height: 4rem;
-  border-radius: 2rem;
-  color: blue;
-  z-index: 11;
-  display: flex;
+
+.P>.fab {
+  position       : absolute;
+  top            : calc(var(--here-height) - 6rem);
+  right          : calc(0px - var(--nearWest-width) - 3rem);
+  transition     : right 0.5s, top 0.5s, transform 0.2s;
+  display        : block;
+  background     : #4f8;
+  width          : 4rem;
+  height         : 4rem;
+  border-radius  : 2rem;
+  color          : blue;
+  z-index        : 11;
+  display        : flex;
   justify-content: center;
-  align-items: center;
-}
-.P.north > .fab {
-  right: calc(var(--column) - 6rem);
-  top: calc(var(--here-height) - 2rem);
-}
-.P > .fab:hover {
-  transform: scale(1.1);
-}
-.fab > details > summary {
-  list-style-type: none !important;
-}
-.P > .fab span.title {
-  line-height: 1ex;
-  font-family: "subaruheavy";
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  font-size: calc(7em / 8);
-}
-.P > .fab.subscribe {
-  right: -2rem;
-}
-.P.west > a.segmentLabel {
-  position: relative;
-  padding-bottom: 2.75em;
-}
-.P.west > a.segmentLabel::after {
-  content: "↑";
-  font-size: 1.8em;
-  display: block;
-  position: absolute;
-  right: 0.5em;
-  bottom: 0.125em;
+  align-items    : center;
 }
 
-.P.north > a.segmentLabel::after {
-  content: "↓";
-  font-size: 1.8em;
-  display: block;
-  position: absolute;
-  right: 0.2em;
-  bottom: 0.275em;
+.P.north>.fab {
+  right: calc(var(--column) - 6rem);
+  top  : calc(var(--here-height) - 2rem);
 }
+
+.P>.fab:hover {
+  transform: scale(1.1);
+}
+
+.fab>details>summary {
+  list-style-type: none !important;
+}
+
+.P>.fab span.title {
+  line-height   : 1ex;
+  font-family   : "subaruheavy";
+  font-weight   : 800;
+  letter-spacing: -0.5px;
+  font-size     : calc(7em / 8);
+}
+
+.P>.fab.subscribe {
+  right: -2rem;
+}
+
+
+.P.west>a.segmentLabel {
+  position      : relative;
+  padding-bottom: 2.75em;
+}
+
+.P.west>a.segmentLabel::after {
+  content  : "↑";
+  font-size: 1.8em;
+  display  : block;
+  position : absolute;
+  right    : 0.5em;
+  bottom   : 0.125em;
+}
+
+.P.north>a.segmentLabel::after {
+  content  : "↓";
+  font-size: 1.8em;
+  display  : block;
+  position : absolute;
+  right    : 0.2em;
+  bottom   : 0.275em;
+}
+
 .peekLink {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top     : 0;
+  left    : 0;
+  width   : 100%;
+  height  : 100%;
 }
-.peekLink:link > ul,
-.peekLink:visited > ul {
+
+.peekLink:link>ul,
+.peekLink:visited>ul {
   position: absolute;
-  bottom: auto;
-  top: auto;
-  right: 0;
-  padding: 0.1rem 0.8rem;
+  bottom  : auto;
+  top     : auto;
+  right   : 0;
+  padding : 0.1rem 0.8rem;
 }
-.peekLink > h2 {
-  text-align: right;
-  background: rgb(132, 0, 132);
+
+.peekLink>h2 {
+  text-align    : right;
+  background    : rgb(132, 0, 132);
   mix-blend-mode: color-burn;
-  font-size: 5rem;
-  overflow: hidden;
-  line-height: 4rem;
-  margin: 0;
+  font-size     : 5rem;
+  overflow      : hidden;
+  line-height   : 4rem;
+  margin        : 0;
 }
-.peekLink > ul {
+
+.peekLink>ul {
   mix-blend-mode: screen;
-  color: orange;
-  transition: all 0.4s;
+  color         : orange;
+  transition    : all 0.4s;
 }
-.peekLink > ul + ul {
-  background: transparent;
+
+.peekLink>ul+ul {
+  background    : transparent;
   mix-blend-mode: multiply;
-  color: white;
-  transition: all 0.1s;
-  text-shadow: 1px 1px black;
+  color         : white;
+  transition    : all 0.1s;
+  text-shadow   : 1px 1px black;
 }
-.peekLink:hover > ul + ul {
+
+.peekLink:hover>ul+ul {
   background: rgb(111, 0, 255);
 }
-.peekLink:hover > ul {
+
+.peekLink:hover>ul {
   padding: 0.1rem 1.8rem;
 }
+
 .artist fieldset,
 .artist fieldset {
-  animation: scroll 7s linear infinite;
+  animation       : scroll 7s linear infinite;
   background-image: linear-gradient(transparent, blue, transparent);
-  background-size: 400px 1000px;
-  margin: 1.5rem -1rem;
-  padding: 0.25rem 1rem;
-  padding-bottom: 1rem;
-  border: none;
+  background-size : 400px 1000px;
+  margin          : 1.5rem -1rem;
+  padding         : 0.25rem 1rem;
+  padding-bottom  : 1rem;
+  border          : none;
 }
+
 .artist fieldset .weblink {
   margin-top: 0;
 }
+
 @keyframes scroll {
   100% {
     background-position: 0px 1000px;
   }
 }
+
 .artist fieldset a:hover,
 .artist fieldset a:hover,
 .artist a.internal[href]:hover {
@@ -518,10 +569,10 @@ iframe.traces {
 }
 
 .artist a.internal[href] {
-  animation: scroll 7s linear infinite;
+  animation       : scroll 7s linear infinite;
   background-image: linear-gradient(transparent, blue, transparent);
-  background-size: 400px 1000px;
-  display: block;
+  background-size : 400px 1000px;
+  display         : block;
 }
 
 .sheet.ui:not(:hover),
@@ -530,14 +581,16 @@ iframe.traces {
   /* margin-left: -2rem; */
   opacity: 0.3;
 }
+
 .sheet.ui {
   transition: width 0.4s, margin-left 0.4s, opacity 0.2s;
 }
+
 .Accordion {
   padding-bottom: 4rem !important;
 }
 
-.multipleHeaders > a:not(:first-child) {
+.multipleHeaders>a:not(:first-child) {
   line-height: 1rem;
 }
 

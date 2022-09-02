@@ -201,11 +201,17 @@ edit { zone, save } maybeFab =
 
 
 {-| -}
-view : { a | zone : ( String, Time.Zone ) } -> Fab -> Html Never
-view { zone } fab =
+view : { a | zone : ( String, Time.Zone ), now:Time.Posix } -> Fab -> Html Never
+view { zone, now } fab =
     case fab of
         Register r ->
-            Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
+            if Occurrence.isDuring now r.occurrence then
+                Html.a [ class "register fab", target "_blank", href r.link, title ("Current: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
+            else if Occurrence.isUpcoming now r.occurrence then
+                Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
+            else 
+                Html.a [ class "register fab inactive", target "_blank", href r.link, title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past Event" ] ]
+
 
         Subscribe _ ->
             Html.details

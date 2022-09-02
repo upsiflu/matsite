@@ -29,7 +29,7 @@ Sketch of a Look, as the screen expands, by Flupsi, 22-03-04
 
 # Run it
 
-Install `yarn` to execute the scripts defined in [package.json](package.json)
+Install `yarn` and `cross-env` to execute the scripts defined in [package.json](package.json)
 
 ## Code Documentation
 

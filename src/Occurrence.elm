@@ -7,7 +7,7 @@ module Occurrence exposing
     , merge
     , bounds
     , beginning
-    , ViewMode(..), view, edit, toString
+    , ViewMode(..), view, edit, toString, isUpcoming, isDuring, traceBounds
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -39,13 +39,13 @@ improved humaneness.
 
 # Deconstruct
 
-@docs bounds
+@docs bounds, isWithinBounds
 @docs beginning
 
 
 # View
 
-@docs ViewMode, view, edit, toString
+@docs ViewMode, view, edit, toString, traceBounds
 
 -}
 
@@ -158,20 +158,6 @@ localToGlobal zone local =
         |> Time.millisToPosix
 
 
-{-| -}
-toString : ( String, Zone ) -> Precision -> Occurrence -> String
-toString ( zoneDesc, zone ) precision =
-    List.map (occasionToString zone precision)
-        >> String.join " + "
-        >> (\str -> str ++ " (in your current timezone, " ++ zoneDesc ++ ")")
-
-
-{-| Beginning time of the first occurrence
--}
-beginning : Occurrence -> Maybe Time.Posix
-beginning =
-    List.head >> Maybe.map .from
-
 
 
 ---- Combine
@@ -209,6 +195,41 @@ bounds =
             }
         )
         >> Maybe.withDefault { from = Time.millisToPosix 0, until = Time.millisToPosix 0 }
+
+{-| -}
+isDuring : Time.Posix -> Occurrence -> Bool
+isDuring pivot =
+    bounds >>
+        \{from, until}  ->
+            Time.posixToMillis from <= Time.posixToMillis pivot
+                && Time.posixToMillis until >= Time.posixToMillis pivot
+
+{-| -}
+isUpcoming : Time.Posix -> Occurrence -> Bool
+isUpcoming pivot occ =
+    Time.posixToMillis (bounds occ |> .from) >= Time.posixToMillis pivot
+
+{-| -}
+traceBounds : Time.Posix -> Occurrence -> String
+traceBounds pivot =
+    bounds >>
+        \{from, until}  ->
+            (Time.posixToMillis from, Time.posixToMillis pivot, Time.posixToMillis until)
+                |> \(f, p, u) -> String.fromInt f ++ " <= " ++ String.fromInt p ++ " <= " ++String.fromInt u
+
+{-| -}
+toString : ( String, Zone ) -> Precision -> Occurrence -> String
+toString ( zoneDesc, zone ) precision =
+    List.map (occasionToString zone precision)
+        >> String.join " + "
+        >> (\str -> str ++ " (in your current timezone, " ++ zoneDesc ++ ")")
+
+
+{-| Beginning time of the first occurrence
+-}
+beginning : Occurrence -> Maybe Time.Posix
+beginning =
+    List.head >> Maybe.map .from
 
 
 {-| `AsList` : Show all

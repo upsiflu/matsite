@@ -188,8 +188,7 @@ initialActions timezone =
         :: Name "Labs"
         :: Go Down
         :: Series.structure timezone
-        ++ Go Left
-        :: Go Up
+        ++ Go Up
         :: Go Right
         :: Name "Festivals"
         :: appendSubtree
