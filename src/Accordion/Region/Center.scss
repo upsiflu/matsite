@@ -10,7 +10,6 @@
             top: 0;
             width: var(--here-width);
             height: var(--here-height);
-            // outline: 0.5px dashed #77f;
             outline-offset: -0.5px;
             pointer-events: none;
         }
@@ -21,7 +20,7 @@
         }
 
         &.🀱>.bounds {
-            height: 200vw;
+            height: 200vh;
             top: -50vh;
         }
 

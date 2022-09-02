@@ -40,11 +40,16 @@ customElements.define(
         let bottom = rect => rect.y + rect.height;
         let right = rect => rect.x + rect.width;
         let topLeft = rect => rect;
-        let outOfScope = rect =>
-          rect.x > window.innerWidth ||
-          rect.y > window.innerHeight ||
-          rect.x + rect.width < 0 ||
-          rect.y + rect.height < 0;
+        let outOfScope = rect => {
+          console.log("out of scope?");
+          console.log(" WINDOW: 0 ..", window.innerWidth, " |  0 ..", window.innerHeight)
+          console.log(" RECT:  ", rect.x, "..", rect.x + rect.width, " | ", rect.y, "..", rect.y + rect.height)
+          return (rect.x > window.innerWidth / 2 ||
+            rect.y > window.innerHeight / 2 ||
+            rect.x + rect.width < window.innerWidth / 2 ||
+            rect.y + rect.height < window.innerHeight / 2)
+        }
+
         let topRight = rect => ({ x: rect.x + rect.width, y: rect.y });
         let bottomLeft = rect => ({ x: rect.x, y: rect.y + rect.height });
         let boundOffset = (to, from) => {
@@ -64,6 +69,23 @@ customElements.define(
         let minimumDistance = manhattanDistance(focusPoint, pivot);
 
         var closestAisleSegment = null;
+
+        let outerBounds = l => {
+          console.log(l);
+          return l.map(item => item.getBoundingClientRect()).reduce(unionRect);
+        }
+
+        let unionRect = (rect0, rect1) => {
+          let xmin = Math.min(rect0.x, rect1.x);
+          let ymin = Math.min(rect0.y, rect1.y);
+          let xmax = Math.max(rect0.x + rect0.width, rect1.x + rect1.width);
+          let ymax = Math.max(rect0.y + rect0.height, rect1.y + rect1.height);
+          return {
+            x: xmin
+            , y: ymin
+            , width: xmax - xmin, height: ymax - ymin
+          }
+        }
 
         for (let a of document.querySelectorAll(".A>.bounds")) {
           let aisleSegmentRect = a.getBoundingClientRect();
@@ -88,7 +110,9 @@ customElements.define(
             })
           );
         } else {
-          if (outOfScope(focusRect)) closestAisle.dispatchEvent(new CustomEvent("scrolledIntoNowhere"));
+          let maximumRect =
+            outerBounds(Array.from(document.querySelectorAll(".Accordion>li:not(.cache)>.bounds")))
+          if (outOfScope(maximumRect)) setTimeout(() => closestAisle.dispatchEvent(new CustomEvent("scrolledIntoNowhere")), 100);
         }
         document.documentElement.classList.remove("is-scrolling");
       };

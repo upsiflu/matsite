@@ -6,6 +6,8 @@ import Html.Styled.Attributes exposing (..)
 import Layout
 import Ui exposing (cacheImg)
 
+import Directory
+
 
 mat : Article.BodyTemplate
 mat =
@@ -44,24 +46,33 @@ mat =
 
 team : Article.BodyTemplate
 team =
-    article []
-        [ cacheImg "Team" 1 "" "https://lh5.googleusercontent.com/DDQ5JPLeAEEx8DraEuc3NzLWq-u3CQl8alu-doc4KUBoBT6BizoBy3Cjs9RgJEoroC5-nH_cmI7VocfbgsmZaM5Y9GKhhizMb70OPpnSGk6IdbfxoFspHaq3_qPEa4T0c1V9YEZTrFpgp7DOHQ"
-        , [ ( "Concept, Curation, Facilitation", "Renae Shadler" )
-          , ( "Creative Companion", "Susanne Schmitt" )
-          , ( "Collages, Festival Companion", "Judith Förster" )
-          , ( "Communications", "Flupsi Upsi" )
-          , ( "Documentation", "Stella Horta" )
-          , ( "Production", "Sofia Fantuzzi" )
-          , ( "2021 Communications", "Katie-rose Spence" )
-          , ( "2020/21 Production", "ehrliche arbeit – freelance office for culture" )
-          ]
-            |> List.map
-                (\( role, person ) ->
-                    li [] [ span [ class "role" ] [ text role ], a [ class "person", href (Layout.sanitise person) ] [ text person ] ]
-                )
-            |> ul []
-        ]
-        |> always
+    let
+        closeArtist who dir =
+            Directory.getClosestBy (String.length who // 4) who dir
+                |> Maybe.map
+                    (\uuid -> a [ href uuid ] [ text ("☛ " ++ who |> String.replace " " " ") ])
+                |> Maybe.withDefault (text who)
+    in
+    (\dir->
+    
+        article []
+            [ cacheImg "Team" 1 "" "https://lh5.googleusercontent.com/DDQ5JPLeAEEx8DraEuc3NzLWq-u3CQl8alu-doc4KUBoBT6BizoBy3Cjs9RgJEoroC5-nH_cmI7VocfbgsmZaM5Y9GKhhizMb70OPpnSGk6IdbfxoFspHaq3_qPEa4T0c1V9YEZTrFpgp7DOHQ"
+            , [ ( "Concept, Curation, Facilitation", "Renae Shadler" )
+            , ( "Creative Companion", "Susanne Schmitt" )
+            , ( "Collages, Festival Companion", "Judith Förster" )
+            , ( "Communications", "Flupsi Upsi" )
+            , ( "Documentation", "Stella Horta" )
+            , ( "Production", "Sofia Fantuzzi" )
+            , ( "2021 Communications", "Katie-rose Spence" )
+            , ( "2020/21 Production", "ehrliche arbeit – freelance office for culture" )
+            ]
+                |> List.map
+                    (\( role, person ) ->
+                        li [] [ span [ class "role" ] [ text role ], text ": ", closeArtist person dir ]
+                    )
+                |> ul []
+            ]
+    )
         |> Article.Content (Just "Team")
 
 
