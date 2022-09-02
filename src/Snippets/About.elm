@@ -39,7 +39,7 @@ mat =
                                 [ 1, 2, 3, 4, 5, 6 ]
                        ]
            )
-        |> article []
+        |> article [class "richtext"]
         |> always
         |> Article.Content (Just "Moving across Thresholds")
 
