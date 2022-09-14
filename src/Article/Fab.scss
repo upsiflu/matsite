@@ -76,6 +76,11 @@
         letter-spacing: -0.5px;
         font-size: calc(7em / 8);
     }
+    &.soon span.title {
+        text-align: center;
+        line-height: .8rem;
+        color: black;
+    }
 }
 
 .P>.fab.subscribe {

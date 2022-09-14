@@ -60,19 +60,23 @@ import Zipper
 type Fab
     = Register { link : String, occurrence : Occurrence }
     | Subscribe { link : String }
+    | ComingSoon { occurrence : Occurrence }
 
 
 {-| -}
 codec : Codec Fab
 codec =
     Codec.custom
-        (\reg sub value ->
+        (\reg sub com value ->
             case value of
                 Register r ->
                     reg r
 
                 Subscribe s ->
                     sub s
+
+                ComingSoon t ->
+                    com t
         )
         |> Codec.variant1 "Register"
             Register
@@ -85,6 +89,12 @@ codec =
             Subscribe
             (Codec.object (\l -> { link = l })
                 |> Codec.field "link" .link string
+                |> Codec.buildObject
+            )
+        |> Codec.variant1 "ComingSoon"
+            ComingSoon
+            (Codec.object (\o -> { occurrence = o })
+                |> Codec.field "occurrence" .occurrence Occurrence.codec
                 |> Codec.buildObject
             )
         |> Codec.buildCustom
@@ -123,6 +133,12 @@ merge next prev =
         ( Register r0, Register r1 ) ->
             Register { r0 | occurrence = Occurrence.merge r0.occurrence r1.occurrence }
 
+        ( ComingSoon _, f ) ->
+            f
+
+        ( f, ComingSoon _) ->
+            f
+
 
 
 ---- View
@@ -137,6 +153,9 @@ fabTypeToString fab =
         Subscribe _ ->
             "Subscribe"
 
+        ComingSoon _ ->
+            "Coming Soon"
+
 
 stringToFabType : String -> Maybe Fab
 stringToFabType str =
@@ -146,6 +165,9 @@ stringToFabType str =
 
         "Subscribe" ->
             Subscribe { link = "https://" } |> Just
+
+        "Coming Soon" ->
+            ComingSoon {occurrence = [] } |> Just
 
         _ ->
             Nothing
@@ -167,6 +189,9 @@ edit { zone, save } maybeFab =
 
                 Just (Subscribe { link }) ->
                     [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] [] ]
+                Just (ComingSoon r) ->
+                    [ Occurrence.edit { zone = zone, save = \o -> ComingSoon { r | occurrence = o } |> Just |> save } r.occurrence
+                    ]
     in
     [ ( "Register", stringToFabType "Register" |> save )
     ]
@@ -225,6 +250,15 @@ view { zone, now } fab =
                     ]
                 ]
 
+        ComingSoon r ->
+            if Occurrence.isDuring now r.occurrence then
+                Html.a [ class "register soon fab", target "_blank", title ("Current: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Link coming soon" ] ]
+            else if Occurrence.isUpcoming now r.occurrence then
+                Html.a [ class "register soon fab", target "_blank", title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Link coming soon" ] ]
+            else 
+                Html.a [ class "register soon fab inactive", target "_blank", title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past Event" ] ]
+
+
 
 {-| where Nothing means something like eternal
 -}
@@ -235,6 +269,9 @@ occurrence fab =
             Nothing
 
         Register r ->
+            Just r.occurrence
+        
+        ComingSoon r ->
             Just r.occurrence
 
 

@@ -53,6 +53,12 @@ elm-verify-examples && elm-test
 elm-verify-examples --run-tests
 ```
 
+## Run on the localhost
+
+`yarn local`
+
+
+
 ## Run on the local network
 
 `yarn dev`

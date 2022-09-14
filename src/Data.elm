@@ -139,16 +139,36 @@ initialActions timezone =
                 |> WithFab
                 |> Modify
 
-        registerTwoDays : Int -> Month -> Int -> Int -> Accordion.Action
-        registerTwoDays day month year hour =
+        comingSoon : Occurrence -> Accordion.Action
+        comingSoon occurrence =
+            Fab.ComingSoon { occurrence = occurrence }
+                |> Just
+                |> WithFab
+                |> Modify
+
+        registerWithLink : String -> Occurrence -> Accordion.Action
+        registerWithLink link occurrence =
+            Fab.Register { link = link, occurrence = occurrence }
+                |> Just
+                |> WithFab
+                |> Modify
+
+        registerTwoDays : Int -> Month -> Int -> Int -> String -> Accordion.Action
+        registerTwoDays day month year hour link =
             Occurrence.moment Time.utc month day year hour 0
                 |> Occurrence.withDurationDays 1
-                |> register
+                |> registerWithLink link
+
+        comingSoonTwoDays : Int -> Month -> Int -> Int -> Accordion.Action
+        comingSoonTwoDays day month year hour =
+            Occurrence.moment Time.utc month day year hour 0
+                |> Occurrence.withDurationDays 1
+                |> comingSoon
 
         appendSubtree =
             Go Down
                 :: Name "Perform[d]ance"
-                :: registerTwoDays 26 Nov 2022 2
+                :: comingSoonTwoDays 26 Nov 2022 2
                 :: Modify (WithCaption { text = "Perform[d]ance Stralsund", showsDate = True })
                 :: Go Down
                 :: Name "Tidal Shifts"
@@ -159,7 +179,7 @@ initialActions timezone =
                 :: Go Right
                 :: Name "Radialsystem"
                 :: Modify (WithCaption { text = "Radialsystem Berlin", showsDate = True })
-                :: registerTwoDays 23 Apr 2022 1
+                :: registerTwoDays 23 Apr 2022 1 "https://www.radialsystem.de/de/veranstaltungen/moving-across-thresholds/"
                 :: Go Down
                 :: Name "Video2"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
