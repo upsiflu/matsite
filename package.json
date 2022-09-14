@@ -25,6 +25,7 @@
     "build": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && cross-env NODE_ENV=production parcel build ./index.html --public-url ./",
     "format": "prettier --write \"./**/*.{js,jsx}\"",
     "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",
-    "test": "elm-verify-examples && elm-test"
+    "test": "elm-verify-examples && elm-test",
+    "deploy": "yarn clear-build-cache && yarn build && firebase deploy"
   }
 }
