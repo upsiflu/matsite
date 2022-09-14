@@ -350,7 +350,7 @@ structure timezone =
                             |> List.intersperse [ Go Right ]
                             |> List.concat
                        )
-                    ++ [ Go Left, Go Left, Go Left, Go Left, Go Left, Go Up ]
+                    ++ [ Go Left, Go Left, Go Left, Go Left, Go Up ]
             )
         |> List.intersperse [ Go Right ]
         |> List.concat
