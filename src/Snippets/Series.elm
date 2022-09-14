@@ -216,7 +216,11 @@ https://www.movingtouch.space/
           "Gather-town + at bUm, Kreuzberg" "Vera Shchelkina" "-"
            Nothing 
            (Just <| Image 2 "https://lh5.googleusercontent.com/ZbJrTYQQ-N6LqPMlOVwrNVoeUmCXVuFttjA-qhnN0lFezUaEO9VmgHnZhquQgguAs-cJ2wFrc9rJOjSY4X94miS6JjdA82mAe7UtRzHU8YpqbUxe1o9AJEOHlsOs5rfIuwibYNEbCY6bBKKcJMrbtmNFPKMVaz07LxBKmtx6vzmXAEQcpT2D-mKkug")
-        , Event 22 Sep 22 "Locality 2" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/8ty1IW3kx04YMqKk-xnWt4XGZ5YgxIesJPvSMZvJrxdYmzTb4SqoJTj-BXTfkAUJ2VkNc0x7Boo3DnAK9N89zYWv2ketrr0YmUR-Bhd9n_ThR2kdu2Bmcd7Ct8CQiWQ8cpXEq02bxkuXXmMz1A")
+        , Event 22 Sep 22 "Pleasure is a practice" (Just """This gathering is centered on “Pleasure Activism: The Politics of Feeling Good” by activist, author and doula - adrienne maree brown, who teaches us how embracing what brings us joy is essential in organising against oppression. brown highlights the many ways that people of color, sex workers, disabled people and queer, trans and nonbinary people have been denied joy—and why we must encourage their pleasure as well as our own for collective liberation.
+            Facilitated by choreographer/dancer Renae Shadler and companioned by anthropologist Susanne Schmitt, this event includes readings of text excerpts as well as a somatic proposition to work through our body’s internal layers of skin, flesh and bone, creating more space within the container of our body. The practice builds up to a place where the body can operate as a whole by connecting all the layers within itself and then radiating beyond its borders and limits - moving as the Pleasure Activists we inherently are!""") 
+            "Gather-town + at bUm, Kreuzberg" "Renae Shadler" "Susanne Schmitt" 
+            Nothing 
+            (Just <| Image 2 "https://lh3.googleusercontent.com/To6h6vTsIIh65kLIY45osrEwm2y0rJkOEy0o_wQ9SSgd2ycb5dbOYzMzkLksHPCv5DG4gR31hYfs7wyapo_dwUfkdFqLa6LUKO2p2V7pKH_Np49w6N9d2BgBDRH7JO-_IDBFj444hldIXDGKQOZzWSI4mCAeQgTWvnWwBMlVbqXtlsQfmvIVN84Vbg")
         , Event 6 Oct 22 "Locality 3" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
         , Event 20 Oct 22 "Locality 4" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
         , Event 3 Nov 22 "Locality 5" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
