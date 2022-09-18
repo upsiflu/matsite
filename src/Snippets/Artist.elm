@@ -2,11 +2,12 @@ module Snippets.Artist exposing (Artist, artists, view, viewPhoto)
 
 import Article
 import Directory exposing (Directory)
-import Html.Styled as Html exposing (Html, text)
-import Html.Styled.Attributes exposing (..)
+import Html.String as Html exposing (Html, text, toHtml)
+import Html.String.Attributes exposing (..)
+import Html.Styled exposing(fromUnstyled)
 import Layout
 import List.Extra as List
-import Ui exposing (cacheImg)
+import Snippet exposing (cacheImg)
 
 
 type alias Artist =
@@ -26,7 +27,7 @@ artists =
                     Directory.getClosestBy (String.length descr // 4) descr dir
                         |> Maybe.map
                             (\uuid -> Html.a [ href uuid ] [ Html.text "☛ Moving across Thresholds Lab" ])
-                        |> Maybe.withDefault Ui.none
+                        |> Maybe.withDefault Snippet.none
             in
             Html.fieldset []
                 [ Html.legend [] [ Html.text (descr ++ ":") ]

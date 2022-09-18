@@ -110,6 +110,18 @@ input[type="checkbox"]:focus+span {
     outline: 2px solid rgba(0, 0, 255, 0.5);
     outline-offset: 0.5px;
 }
+input[type="text"] {
+    outline: 1px inset #ddd;
+    outline-offset: 0.5px;
+    width:100%;
+}
+.distance-holder ~ .ui {
+    width:auto;
+}
+
+legend:not(.no-break) > label {
+    min-width:50%;
+}
 
 button.ui:focus {
     outline: 2px solid rgba(0, 0, 255, 0.5);
@@ -241,7 +253,6 @@ button.ui:focus {
 
     >label {
         position: relative;
-        cursor: pointer;
         text-align: center;
         min-width: 2rem;
 
@@ -263,6 +274,10 @@ button.ui:focus {
             position: absolute;
         }
 
+        >input:not([disabled]), >input:not([disabled])~span {
+            cursor: pointer;
+        }
+
         >input:checked~span {
             background: var(--active-background);
             color: var(--active-foreground);
@@ -271,6 +286,22 @@ button.ui:focus {
         >input:not(:checked)~span {
             background: var(--background);
             color: var(--foreground);
+        }
+
+        > input[disabled]~span {
+            background:#ccc;
+            color:grey;
+            text-shadow: 1px 1px 1px white;
+            outline:0.5px outset #ddd;
+            outline-offset:-0.5px;
+        }
+
+        > input[disabled]:checked~span {
+            background:#bbb;
+            color:#777;
+            outline:0.5px inset #ddd;
+            outline-offset:-0.5px;
+            text-shadow: 1px 1px 1px #eee;
         }
 
         transition:all .1s;
@@ -405,7 +436,7 @@ button.ui.mode[aria-checked="true"]:enabled:active {
     border-bottom-width: 0;
 
     &:not(:hover) {
-        opacity: .75;
+        opacity: 1;
     }
 }
 
@@ -423,11 +454,9 @@ button.ui.mode[aria-checked="true"]:enabled:active {
 }
 
 
-.sheet.ui:not(:hover) {
-    width: 4rem;
-    margin-left: -2rem;
+.sheet.ui {
+    margin-left: calc(0px - var(--column) / 2);
 }
-
 
 fieldset.ui {
     padding-top: 0;
@@ -439,7 +468,7 @@ fieldset.ui {
 }
 
 .sheet.ui>fieldset {
-    border-right: 2px groove grey;
+    border-right: 2px groove var(--bevel);
     border-left: 2px groove white;
 
 }
@@ -529,9 +558,6 @@ label.ui {
 
 
 .sheet.ui {
-    &:not(:hover) {
-        opacity: 0.3;
-    }
 
     transition: width 0.4s,
     margin-left 0.4s,
@@ -540,6 +566,12 @@ label.ui {
 
 #activityLog {
     &:not(:hover) {
-        opacity: 0.3;
+        opacity: 0.8;
     }
+}
+
+.row,
+.column {
+  display: flex;
+  justify-content: space-between;
 }

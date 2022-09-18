@@ -1,7 +1,7 @@
 module Snippets.Lab exposing (Lab, toEnactAMovement)
 
-import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr
+import Html.String exposing (..)
+import Html.String.Attributes as Attr
 import Occurrence exposing (Occurrence)
 import Time exposing (Month(..))
 

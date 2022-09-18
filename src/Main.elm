@@ -1,21 +1,27 @@
-port module Main exposing (Model(..), Msg(..), Route(..), SessionId, destination, main, overwrite, pleaseCenter, pleaseConfirm, route, update, upgradeIfPossible, view)
+port module Main exposing (Model(..), Msg(..), Route(..), SessionId, main, overwrite, pleaseCenter, pleaseConfirm, update, upgradeIfPossible, view)
 
 import Accordion exposing (Accordion)
 import Browser
 import Browser.Navigation as Nav
+import Codec exposing (decoder, encoder)
 import Css exposing (..)
 import Data
 import Html as Unstyled
 import Html.Attributes as UnstyledAttributes
+import Html.Events as Events
 import Html.Styled as Html
 import Html.Styled.Attributes as Attributes
 import Html.Styled.Keyed as Keyed
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Layout
+import Result.Extra as Result
 import Task
 import Time
 import TimeZone
 import Ui
 import Url exposing (Url)
+import Url.Codec exposing (Codec)
 import Url.Parser as UrlParser exposing (Parser)
 
 
@@ -49,7 +55,7 @@ type Model
 
 overwrite : Bool
 overwrite =
-    False
+    True
 
 
 main : Program () Model Msg
@@ -97,29 +103,69 @@ type Msg
 
 
 type Route
-    = Home
-    | Article String
+    = Home Ui.State
+    | Article String Ui.State
 
 
-route : Parser (Route -> a) a
-route =
-    UrlParser.oneOf
-        [ UrlParser.map Home UrlParser.top
-        , UrlParser.map Article UrlParser.string
-        ]
+routeCodecs : List (Codec Route)
+routeCodecs =
+    let
+        isHome : Route -> Bool
+        isHome r =
+            case r of
+                Home _ ->
+                    True
+
+                _ ->
+                    False
+
+        isArticle : Route -> Bool
+        isArticle r =
+            case r of
+                Article _ _ ->
+                    True
+
+                _ ->
+                    False
+
+        guiState : Route -> Ui.State
+        guiState r =
+            case r of
+                Home ff ->
+                    ff
+
+                Article _ ff ->
+                    ff
+
+        maybePath : Route -> Maybe String
+        maybePath r =
+            case r of
+                Home _ ->
+                    Just ""
+
+                Article str _ ->
+                    Just str
+    in
+    [ Url.Codec.succeed Home isHome
+        |> Url.Codec.allQueryFlags guiState
+    , Url.Codec.succeed Article isArticle
+        |> Url.Codec.string maybePath
+        |> Url.Codec.allQueryFlags guiState
+    ]
 
 
-destination : Url -> String
-destination url =
-    case UrlParser.parse route url of
-        Just Home ->
-            ""
+unwrap : Url -> { destination : String, uiState : Ui.State }
+unwrap =
+    Url.Codec.parseUrl routeCodecs
+        >> Result.unwrap { destination = "", uiState = [] }
+            (\r ->
+                case r of
+                    Home u ->
+                        { destination = "", uiState = u }
 
-        Just (Article s) ->
-            s
-
-        _ ->
-            ""
+                    Article d u ->
+                        { destination = d, uiState = u }
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -127,53 +173,38 @@ update msg model =
     case ( msg, model ) of
         ---- Navigation
         ( LinkClicked (Browser.Internal url), Model m ) ->
-            (\x ->
-                {- Debug.log ("in Internal LinkClicked; path went from `" ++ destination m.url ++ "` to ") -}
-                destination url |> (\_ -> x)
-            )
-            <|
-                -- TODO: handle query and fragment
-                -- case: the destination url is the same as before, so we want to go up
-                if destination url == Accordion.parentId m.accordion && url.query == Nothing then
-                    ( Model { m | accordion = Accordion.exit m.accordion }, Accordion.parentId m.accordion |> pleaseCenter )
+            let
+                { destination, uiState } =
+                    unwrap url
+            in
+            if destination == Accordion.parentId m.accordion && uiState == .uiState (unwrap m.url) then
+                ( Model { m | accordion = Accordion.exit m.accordion }, Accordion.parentId m.accordion |> pleaseCenter )
 
-                else
-                    ( Model m, Url.toString url |> Nav.pushUrl m.key )
+            else
+                ( Model m, Url.toString url |> Nav.pushUrl m.key )
 
         ( LinkClicked (Browser.External href), Model m ) ->
             ( Model m, Nav.load href )
 
         ( UrlChanged url, Model m ) ->
-            -- TODO: handle query and fragment
-            (\x ->
-                {- Debug.log ("in UrlChanged; path went from " ++ destination m.url ++ " to ") -}
-                destination url |> (\_ -> x)
-            )
-            <|
-                if destination url == Accordion.parentId m.accordion then
-                    (\x ->
-                        {- Debug.log "New destination equals current parentId" -}
-                        destination url |> (\_ -> x)
-                    )
-                    <|
-                        ( Model { m | url = url }, Cmd.none )
+            let
+                { destination, uiState } =
+                    unwrap url
+            in
+            if destination == Accordion.parentId m.accordion then
+                ( Model { m | url = url }, Cmd.none )
 
-                else
-                    (\x ->
-                        {- Debug.log ("New destination" ++ destination url ++ "/=") -}
-                        Accordion.parentId m.accordion |> (\_ -> x)
-                    )
-                    <|
-                        let
-                            newAccordion =
-                                Accordion.goToParentId (destination url) m.accordion
-                        in
-                        ( Model { m | url = url, accordion = newAccordion }
-                        , Cmd.batch
-                            [ Accordion.focusId newAccordion |> pleaseCenter
-                            , Accordion.parentId newAccordion |> pleaseConfirm
-                            ]
-                        )
+            else
+                let
+                    newAccordion =
+                        Accordion.goToParentId destination m.accordion
+                in
+                ( Model { m | url = url, accordion = newAccordion }
+                , Cmd.batch
+                    [ Accordion.focusId newAccordion |> pleaseCenter
+                    , Accordion.parentId newAccordion |> pleaseConfirm
+                    ]
+                )
 
         ---- Client View
         ( ZoneReceived result, Loading o ) ->
@@ -210,7 +241,7 @@ update msg model =
 
         ---- Persistent Data
         ( LogReceived log, Model m ) ->
-            ( Model { m | accordion = Accordion.reviseHistory log m.accordion }, Cmd.none )
+            ( Model { m | accordion = Debug.log "ReVISING" (Accordion.reviseHistory log m.accordion) }, Cmd.none )
 
         ( IntentGenerated intent, Model m ) ->
             ( Model { m | backlog = Just intent }, Cmd.none )
@@ -227,9 +258,12 @@ upgradeIfPossible model =
                 Maybe.map2
                     (\(( _, z ) as zone) now ->
                         let
+                            { destination, uiState } =
+                                unwrap o.url
+
                             initialAccordion =
                                 Data.initial z
-                                    |> Accordion.goToParentId (destination o.url)
+                                    |> Accordion.goToParentId destination
                         in
                         ( Model
                             { key = o.key
@@ -272,39 +306,36 @@ view model =
                         [ Html.text "Loading" |> Html.toUnstyled ]
 
                     Model m ->
-                        [ Ui.view (viewAccordion m)
+                        [ viewAccordion m
+                            |> Ui.view (unwrap m.url |> .uiState)
                             |> Keyed.ul [ Attributes.class "model" ]
                             |> Html.toUnstyled
                         , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
-                            [{- m.backlog
-                                    |> Maybe.map
-                                        (encoder Accordion.intentCodec
-                                            >> Encode.encode 0
-                                            >> UnstyledAttributes.attribute "backlog"
-                                            >> List.singleton
-                                        )
-                                    |> Maybe.withDefault []
-                                    |> (++)
-                                        (if overwrite then
-                                            [ encoder Accordion.historyCodec m.overwrite
-                                                |> Encode.encode 0
-                                                |> UnstyledAttributes.attribute "overwrite"
-                                            ]
-
-                                         else
-                                            []
-                                        )
-                                    |> (++)
-                                        [ Events.on "e" (Decode.at [ "detail" ] Decode.string |> Decode.map NoteReceived) ]
-                                    |> (++)
-                                        [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
-                                            |> Decode.map LogReceived
-                                            |> Events.on "logReceived"
+                            [ m.backlog
+                                |> Maybe.map
+                                    (encoder Accordion.intentCodec
+                                        >> Encode.encode 0
+                                        >> UnstyledAttributes.attribute "backlog"
+                                        >> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+                                |> (++)
+                                    (if overwrite then
+                                        [ encoder Accordion.historyCodec m.overwrite
+                                            |> Encode.encode 0
+                                            |> UnstyledAttributes.attribute "overwrite"
                                         ]
-                                    |> Unstyled.node "append-log"
-                                    |> (|>) []
-                                ,
-                             -}
+
+                                     else
+                                        []
+                                    )
+                                |> (++)
+                                    [ Decode.at [ "detail" ] (decoder Accordion.historyCodec)
+                                        |> Decode.map LogReceived
+                                        |> Events.on "logReceived"
+                                    ]
+                                |> Unstyled.node "append-log"
+                                |> (|>) []
                             ]
                         ]
                )

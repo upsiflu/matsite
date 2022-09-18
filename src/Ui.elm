@@ -1,9 +1,7 @@
 module Ui exposing
     ( Ui, Item
-    , singleton, fromEmpty
-    , map, mapList
+    , map
     , append, concat
-    , composeScenes, composeControls
     , cacheImg
     , disclose, debugOnly, ifJust, notIf, none
     , view
@@ -11,10 +9,11 @@ module Ui exposing
     , sheet
     , pick, pickOrNot, singlePickOrNot, radio
     , check
-    , textInput
+    , textInput, inputLine
     , toggleButton, toggleModeButton, squareToggleButton
     , distanceHolder
     , Face
+    , Handle(..), State, fromHandle, fromHtml, fromHtmlList, row, singleton, withControl, withScene, wrapScene
     )
 
 {-| Gui Helpers
@@ -24,7 +23,7 @@ module Ui exposing
 
 # Create
 
-@docs singleton, fromEmpty
+@docs empty
 
 
 # Map
@@ -59,7 +58,7 @@ module Ui exposing
 @docs sheet
 @docs pick, pickOrNot, singlePickOrNot, radio
 @docs check
-@docs textInput
+@docs textInput, inputLine
 
 ---
 
@@ -79,49 +78,165 @@ import Css exposing (..)
 import Html.Styled as Html exposing (Attribute, Html, details, div, input, label, span, summary)
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick, onInput)
+import Html.Styled.Keyed exposing (ul)
+import List.Extra as List
+import Maybe.Extra as Maybe
 import Zipper exposing (Zipper)
 
 
-{-| consists of several `Item`s that may be orthogonal to each other, like a four-column table with many rows.
+{-| consists of several `item`s that may be orthogonal to each other.
+`Sub` Uis have two nestings:
+
+  - Logical nesting; per item (see `Item`)
+  - DOM nesting; per Ui:
+    All scenes inside a `Sub` are concatenated, and as such transformed according to
+    the second parameter of `Sub`.
+
 -}
 type Ui msg
-    = Ui (List (Item msg))
+    = Sub (List (Item msg)) (List ( String, Html msg ) -> List ( String, Html msg ))
+    | Leaf (List (Html msg))
+
+
+fromHtml : Html msg -> Ui msg
+fromHtml =
+    List.singleton >> Leaf
+
+
+{-| will render as `scene` with integer keys
+-}
+fromHtmlList : List (Html msg) -> Ui msg
+fromHtmlList =
+    Leaf
+
+
+{-| The state of the whole Ui can be mapped directly to the query as a list of flags
+-}
+type alias State =
+    List String
+
+
+{-| State applies to handles: an 'open' handle corresponds to its name appearing in the State
+-}
+type Handle msg
+    = Constant (Html msg)
+    | Toggle String (Html Never)
+
+
+mapHandle : (a -> b) -> Handle a -> Handle b
+mapHandle fu h =
+    case h of
+        Constant html ->
+            Constant (Html.map fu html)
+
+        Toggle flag face ->
+            Toggle flag face
 
 
 {-|
 
   - control: global toolbar or property sheet
-  - handle: the item's avatar or menu
+  - handle: the item's avatar or menu, containing a unique flag
   - info: statusbar, help screen, or tooltip bubbles
-  - scene: the item's editable contents and overlays
+  - scene: the item's editable contents and overlays, each with a unique key
+
+The State pertaining to the handle determines whether the control is drawn or not.
 
 -}
 type alias Item msg =
-    { handle : Html msg, scene : ( String, Html msg ), info : Html msg, control : Html msg }
+    { handle : Maybe (Handle msg)
+    , scene : List ( String, Ui msg )
+    , info : Maybe (Ui msg)
+    , control : Maybe (() -> Ui msg)
+    }
 
 
-{-| Create a Gui out of a single Item. Modify the empty Item.
-
-        fromEmpty <| \e ->
-            { e  | scene = ( "s", none ) }
-
--}
-fromEmpty : (Item msg -> Item msg) -> Ui msg
-fromEmpty fu =
-    Item none ( "", none ) none none
-        |> fu
-        |> singleton
-
-
-{-| `info` is a list of dismissible or disclosable messages (for example toasts),
-`handle` comprises the permanent handles to the object (for example, an avatar plus a login/logout button)
-and that potentially includes custom-elements for syncing with a backend.
-`scene` represents data that can be manipulated in-place.
-`control` is the set of tools related to the object.
--}
-singleton : Item msg -> Ui msg
+singleton : Ui msg
 singleton =
-    List.singleton >> Ui
+    Sub [ void ] identity
+
+
+{-| sets the handle in a new Ui.
+You cannot change the handle later, or add handles to an existing Ui.
+What you can do is, create multiple Uis with one handle each, and then combine
+them with append and concat. This way you can build multi-faceted Uis.
+If the Ui is not segmented, it is wrapped into an initial `scene`.
+-}
+fromHandle : Handle msg -> Ui msg
+fromHandle h =
+    mapFirst (\i -> { i | handle = Just h }) singleton
+
+
+
+{- Helper to promote and populate a Ui. If the Ui is not segmented, it is wrapped into an initial `scene`. -}
+
+
+mapFirst : (Item msg -> Item msg) -> Ui msg -> Ui msg
+mapFirst fu ui =
+    case ui of
+        Leaf l ->
+            mapFirst fu (promote ui)
+
+        Sub (i :: tems) transform ->
+            Sub (fu i :: tems) transform
+
+        Sub [] transform ->
+            Sub [] transform
+
+
+{-| Adds a scene in the first item of the Ui, before any existing scenes.
+Scenes are rendered as list items, with attributes applied to the `Keyed.li`.
+Make sure that key strings are unique, preferably globally!
+-}
+withScene : List ( String, Ui msg ) -> Ui msg -> Ui msg
+withScene s =
+    mapFirst
+        (\item ->
+            { item
+                | scene = s ++ item.scene
+            }
+        )
+
+
+{-| appends a control to the first item in the Ui
+-}
+withControl : (() -> Ui msg) -> Ui msg -> Ui msg
+withControl c =
+    mapFirst
+        (\item ->
+            { item
+                | control =
+                    case item.control of
+                        Just fu ->
+                            Just (\() -> fu () |> append (c ()))
+
+                        Nothing ->
+                            Just c
+            }
+        )
+
+
+{-| appends into to the first item in the Ui
+-}
+withInfo : Ui msg -> Ui msg -> Ui msg
+withInfo i =
+    mapFirst
+        (\item ->
+            { item
+                | info =
+                    case item.info of
+                        Just ui ->
+                            Just (append i ui)
+
+                        Nothing ->
+                            Just i
+            }
+        )
+
+
+void : Item msg
+void =
+    Item Nothing [] Nothing Nothing
 
 
 
@@ -129,61 +244,74 @@ singleton =
 
 
 {-| modify the message type
+Attention: The wrapper is removed
 -}
 map : (a -> b) -> Ui a -> Ui b
-map fu (Ui items) =
+map fu ui =
     let
         mapItem i =
-            { handle = Html.map fu i.handle
-            , scene = Tuple.mapSecond (Html.map fu) i.scene
-            , info = Html.map fu i.info
-            , control = Html.map fu i.control
+            { handle = Maybe.map (mapHandle fu) i.handle
+            , scene = List.map (Tuple.mapSecond (map fu)) i.scene
+            , info = Maybe.map (map fu) i.info
+            , control = Maybe.map (\c -> c >> map fu) i.control
             }
     in
-    Ui (List.map mapItem items)
+    case ui of
+        Sub ll transform ->
+            Sub (List.map mapItem ll) identity
+
+        Leaf ll ->
+            Leaf (List.map (Html.map fu) ll)
 
 
-{-| apply a list transformation on the Ui
--}
-mapList : (List (Item a) -> List (Item b)) -> Ui a -> Ui b
-mapList fu (Ui la) =
-    Ui (fu la)
+promote : Ui msg -> Ui msg
+promote ui =
+    case ui of
+        Sub _ _ ->
+            ui
+
+        leaf ->
+            singleton |> withScene [ ( "!", leaf ) ]
 
 
 
 ---- COMPOSE ----
 
 
-{-| compose two `Gui`s into one
+{-| compose two `Gui`s into one, making all `Item`s orthogonal to each other
 -}
 append : Ui msg -> Ui msg -> Ui msg
-append (Ui l0) (Ui l1) =
-    Ui (l0 ++ l1)
+append a b =
+    case ( a, b ) of
+        ( Sub aa ta, Sub bb tb ) ->
+            Sub (aa ++ bb) (ta >> tb)
+
+        ( Leaf aa, Leaf bb ) ->
+            Leaf (aa ++ bb)
+
+        ( sub, Leaf bb ) ->
+            append sub (promote (Leaf bb))
+
+        ( Leaf aa, sub ) ->
+            append (promote (Leaf aa)) sub
 
 
 {-| compose many `Gui`s into one
+Fails to Nothing on []
 -}
-concat : List (Ui msg) -> Ui msg
+concat : List (Ui item) -> Maybe (Ui item)
 concat =
-    List.foldl append (fromEmpty identity)
+    List.foldl1 append
 
 
-{-| encloses all scenes within the Ui into a single scene
--}
-composeScenes : (List ( String, Html msg ) -> ( String, Html msg )) -> Ui msg -> Ui msg
-composeScenes fu (Ui l) =
-    Item none (fu (List.map .scene l)) none none
-        :: List.map (\item -> { item | scene = ( "", none ) }) l
-        |> Ui
+wrapScene : (List ( String, Html msg ) -> List ( String, Html msg )) -> Ui msg -> Ui msg
+wrapScene fu ui =
+    case ui of
+        Sub items transform ->
+            Sub items (transform >> fu)
 
-
-{-| encloses all controls within the Ui into a single control
--}
-composeControls : (List (Html msg) -> Html msg) -> Ui msg -> Ui msg
-composeControls fu (Ui l) =
-    Item none ( "", none ) none (fu (List.map .control l))
-        :: List.map (\item -> { item | control = none }) l
-        |> Ui
+        _ ->
+            wrapScene fu (promote ui)
 
 
 
@@ -197,29 +325,125 @@ disclose more handle =
     details [] [ summary [] handle, div [ class "popup" ] more ]
 
 
-{-| -}
-view : Ui msg -> List ( String, Html msg )
-view (Ui items) =
+{-| Magic happens here.
+For example, we have two `view`able types, `Segment` and `Accordion`.
+
+`Segment.view` renders a `Ui` singleton where
+
+  - the `scene` contains a list of `(String, Html msg)` elements
+  - the `control` contains editing controls and also the overlays `scene`.
+  - we `concat` all Segments (they are orthogonal)
+
+`Accordion.view` renders a `Ui` singleton where
+
+  - the `handle` has a toggle for the `control`
+  - the `control` can edit the whole Accordion
+  - the `scene` has overlaid frames for regions (screenBackground, aisleBackground, xy, closest-aisle)
+  - we insert the `Segments` as a `scene` (hierarchically controlled by the handle)
+  - we `append` a singleton `handle` with unit state for the hamburger menu
+
+Now, flipping the Accordion item handle toggles the rendering of its `control`:
+When it is off, the control is not rendered, and the Segment scene inside it
+(the overlays) is also not rendered.
+When it is on, the control is rendered and the overlays are added to the scene.
+
+Questions:
+
+1.  How do we wrap the `overlay` over the segment-view?
+    Answer: we don't. Overlays and underlays inhabit the same pool and are overlaid by CSS, not by DOM nesting.
+2.  How do we nest controls into a fieldsets?
+    Answer: Perhaps that's not necessary. We create the fieldsets for parent and child
+    plus the row (not fieldset) for Accordion, and then they are wrapped globally into a Sheet,
+    which may retain the contract/expand-from-below capability through a global 'control' property.
+
+-}
+view : State -> Ui msg -> List ( String, Html msg )
+view state ui =
     let
-        indexicate =
+        autoIndex =
             List.indexedMap (\index item -> ( String.fromInt index, item ))
+
+        viewHandle : Handle msg -> Html msg
+        viewHandle h =
+            case h of
+                Constant html ->
+                    html
+
+                Toggle flag face ->
+                    Html.map never face
+
+        -- Delete control out of a scene:
+        viewSubScene : Bool -> ( String, Ui msg ) -> List ( String, Html msg )
+        viewSubScene isControlVisible ( key, scene ) =
+            case scene of
+                Leaf htmls ->
+                    [ ( key, ul [] (autoIndex htmls) ) ]
+
+                Sub items transform ->
+                    view state
+                        (Sub
+                            (items
+                                |> List.map
+                                    (\item ->
+                                        { item
+                                            | control =
+                                                if isControlVisible then
+                                                    item.control
+
+                                                else
+                                                    Nothing
+                                            , scene = List.map (\( subKey, subScene ) -> ( key ++ "-" ++ subKey, subScene )) item.scene
+                                        }
+                                    )
+                            )
+                            transform
+                        )
     in
-    items
-        |> List.foldl
-            (\item acc ->
-                { acc
-                    | handles = item.handle :: acc.handles
-                    , scenes = item.scene :: acc.scenes
-                    , infos = item.info :: acc.infos
-                    , controls = item.control :: acc.controls
-                }
-            )
-            { handles = []
-            , scenes = []
-            , infos = []
-            , controls = []
-            }
-        |> (\i -> i.scenes ++ indexicate i.handles ++ indexicate i.infos ++ indexicate i.controls)
+    case ui of
+        Leaf htmls ->
+            autoIndex htmls
+
+        Sub items transform ->
+            items
+                |> List.foldl
+                    (\item acc ->
+                        let
+                            isOn =
+                                case item.handle of
+                                    Just (Constant _) ->
+                                        True
+
+                                    Just (Toggle flag _) ->
+                                        List.member flag state
+
+                                    Nothing ->
+                                        False
+                        in
+                        { acc
+                            | handles = Maybe.cons item.handle acc.handles
+                            , scenes = List.concatMap (viewSubScene isOn) item.scene ++ acc.scenes
+                            , infos = Maybe.cons item.info acc.infos
+                            , controls =
+                                case ( item.control, isOn ) of
+                                    ( Just control, True ) ->
+                                        control () :: acc.controls
+
+                                    _ ->
+                                        acc.controls
+                        }
+                    )
+                    { handles = []
+                    , scenes = []
+                    , infos = []
+                    , controls = []
+                    }
+                |> (\i ->
+                        autoIndex (List.map viewHandle i.handles)
+                            -- scene: only show control within scene if parent handle is on
+                            ++ transform i.scenes
+                            ++ autoIndex (List.map (view state >> ul []) i.infos)
+                            ++ autoIndex (List.map (view state >> ul []) i.controls)
+                   )
 
 
 
@@ -312,6 +536,12 @@ overlay edge =
 
 
 {-| -}
+row : List (Html msg) -> Html msg
+row =
+    Html.div [ class "row" ]
+
+
+{-| -}
 sheet : List (Html msg) -> Html msg
 sheet contents =
     Html.details [ class "sheet", attribute "open" "True" ] <| contents ++ [ Html.summary [ class "collapseSheet" ] [ Html.span [] [ Html.text "Properties" ] ] ]
@@ -366,6 +596,12 @@ pickHelp className isActive =
 
 
 {-| -}
+inputLine : String -> String -> String -> (String -> msg) -> Html msg
+inputLine cls ttl val msg =
+    label [ class "ui" ] [ Html.input [ class cls, title ttl, type_ "input", value val, onInput msg ] [] ]
+
+
+{-| -}
 singlePickOrNot : Bool -> ( Face, Maybe msg ) -> Html msg
 singlePickOrNot isActive =
     Zipper.singleton >> pickOrNot isActive
@@ -374,7 +610,7 @@ singlePickOrNot isActive =
 {-| -}
 radio : Face -> Maybe msg -> Bool -> Html msg
 radio face toggle isChecked =
-    label [ class "ui" ]
+    label [ class "ui", title face.title ]
         [ input (quadState isChecked toggle ++ [ type_ "radio", Attributes.checked isChecked ]) []
         , span [] face.front |> Html.map never
         ]

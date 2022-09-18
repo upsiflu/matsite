@@ -1,10 +1,10 @@
 module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, video1, video2, view)
 
 import Article exposing (Article, BodyTemplate)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr
+import Html.String exposing (..)
+import Html.String.Attributes as Attr
 import Layout
-import Ui exposing (cacheImg)
+import Snippet exposing (cacheImg)
 
 
 type alias Festival =
@@ -31,7 +31,7 @@ tidalShifts =
             ]
         , p []
             [ text "in the frame of the Perform[d]ance Mini-festival at Stralsund; 26 + 27 November" ]
-        , Ui.cacheImg "Tidal Shifts" 1 "" "https://lh4.googleusercontent.com/KhvCcb1f63tCgNBDATLEip6KTZ3LPpXwaTo99Ho4ibQ8dpXgW2tJbKyompDD4Qq5l13O1G_qF2RmZac0SVhLrWnQv--w-4lfaW66gIFN9hD0qmQjy1wKWdz3Rr7hk88_ks3PlPMlRGedRTxSbA"
+        , cacheImg "Tidal Shifts" 1 "" "https://lh4.googleusercontent.com/KhvCcb1f63tCgNBDATLEip6KTZ3LPpXwaTo99Ho4ibQ8dpXgW2tJbKyompDD4Qq5l13O1G_qF2RmZac0SVhLrWnQv--w-4lfaW66gIFN9hD0qmQjy1wKWdz3Rr7hk88_ks3PlPMlRGedRTxSbA"
         ]
         |> always
         |> Article.Content (Just "Moving across Thresholds:")

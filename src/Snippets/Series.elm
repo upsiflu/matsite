@@ -5,8 +5,8 @@ import Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
 import Article.Fab as Fab
 import Directory
 import Fold exposing (Direction(..))
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.String exposing (..)
+import Html.String.Attributes exposing (..)
 import Layout
 import Levenshtein
 import List.Extra as List
@@ -14,7 +14,7 @@ import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
 import Snippets.Video as Video
 import Time exposing (Month(..))
-import Ui exposing (cacheImg)
+import Snippet exposing (cacheImg)
 
 
 type Collage
@@ -246,7 +246,7 @@ presets timezone =
                 ((\dir ->
                     article [ class "generic lab" ]
                         [ h3 []
-                            [ Occurrence.view (Occurrence.Short timezone Minutes) (eventDate timezone event) ]
+                            [ Occurrence.viewAsSnippet (Occurrence.Short timezone Minutes) (eventDate timezone event) ]
                         , p []
                             ([ b [] [ text "Facilitator " ]
                              , closeArtist event.facilitator dir
@@ -282,7 +282,7 @@ presetInfos =
     data
         |> List.map
             (\series ->
-                Byline 0 (span [ class "motto" ] [ text series.motto ])
+                Byline 0 (span [ class "motto" ] [ text series.motto ] |> Snippet.view)
                     |> Tuple.pair ("Series " ++ String.fromInt series.number)
             )
 

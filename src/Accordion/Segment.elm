@@ -7,7 +7,7 @@ module Accordion.Segment exposing
     , fab, occ
     , path
     , toCssVariables
-    , view, edit, toClass
+    , view, toClass
     , defaultPeekConfig
     )
 
@@ -45,7 +45,7 @@ module Accordion.Segment exposing
 
 -}
 
-import Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTypeToString, getTemplate, infoTypeToString)
+import Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTemplateToString, bodyTypeToString, getTemplate, infoTypeToString)
 import Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
 import Css exposing (..)
@@ -59,8 +59,9 @@ import Layout
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
+import Snippet
 import Time
-import Ui exposing (Ui)
+import Ui exposing (Item, Ui)
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 
@@ -395,177 +396,39 @@ byline ({ templates } as config) model =
             ( Html.text "", 0 )
 
 
-{-| In contrast to `view`, we can persist Article Actions as well as insertions into the Accordion when editing
+{-| Returns a `Ui` which contains:
+
+  - **scene**: the visible article
+  - **control**: the contingent controls to edit the article, and a logically nested scene with overlays for adding siblings
+
+If you add a handle, you can toggle the control.
+To toggle a set of segments, put them all into a scene. Any control within a scene is only drawn if the sibling control to that scene is also drawn
+(principle of hierarchical contingency)
+
 -}
-edit :
+view :
     { zone : ( String, Time.Zone )
     , now : Time.Posix
     , templates : Templates
     , directory : Directory
     , do : String -> Action -> msg
     , delete : msg
+    , reset : String -> msg
     , rename : String -> msg
     , insert : Direction -> msg
     }
     -> Segment
     -> Ui msg
-edit { zone, now, templates, directory, do, delete, rename, insert } ({ position, article } as model) =
+view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as config) ({ position, article } as model) =
     let
-        ( overlay, propertySheet ) =
-            let
-                intend =
-                    do article.id
-
-                overlaidButton dir hint_ symbol =
-                    button [ onClick (insert dir), title hint_ ] [ span [] [ text symbol ] ]
-
-                template =
-                    { body = getTemplate .body article templates
-                    , info = getTemplate .info article templates
-                    }
-
-                maybeNot whatNot whatThen =
-                    case whatNot of
-                        Nothing ->
-                            Just whatThen
-
-                        _ ->
-                            Nothing
-            in
-            case position.role of
-                Focus ->
-                    let
-                        overlaidDeleteButton =
-                            details [ class "deleteArticle fly-orientation" ]
-                                [ summary [] [ Html.span [] [ Html.text "" ] ]
-                                , div [ class "ui flying right-aligned bottom-aligned" ]
-                                    [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
-                                    ]
-                                ]
-
-                        activeOption =
-                            case ( template.body, article.body ) of
-                                ( Just _, _ ) ->
-                                    "Preset"
-
-                                ( _, custom ) ->
-                                    bodyTypeToString custom
-
-                        options =
-                            [ ( bodyTypeToString CustomIllustration, intend (WithBody CustomIllustration) )
-                            , ( bodyTypeToString (CustomContent Nothing), intend (WithBody (CustomContent Nothing)) )
-                            , ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) )
-                            ]
-                                |> Zipper.create
-                                    ( bodyTypeToString PeekThrough, intend (WithBody PeekThrough) )
-                                    []
-                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
-                                |> Zipper.map
-                                    (\( str, msg ) ->
-                                        ( { front = [ Html.text str ], title = "Select a Body type for this Article" }
-                                        , maybeNot template.body msg
-                                        )
-                                    )
-                    in
-                    ( [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                      , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
-                      , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
-                      , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
-                      ]
-                    , Html.fieldset [ class "ui" ]
-                        [ Html.legend [ class "fill-h" ]
-                            [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName), Ui.distanceHolder, overlaidDeleteButton ]
-                        , Ui.pick options
-                        ]
-                    )
-
-                Parent ->
-                    let
-                        activeOption =
-                            case ( template.info, article.info ) of
-                                ( Just _, _ ) ->
-                                    "Preset"
-
-                                ( _, custom ) ->
-                                    infoTypeToString custom
-
-                        options =
-                            [ ( infoTypeToString (Just (CustomByline 1)), intend (WithInfo <| Just (CustomByline 1)) )
-                            , ( infoTypeToString (Just (CustomByline 2)), intend (WithInfo <| Just (CustomByline 2)) )
-                            ]
-                                |> Zipper.create
-                                    ( infoTypeToString Nothing, intend (WithInfo Nothing) )
-                                    [ ( infoTypeToString (Just CustomToc), intend (WithInfo (Just CustomToc)) ) ]
-                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
-                                |> Zipper.map
-                                    (\( str, msg ) ->
-                                        ( { front = [ Html.text str ], title = "Select a Byline if needed" }
-                                        , maybeNot template.info msg
-                                        )
-                                    )
-
-                        originalCaption =
-                            model.article.caption
-                    in
-                    ( []
-                    , Html.fieldset [ class "ui" ]
-                        [ Html.legend [ class "editCaption" ]
-                            [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
-                            , Ui.singlePickOrNot article.caption.showsDate
-                                ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
-                                , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
-                                )
-                            ]
-                        , Ui.pick options
-                        , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
-                        ]
-                    )
-
-                _ ->
-                    ( [], Ui.none )
-
-        ui =
-            Ui.fromEmpty <| \e -> { e | control = propertySheet }
-    in
-    view_ { zone = zone, directory = directory, templates = templates, now = now } ui overlay model
-
-
-{-| -}
-view :
-    { c
-        | zone : ( String, Time.Zone )
-        , now : Time.Posix
-        , directory : Directory
-        , templates : Templates
-    }
-    -> Segment
-    -> Ui msg
-view config =
-    view_ config (Ui.fromEmpty identity) []
-
-
-view_ :
-    { c
-        | templates : Templates
-        , directory : Directory
-        , zone : ( String, Time.Zone )
-        , now : Time.Posix
-    }
-    -> Ui msg
-    -> List (Html msg)
-    -> Segment
-    -> Ui msg
-view_ ({ zone, templates, directory } as config) ui overlays model =
-    let
+        -- SCENE --
         hideBecauseVeryFarAway =
             model.position.role == Aisle && List.length model.position.path > 5
 
         template =
             { body = getTemplate .body model.article templates
             , info = getTemplate .info model.article templates
+            , isResetting = getTemplate .isResetting model.article templates
             }
 
         viewCaption cc =
@@ -629,21 +492,27 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
                         Nothing ->
                             Html.text ""
                 , Tuple.pair "content" <|
-                    case ( template.body, body ) of
-                        ( Just (Content _ c), _ ) ->
-                            c directory
+                    if template.isResetting == Just () then
+                        Html.node "sync-hypertext" [ attribute "preset" "OVERWRITE", attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
 
-                        ( Just (Illustration i), _ ) ->
-                            i directory
+                    else
+                        case ( template.body, body ) of
+                            ( Just (Content _ c), _ ) ->
+                                c directory
+                                    |> Snippet.view
 
-                        ( Nothing, PeekThrough ) ->
-                            Html.text ""
+                            ( Just (Illustration i), _ ) ->
+                                i directory
+                                    |> Snippet.view
 
-                        ( Nothing, CustomIllustration ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+                            ( Nothing, PeekThrough ) ->
+                                Html.text ""
 
-                        ( Nothing, CustomContent _ ) ->
-                            Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+                            ( Nothing, CustomIllustration ) ->
+                                Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+
+                            ( Nothing, CustomContent _ ) ->
+                                Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
                 ]
 
              else
@@ -685,55 +554,231 @@ view_ ({ zone, templates, directory } as config) ui overlays model =
 
         viewBounds =
             div [ class "bounds" ] []
-    in
-    if hideBecauseVeryFarAway then
-        List.indexedMap (\i -> Html.map never >> Tuple.pair (String.fromInt i))
-            [ model.article.caption |> viewCaption
-            , Html.div [ class "body waiting" ] []
-            , viewBounds
-            ]
-            |> Keyed.node "li"
-                (id model.article.id
-                    :: toClass model
-                    :: class (Article.orientationToString (Article.orientation model.article))
-                    :: class (bodyTypeToString model.article.body)
-                    :: Article.structureClass config model.article
-                    :: toCssVariables model
-                    :: css ownWidthAsVars
-                    :: additionalAttributes
-                )
-            |> Tuple.pair model.article.id
-            |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
 
-    else
-        let
-            viewFab =
-                fab config model
-                    |> Maybe.map (Fab.view config)
-                    |> Maybe.withDefault Ui.none
-        in
-        List.map (Html.map never)
-            [ model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
-            , model.article.body |> viewBody
-            , viewPeekLink
-            , viewByline
-            , Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
-            , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
-            , viewBounds
-            ]
-            ++ overlays
-            ++ [ Html.map never viewFab ]
-            |> List.indexedMap (String.fromInt >> Tuple.pair)
-            |> Keyed.node "li"
-                (id model.article.id
-                    :: toClass model
-                    :: class (Article.orientationToString (Article.orientation model.article))
-                    :: class (bodyTypeToString model.article.body)
-                    :: Article.structureClass config model.article
-                    :: toCssVariables model
-                    :: css ownWidthAsVars
-                    :: additionalAttributes
-                )
-            |> Tuple.pair model.article.id
-            |> (\scene -> Ui.fromEmpty (\e -> { e | scene = scene }))
-            |> Ui.append ui
+        scene =
+            if hideBecauseVeryFarAway then
+                List.map (Html.map never)
+                    [ model.article.caption |> viewCaption
+                    , Html.div [ class "body waiting" ] []
+                    , viewBounds
+                    ]
+                    |> Ui.fromHtmlList
+                    |> Ui.wrapScene
+                        (\inner ->
+                            [ Keyed.node "li"
+                                (id model.article.id
+                                    :: toClass model
+                                    :: class (Article.orientationToString (Article.orientation model.article))
+                                    :: class (bodyTypeToString model.article.body)
+                                    :: Article.structureClass config model.article
+                                    :: toCssVariables model
+                                    :: css ownWidthAsVars
+                                    :: additionalAttributes
+                                )
+                                inner
+                                |> Tuple.pair model.article.id
+                            ]
+                        )
+
+            else
+                let
+                    viewFab =
+                        fab config model
+                            |> Maybe.map (Fab.view config)
+                            |> Maybe.withDefault Ui.none
+
+                    inner =
+                        List.map (Html.map never)
+                            [ model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
+                            , model.article.body |> viewBody
+                            , viewPeekLink
+                            , viewByline
+                            , Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
+                            , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
+                            , viewBounds
+                            ]
+                            ++ [ Html.map never viewFab ]
+                            |> List.indexedMap (\key item -> ( String.fromInt key, item ))
+                in
+                Ui.singleton
+                    |> Ui.wrapScene
+                        (\_ ->
+                            [ Keyed.node "li"
+                                (id model.article.id
+                                    :: toClass model
+                                    :: class (Article.orientationToString (Article.orientation model.article))
+                                    :: class (bodyTypeToString model.article.body)
+                                    :: Article.structureClass config model.article
+                                    :: toCssVariables model
+                                    :: css ownWidthAsVars
+                                    :: additionalAttributes
+                                )
+                                inner
+                                |> Tuple.pair model.article.id
+                            ]
+                        )
+
+        -- CONTROL (contingent Ui) --
+        addControlIfPresent =
+            let
+                intend =
+                    do article.id
+
+                overlaidButton dir hint_ symbol =
+                    button [ onClick (insert dir), title hint_ ] [ span [] [ text symbol ] ]
+
+                maybeNot whatNot whatThen =
+                    case whatNot of
+                        Nothing ->
+                            Just whatThen
+
+                        _ ->
+                            Nothing
+            in
+            case position.role of
+                Focus ->
+                    let
+                        overlaidDeleteButton =
+                            details [ class "deleteArticle fly-orientation" ]
+                                [ summary [] [ Html.span [] [ Html.text "" ] ]
+                                , div [ class "ui flying right-aligned bottom-aligned" ]
+                                    [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
+                                    , Ui.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
+                                    ]
+                                ]
+
+                        activeOption =
+                            case ( template.body, article.body ) of
+                                ( Just t, _ ) ->
+                                    bodyTemplateToString t
+
+                                ( _, custom ) ->
+                                    bodyTypeToString custom
+
+                        options =
+                            [ ( bodyTypeToString CustomIllustration, intend (WithBody CustomIllustration) )
+                            , ( bodyTypeToString (CustomContent Nothing), intend (WithBody (CustomContent Nothing)) )
+                            , ( bodyTypeToString (CustomContent (Just "Heading")), intend (WithBody (CustomContent (Just "Heading"))) )
+                            ]
+                                |> Zipper.create
+                                    ( bodyTypeToString PeekThrough, intend (WithBody PeekThrough) )
+                                    []
+                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
+                                |> Zipper.map
+                                    (\( str, msg ) ->
+                                        ( { front = [ Html.text str ], title = "Select a Body type for this Article" }
+                                        , maybeNot template.body msg
+                                        )
+                                    )
+
+                        templateOptions =
+                            [ ( bodyTemplateToString (Content (Just "") (always Snippet.none)), Nothing )
+                            , ( bodyTemplateToString (Illustration (always Snippet.none)), Nothing )
+                            ]
+                                |> Zipper.create
+                                    ( bodyTemplateToString (Content Nothing (always Snippet.none)), Nothing )
+                                    []
+                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
+                                |> Zipper.map
+                                    (\( str, msg ) ->
+                                        ( { front = [ Html.text str ], title = "Preset Content type" }
+                                        , maybeNot template.body msg
+                                        )
+                                    )
+                    in
+                    Ui.withControl
+                        (\() ->
+                            Html.fieldset [ class "ui" ]
+                                [ Html.legend [ class "fill-h" ]
+                                    [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName)
+                                    , Ui.distanceHolder
+                                    , overlaidDeleteButton
+                                    ]
+                                , case template.body of
+                                    Just _ ->
+                                        Ui.row
+                                            [ Ui.pick (templateOptions |> Zipper.map (Tuple.mapSecond (always Nothing)))
+                                            , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False Nothing
+                                            ]
+
+                                    Nothing ->
+                                        Ui.row
+                                            [ Ui.pick options
+                                            , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
+                                            ]
+                                ]
+                                |> Ui.fromHtml
+                                |> Ui.withScene
+                                    [ [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                                      , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
+                                      , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
+                                      , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
+                                      ]
+                                        |> Html.li
+                                            (toClass model
+                                                :: class (Article.orientationToString (Article.orientation model.article))
+                                                :: class (bodyTypeToString model.article.body)
+                                                :: Article.structureClass config model.article
+                                                :: toCssVariables model
+                                                :: css ownWidthAsVars
+                                                :: additionalAttributes
+                                            )
+                                        |> Ui.fromHtml
+                                        |> Tuple.pair model.article.id
+                                    ]
+                        )
+
+                Parent ->
+                    let
+                        activeOption =
+                            case ( template.info, article.info ) of
+                                ( Just _, custom ) ->
+                                    --"Preset"
+                                    infoTypeToString custom
+
+                                ( _, custom ) ->
+                                    infoTypeToString custom
+
+                        options =
+                            [ ( infoTypeToString (Just (CustomByline 1)), intend (WithInfo <| Just (CustomByline 1)) )
+                            , ( infoTypeToString (Just (CustomByline 2)), intend (WithInfo <| Just (CustomByline 2)) )
+                            ]
+                                |> Zipper.create
+                                    ( infoTypeToString Nothing, intend (WithInfo Nothing) )
+                                    [ ( infoTypeToString (Just CustomToc), intend (WithInfo (Just CustomToc)) ) ]
+                                |> Zipper.findClosest (Tuple.first >> (==) activeOption)
+                                |> Zipper.map
+                                    (\( str, msg ) ->
+                                        ( { front = [ Html.text str ], title = "Select a Byline if needed" }
+                                        , maybeNot template.info msg
+                                        )
+                                    )
+
+                        originalCaption =
+                            model.article.caption
+                    in
+                    Ui.withControl
+                        (\() ->
+                            Html.fieldset [ class "ui" ]
+                                [ Html.legend [ class "editCaption fill-h" ]
+                                    [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
+                                    , Ui.distanceHolder
+                                    , Ui.singlePickOrNot article.caption.showsDate
+                                        ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
+                                        , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
+                                        )
+                                    ]
+                                , Ui.pick options
+                                , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
+                                ]
+                                |> Ui.fromHtml
+                        )
+
+                _ ->
+                    identity
+    in
+    Ui.singleton
+        |> Ui.withScene [ ( "", scene ) ]
+        |> addControlIfPresent

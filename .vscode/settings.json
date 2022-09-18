@@ -1,3 +1,8 @@
 {
-  "livePreview.defaultPreviewPath": "/index.html"
+  "livePreview.defaultPreviewPath": "/index.html",
+  "editor.acceptSuggestionOnEnter": "off",
+  "editor.suggest.insertMode": "insert",
+  "editor.suggest.localityBonus": true,
+  "editor.suggest.shareSuggestSelections": false,
+  "files.autoSave": "off"
 }

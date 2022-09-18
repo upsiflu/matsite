@@ -3,8 +3,8 @@ module Accordion exposing
     , create
     , exit, reviseHistory
     , Msg, update
-    , Action(..), History
-    , Intent, IntentId
+    , Action(..), History, historyCodec
+    , Intent, IntentId, intentCodec
     , goToId, goToParentId
     , parentId, focusId
     , ViewMode, view
@@ -39,8 +39,8 @@ module Accordion exposing
 
 # Persist
 
-@docs Action, History
-@docs Intent, IntentId
+@docs Action, History, historyCodec
+@docs Intent, IntentId, intentCodec
 
 
 # Navigate
@@ -179,6 +179,7 @@ type Action
     | Go Direction
     | Insert Direction
     | Delete
+    | Reset String
     | Undo IntentId
 
 
@@ -186,22 +187,25 @@ type Action
 actionCodec : Codec Action
 actionCodec =
     Codec.custom
-        (\name modify go_ insert delete_ undo_ value ->
+        (\name_ modify_ go_ insert_ delete_ reset_ undo_ value ->
             case value of
                 Name s ->
-                    name s
+                    name_ s
 
                 Modify a ->
-                    modify a
+                    modify_ a
 
                 Go d ->
                     go_ d
 
                 Insert d ->
-                    insert d
+                    insert_ d
 
                 Delete ->
                     delete_
+
+                Reset s ->
+                    reset_ s
 
                 Undo i ->
                     undo_ i
@@ -211,6 +215,7 @@ actionCodec =
         |> variant1 "Go" Go Fold.directionCodec
         |> variant1 "Insert" Insert Fold.directionCodec
         |> variant0 "Delete" Delete
+        |> variant1 "Reset" Reset string
         |> variant1 "Undo" Undo intentIdCodec
         |> Codec.buildCustom
 
@@ -282,6 +287,9 @@ injectHistory history accordion =
                         Delete ->
                             delete
 
+                        Reset id ->
+                            reset id
+
                         Undo _ ->
                             identity
                    )
@@ -297,7 +305,7 @@ injectHistory history accordion =
 -}
 reviseHistory : History -> Accordion -> Accordion
 reviseHistory history accordion =
-    if (config accordion).syncing then
+    if Debug.log "is syncing?" (config accordion).syncing then
         injectHistory history accordion
 
     else
@@ -473,6 +481,11 @@ insertEmpty direction =
 delete : Accordion -> Accordion
 delete =
     mapTree Tree.deleteIfPossible
+
+
+reset : String -> Accordion -> Accordion
+reset id =
+    mapConfig <| \c -> { c | templates = Article.resetTemplate id c.templates }
 
 
 {-| The segment.id is made unique by appending an incrementing suffix if necessary
@@ -720,7 +733,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
             (case accordion of
                 Log { editing } _ ->
                     if editing then
-                        Segment.edit
+                        Segment.view
 
                     else
                         Segment.view
@@ -734,6 +747,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 , templates = c.templates
                 , do = \location -> Modify >> generateIntent location >> do
                 , delete = Delete |> atFocus
+                , reset = Reset >> atFocus
                 , rename = Name >> atFocus
                 , insert = Insert >> atFocus
                 }
@@ -754,7 +768,6 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         [ Html.div [ class "stretch-h" ]
                             [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
                             ]
-                            |> Ui.notIf True
                         ]
 
                 _ ->
@@ -911,29 +924,28 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
 
         globalToolbar : Ui msg
         globalToolbar =
-            Ui.fromEmpty
-                (\ui ->
-                    { ui
-                        | handle =
-                            Layout.hamburgerMenu <|
-                                if isRoot accordion then
-                                    Nothing
+            Ui.fromHandle
+                (Ui.Constant <|
+                    Layout.hamburgerMenu <|
+                        if isRoot accordion then
+                            Nothing
 
-                                else
-                                    Just "/"
-                    }
+                        else
+                            Just "/"
                 )
 
-        propertySheet : Ui msg
-        propertySheet =
-            Ui.fromEmpty <|
-                \e ->
-                    { e
-                        | control =
-                            Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
-                                (volatile (TemplatesUpdated Article.toggleTemplates))
-                                (Article.templatesAreOn (accordion |> config |> .templates))
-                    }
+        propertySheet : () -> Ui msg
+        propertySheet () =
+            Ui.fromHtml
+                (Ui.row
+                    [ Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
+                        (volatile (TemplatesUpdated Article.toggleTemplates))
+                        (Article.templatesAreOn (accordion |> config |> .templates))
+                    , Ui.check { front = [ Html.label [] [ Html.text "Synchronize with database" ] ], title = "Accept updates from the database." }
+                        (volatile SyncingToggled)
+                        (Just (config accordion).syncing)
+                    ]
+                )
 
         renderAccordion : List (Renderable msg) -> Ui msg
         renderAccordion =
@@ -950,20 +962,21 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                             Tuple.mapSecond ((::) (class cl))
                 )
                 ( [], [] )
-                >> (\( items, attrs ) ->
-                        Ui.concat (propertySheet :: items)
-                            |> Ui.composeScenes
+                >> (\( items, accordionAttributes ) ->
+                        Ui.fromHandle (Ui.Toggle "backstage" (Html.span [] [ Html.text "-> BackStage" ]))
+                            |> Ui.withControl propertySheet
+                            |> Ui.withScene [ ( "", Ui.singleton |> Ui.wrapScene (always overlays) ) ]
+                            |> Ui.withScene (List.map (Tuple.pair "") items)
+                            |> Ui.wrapScene
                                 (\scenes ->
-                                    ( "Accordion"
-                                    , Keyed.ul
-                                        (class "Accordion" :: statistics :: attrs)
-                                        (List.sortBy Tuple.first (overlays ++ scenes))
-                                    )
+                                    [ ( "Accordion"
+                                      , Keyed.ul
+                                            (class "Accordion" :: statistics :: accordionAttributes)
+                                            (List.sortBy Tuple.first scenes)
+                                      )
+                                    ]
                                 )
-                            |> Ui.composeControls
-                                (editAccordion
-                                    >> Html.section [ class "ui sheet" ]
-                                )
+                            -- Ui.composeControls >> Html.section [ class "ui sheet" ]
                             |> Ui.append globalToolbar
                    )
     in

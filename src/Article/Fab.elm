@@ -154,7 +154,7 @@ fabTypeToString fab =
             "Subscribe"
 
         ComingSoon _ ->
-            "Coming Soon"
+            "(Soon)"
 
 
 stringToFabType : String -> Maybe Fab
@@ -166,7 +166,7 @@ stringToFabType str =
         "Subscribe" ->
             Subscribe { link = "https://" } |> Just
 
-        "Coming Soon" ->
+        "(Soon)" ->
             ComingSoon {occurrence = [] } |> Just
 
         _ ->
@@ -183,12 +183,13 @@ edit { zone, save } maybeFab =
                     []
 
                 Just (Register r) ->
-                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value r.link, onInput (\l -> Register { r | link = l } |> Just |> save) ] []
+                    [ Ui.inputLine "link" "Weblink (https://...)" r.link (\l -> Register { r | link = l } |> Just |> save)
                     , Occurrence.edit { zone = zone, save = \o -> Register { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
 
                 Just (Subscribe { link }) ->
-                    [ Html.input [ class "link", title "Weblink (http://...)", type_ "input", value link, (\l -> Subscribe { link = l }) >> Just >> save |> onInput ] [] ]
+                    [ Ui.inputLine "link" "Weblink (https://...)" link (\l -> Subscribe { link = l } |> Just |> save )
+                    ]
                 Just (ComingSoon r) ->
                     [ Occurrence.edit { zone = zone, save = \o -> ComingSoon { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
@@ -197,14 +198,15 @@ edit { zone, save } maybeFab =
     ]
         |> Zipper.create
             ( "Subscribe", stringToFabType "Subscribe" |> save )
-            []
+            
+            [( "(Soon)", stringToFabType "(Soon)" |> save )]
         |> (case maybeFab of
                 Nothing ->
                     Tuple.pair False
 
                 Just fab ->
                     Zipper.findClosest (Tuple.first >> (==) (fabTypeToString fab))
-                        >> Zipper.mapFocus (\( str, _ ) -> ( str ++ " ×", save Nothing ))
+                        >> Zipper.mapFocus (\( str, _ ) -> ( str ++ " ×", save Nothing ))
                         >> Tuple.pair True
            )
         |> (\( active, options ) ->

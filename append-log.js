@@ -14,9 +14,15 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+
 import _ from "lodash";
 
 import Squire from "./squire";
+
+
+
+const provider = new GoogleAuthProvider();
 
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -98,22 +104,48 @@ var query = async function () {
 const log = doc(db, "log", "entries");
 
 const append = async function (data) {
-  console.log("append");
-  try {
-    await updateDoc(log, { actions: arrayUnion(data) });
-  } catch (error) {
-    console.log("error in append", error);
+  console.log("append", data);
+  console.log(auth.currentUser);
+  if (!auth.currentUser) { login() } else {
+    try {
+      await updateDoc(log, { actions: arrayUnion(data) });
+    } catch (error) {
+      console.log("error in append", error);
+    }
   }
 };
 
 const overwrite = async function (data) {
   console.log("overwrite");
+  console.log(auth);
   try {
     await updateDoc(log, { actions: data });
   } catch (error) {
     console.log("error in overwrite", error);
   }
 };
+
+const auth = getAuth();
+const login = async function () {
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      // ...
+    }).catch((error) => {
+      // Handle Errors here.
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // The email of the user's account used.
+      const email = error.customData.email;
+      // The AuthCredential type that was used.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      // ...
+    });
+}
 
 customElements.define(
   "append-log",
@@ -122,14 +154,14 @@ customElements.define(
       super();
     }
     connectedCallback() {
-      var appendLog = this;
       /**/
       const unsub = onSnapshot(
         log,
         doc => {
           requestAnimationFrame(() => {
-            console.log("onSnapshot");
-            appendLog.dispatchEvent(
+            console.log("onSnapshot (append-log)");
+            console.log(doc.data().actions);
+            this.dispatchEvent(
               new CustomEvent("logReceived", {
                 detail: doc.data().actions,
               })
@@ -140,7 +172,7 @@ customElements.define(
       );
     }
     disconnectedCallback() {
-      // unsub();
+      //this.unsub();
     }
     attributeChangedCallback(name, oldValue, newValue) {
       /**/
@@ -231,16 +263,18 @@ customElements.define(
         })
         .catch(e => console.log(e));
     }
-    disconnectedCallback() {}
-    attributeChangedCallback(name, oldValue, newValue) {}
+    disconnectedCallback() { }
+    attributeChangedCallback(name, oldValue, newValue) { }
     static get observedAttributes() {
-      return ["data-id", "state"];
+      return ["data-id", "state", "preset"];
     }
     reflectState(content) {
       if (this.hasAttribute("state") && this.getAttribute("state") == "editing") {
         if (this.contains(this.replacement)) this.removeChild(this.replacement);
         if (!this.contains(this.field)) this.appendChild(this.field);
-        // this.squire.setHTML(content);
+        if (this.hasAttribute("preset")) {
+          save(this.getAttribute("data-id"), this.getAttribute("preset"))
+        }
       } else {
         if (this.contains(this.field)) this.removeChild(this.field);
         if (this.replacement && !this.contains(this.replacement)) {

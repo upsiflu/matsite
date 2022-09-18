@@ -1,9 +1,8 @@
 module Snippets.Anarchive exposing (anarchive, incipit)
 
 import Article
-import Css exposing (..)
-import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr exposing (class, css, href, src, title)
+import Html.String as Html exposing (..)
+import Html.String.Attributes as Attr exposing (class, href, src, title)
 
 
 {-| -}
@@ -12,7 +11,8 @@ anarchive =
     Html.iframe
         [ Attr.attribute "width" "100%"
         , Attr.class "library"
-        , css [ Css.height (pct 100), border (px 0) ]
+        , Attr.style "height" "100%"
+        , Attr.style "border" "0px"
         , src "https://www.are.na/moving-across-thresholds/library-of-worded-companions/embed"
         , title "Moving Across Thresholds - Library"
         ]

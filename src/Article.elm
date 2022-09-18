@@ -11,10 +11,11 @@ module Article exposing
     , Templates, BodyTemplate(..), InfoTemplate(..)
     , toggleTemplates
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
-    , bodyTypeToString, infoTypeToString
+    , bodyTypeToString, infoTypeToString, bodyTemplateToString
     , structureClass
     , templatesAreOn
     , getTemplate
+    , resetTemplate
     )
 
 {-| _To render (view|edit) Articles and format them based on their position in the tree
@@ -57,7 +58,7 @@ and on the screen, use [`Accordion.Segment`](Accordion.Segment)_
 
 @docs hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
 
-@docs bodyTypeToString, infoTypeToString
+@docs bodyTypeToString, infoTypeToString, bodyTemplateToString
 
 @docs structureClass
 
@@ -78,6 +79,7 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import Layout
 import Occurrence
+import Snippet exposing (Snippet)
 import Time exposing (Zone)
 
 
@@ -274,8 +276,8 @@ bodyCodec =
 
 {-| -}
 type BodyTemplate
-    = Content Heading (Directory -> Html Never)
-    | Illustration (Directory -> Html Never)
+    = Content Heading (Directory -> Snippet)
+    | Illustration (Directory -> Snippet)
 
 
 {-| akin to update, but with serializable `Action` instead of `Msg`
@@ -306,7 +308,7 @@ apply a s =
 {-| per-session switchable hardcoded presets; off by default
 -}
 type alias Templates =
-    { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
+    { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ), isResetting : Dict String ( Bool, () ) }
 
 
 {-| returns a corresponding template if it's activated
@@ -327,11 +329,13 @@ getTemplate selector s =
 
 {-| Volatile per-session preset dicts; individually switchable; all off by default; see `Data` module for presets
 -}
-initialTemplates : { body : Dict String ( Bool, BodyTemplate ), info : Dict String ( Bool, InfoTemplate ) }
+initialTemplates : Templates
 initialTemplates =
     { body =
         Dict.empty
     , info =
+        Dict.empty
+    , isResetting =
         Dict.empty
     }
 
@@ -476,6 +480,20 @@ orientationToString o =
 
 
 {-| -}
+bodyTemplateToString : BodyTemplate -> String
+bodyTemplateToString body =
+    case body of
+        Content Nothing _ ->
+            "Preset Content"
+
+        Content (Just _) _ ->
+            "+\u{00A0}Heading"
+
+        Illustration _ ->
+            "Illustration"
+
+
+{-| -}
 bodyTypeToString : BodyChoice -> String
 bodyTypeToString body =
     case body of
@@ -512,8 +530,17 @@ infoTypeToString info =
 {-| -}
 toggleTemplates : Templates -> Templates
 toggleTemplates t =
-    { body = Dict.map (\_ ( b, x ) -> ( not b, x )) t.body
-    , info = Dict.map (\_ ( b, x ) -> ( not b, x )) t.info
+    { t
+        | body = Dict.map (\_ ( b, x ) -> ( not b, x )) t.body
+        , info = Dict.map (\_ ( b, x ) -> ( not b, x )) t.info
+    }
+
+
+{-| -}
+resetTemplate : String -> Templates -> Templates
+resetTemplate id t =
+    { t
+        | isResetting = Dict.insert id ( True, () ) t.isResetting
     }
 
 

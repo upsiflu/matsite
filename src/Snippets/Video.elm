@@ -1,10 +1,11 @@
 module Snippets.Video exposing (trailers, videochannel, vimeoVideo)
 
 import Article
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.String exposing (..)
+import Html.String.Attributes exposing (..)
 import Layout
 import Ui
+import Snippet
 
 
 vimeoVideo : Int -> Html msg
@@ -38,7 +39,7 @@ trailers =
                                 text "More..."
 
                               else
-                                Ui.none
+                                Snippet.none
                             ]
                         ]
                     ]

@@ -1,8 +1,8 @@
 module Snippets.Traces exposing (foldernumber, traces)
 
 import Article
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.String exposing (..)
+import Html.String.Attributes exposing (..)
 
 
 foldernumber : String

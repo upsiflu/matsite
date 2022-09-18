@@ -1,10 +1,10 @@
 module Snippets.About exposing (contact, mat, team)
 
 import Article
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.String exposing (..)
+import Html.String.Attributes exposing (..)
 import Layout
-import Ui exposing (cacheImg)
+import Snippet exposing (cacheImg)
 
 import Directory
 

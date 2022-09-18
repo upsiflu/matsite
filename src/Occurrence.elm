@@ -7,7 +7,7 @@ module Occurrence exposing
     , merge
     , bounds
     , beginning
-    , ViewMode(..), view, edit, toString, isUpcoming, isDuring, traceBounds
+    , ViewMode(..), view, viewAsSnippet, edit, toString, isUpcoming, isDuring, traceBounds
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -45,7 +45,7 @@ improved humaneness.
 
 # View
 
-@docs ViewMode, view, edit, toString, traceBounds
+@docs ViewMode, view, viewAsSnippet, edit, toString, traceBounds
 
 -}
 
@@ -55,6 +55,7 @@ import DateTime exposing (DateTime)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, title, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
+import Html.String
 import Iso8601
 import List.Extra as List
 import String.Extra as String
@@ -258,6 +259,27 @@ view mode =
                         bounds occurrence
                             |> occasionToString zone precision
                             |> Html.text
+
+{-| -}
+viewAsSnippet : ViewMode -> Occurrence -> Html.String.Html Never
+viewAsSnippet mode =
+    case mode of
+        AsList zone precision ->
+            List.map (occasionToString zone precision >> Html.String.text >> List.singleton >> Html.String.li [])
+                >> Html.String.ul []
+
+        Short zone precision ->
+            \occurrence ->
+                case occurrence of
+                    [] ->
+                        Html.String.text "--"
+
+                    _ :: _ ->
+                        bounds occurrence
+                            |> occasionToString zone precision
+                            |> Html.String.text
+
+
 
 
 occasionToString : Zone -> Precision -> Occasion -> String

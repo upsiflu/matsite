@@ -1,8 +1,8 @@
 module Snippets.Intro exposing (intro)
 
 import Article
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.String exposing (..)
+import Html.String.Attributes exposing (..)
 
 
 intro : Article.BodyTemplate
