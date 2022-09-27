@@ -65,6 +65,7 @@ module Accordion exposing
 import Accordion.Segment as Segment exposing (Region(..), Segment)
 import Article exposing (Article, Orientation(..), hasBody)
 import Article.Fab as Fab
+import Bool.Extra as Bool
 import Codec exposing (Codec, encoder, string, variant0, variant1)
 import Css exposing (..)
 import Directory exposing (Directory)
@@ -82,6 +83,8 @@ import Maybe.Extra as Maybe
 import String
 import Time
 import Ui exposing (Ui)
+import Ui.Aspect exposing (Aspect(..))
+import Ui.ViewModel as UiView
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Tree as Tree exposing (EdgeOperation(..), Tree, Walk(..))
@@ -730,17 +733,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
 
         viewArticle : Segment -> Ui msg
         viewArticle =
-            (case accordion of
-                Log { editing } _ ->
-                    if editing then
-                        Segment.view
-
-                    else
-                        Segment.view
-
-                _ ->
-                    Segment.view
-            )
+            Segment.view
                 { zone = zone
                 , now = now
                 , directory = directory accordion
@@ -924,18 +917,13 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
 
         globalToolbar : Ui msg
         globalToolbar =
-            Ui.fromHandle
-                (Ui.Constant <|
-                    Layout.hamburgerMenu <|
-                        if isRoot accordion then
-                            Nothing
+            Ui.constant
+                [ Bool.toMaybe "/" (not (isRoot accordion))
+                    |> Layout.hamburgerMenu
+                ]
 
-                        else
-                            Just "/"
-                )
-
-        propertySheet : () -> Ui msg
-        propertySheet () =
+        propertySheet : Ui msg
+        propertySheet =
             Ui.fromHtml
                 (Ui.row
                     [ Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
@@ -963,11 +951,11 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 )
                 ( [], [] )
                 >> (\( items, accordionAttributes ) ->
-                        Ui.fromHandle (Ui.Toggle "backstage" (Html.span [] [ Html.text "-> BackStage" ]))
-                            |> Ui.withControl propertySheet
-                            |> Ui.withScene [ ( "", Ui.singleton |> Ui.wrapScene (always overlays) ) ]
-                            |> Ui.withScene (List.map (Tuple.pair "") items)
-                            |> Ui.wrapScene
+                        Ui.toggle "backstage" (Html.span [] [ Html.text "-> BackStage" ])
+                            |> Ui.with Control propertySheet
+                            |> Ui.with Scene (Ui.fromFoliage overlays)
+                            |> Ui.with Scene (List.concat items)
+                            |> Ui.wrap
                                 (\scenes ->
                                     [ ( "Accordion"
                                       , Keyed.ul
@@ -977,7 +965,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                     ]
                                 )
                             -- Ui.composeControls >> Html.section [ class "ui sheet" ]
-                            |> Ui.append globalToolbar
+                            |> (++) globalToolbar
                    )
     in
     c.tree

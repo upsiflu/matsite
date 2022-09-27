@@ -13,12 +13,15 @@
   "dependencies": {
     "@vimeo/player": "^2.16.4",
     "cross-env": "^7.0.3",
+    "elm-doc-preview": "^5.0.5",
     "firebase": "^9.9.4",
     "lodash": "^4.17.21"
   },
   "browserslist": "> 15%",
   "scripts": {
     "doc": "edp --no-browser --port 8000",
+    "docs": "edp --no-browser --port 8000",
+    "verify": "elm-verify-examples && elm-test",
     "clear-build-cache": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && cp -r ./static/* dist",
     "local": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && parcel index.html",
     "dev": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && parcel --host=192.168.178.93 index.html",

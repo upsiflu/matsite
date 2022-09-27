@@ -5,9 +5,9 @@ module Occurrence exposing
     , moment
     , withDurationDays, withDurationMinutes, sort
     , merge
-    , bounds
+    , bounds, isDuring, isUpcoming
     , beginning
-    , ViewMode(..), view, viewAsSnippet, edit, toString, isUpcoming, isDuring, traceBounds
+    , ViewMode(..), view, viewAsSnippet, edit, toString, traceBounds
     )
 
 {-| This requires two packages, one to calculate calendar dates and one to calculate hours,
@@ -39,7 +39,7 @@ improved humaneness.
 
 # Deconstruct
 
-@docs bounds, isWithinBounds
+@docs bounds, isDuring, isUpcoming
 @docs beginning
 
 
@@ -52,10 +52,10 @@ improved humaneness.
 import Codec exposing (Codec)
 import DateFormat exposing (format)
 import DateTime exposing (DateTime)
+import Html.String
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (class, title, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
-import Html.String
 import Iso8601
 import List.Extra as List
 import String.Extra as String
@@ -160,7 +160,6 @@ localToGlobal zone local =
 
 
 
-
 ---- Combine
 
 
@@ -197,26 +196,34 @@ bounds =
         )
         >> Maybe.withDefault { from = Time.millisToPosix 0, until = Time.millisToPosix 0 }
 
+
 {-| -}
 isDuring : Time.Posix -> Occurrence -> Bool
 isDuring pivot =
-    bounds >>
-        \{from, until}  ->
-            Time.posixToMillis from <= Time.posixToMillis pivot
-                && Time.posixToMillis until >= Time.posixToMillis pivot
+    bounds
+        >> (\{ from, until } ->
+                Time.posixToMillis from
+                    <= Time.posixToMillis pivot
+                    && Time.posixToMillis until
+                    >= Time.posixToMillis pivot
+           )
+
 
 {-| -}
 isUpcoming : Time.Posix -> Occurrence -> Bool
 isUpcoming pivot occ =
     Time.posixToMillis (bounds occ |> .from) >= Time.posixToMillis pivot
 
+
 {-| -}
 traceBounds : Time.Posix -> Occurrence -> String
 traceBounds pivot =
-    bounds >>
-        \{from, until}  ->
-            (Time.posixToMillis from, Time.posixToMillis pivot, Time.posixToMillis until)
-                |> \(f, p, u) -> String.fromInt f ++ " <= " ++ String.fromInt p ++ " <= " ++String.fromInt u
+    bounds
+        >> (\{ from, until } ->
+                ( Time.posixToMillis from, Time.posixToMillis pivot, Time.posixToMillis until )
+                    |> (\( f, p, u ) -> String.fromInt f ++ " <= " ++ String.fromInt p ++ " <= " ++ String.fromInt u)
+           )
+
 
 {-| -}
 toString : ( String, Zone ) -> Precision -> Occurrence -> String
@@ -260,6 +267,7 @@ view mode =
                             |> occasionToString zone precision
                             |> Html.text
 
+
 {-| -}
 viewAsSnippet : ViewMode -> Occurrence -> Html.String.Html Never
 viewAsSnippet mode =
@@ -278,8 +286,6 @@ viewAsSnippet mode =
                         bounds occurrence
                             |> occasionToString zone precision
                             |> Html.String.text
-
-
 
 
 occasionToString : Zone -> Precision -> Occasion -> String

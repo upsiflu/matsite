@@ -103,8 +103,8 @@ type Msg
 
 
 type Route
-    = Home Ui.State
-    | Article String Ui.State
+    = Home Ui.Flags
+    | Article String Ui.Flags
 
 
 routeCodecs : List (Codec Route)
@@ -128,7 +128,7 @@ routeCodecs =
                 _ ->
                     False
 
-        guiState : Route -> Ui.State
+        guiState : Route -> Ui.Flags
         guiState r =
             case r of
                 Home ff ->
@@ -154,7 +154,7 @@ routeCodecs =
     ]
 
 
-unwrap : Url -> { destination : String, uiState : Ui.State }
+unwrap : Url -> { destination : String, uiState : Ui.Flags }
 unwrap =
     Url.Codec.parseUrl routeCodecs
         >> Result.unwrap { destination = "", uiState = [] }
@@ -307,7 +307,7 @@ view model =
 
                     Model m ->
                         [ viewAccordion m
-                            |> Ui.view (unwrap m.url |> .uiState)
+                            |> Ui.view (Debug.log "U R LLLLL" (unwrap m.url) |> .uiState) Nothing
                             |> Keyed.ul [ Attributes.class "model" ]
                             |> Html.toUnstyled
                         , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|

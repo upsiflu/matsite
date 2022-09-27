@@ -43,6 +43,8 @@ edp --no-browser --port 1234
 
 ## Verify examples
 
+`yarn verify`
+
 Run `elm-verify-examples` and `elm-test` to verify the correctness of the examples given in the documentation.
 
 ```sh

@@ -9,13 +9,13 @@ module Article exposing
     , BodyChoice(..), InfoChoice(..), Width(..), Heading
     , initialTemplates
     , Templates, BodyTemplate(..), InfoTemplate(..)
+    , resetTemplate
     , toggleTemplates
     , hint, orientationToString, hasBody, isBackground, isIllustration, width, orientation
     , bodyTypeToString, infoTypeToString, bodyTemplateToString
     , structureClass
     , templatesAreOn
     , getTemplate
-    , resetTemplate
     )
 
 {-| _To render (view|edit) Articles and format them based on their position in the tree
@@ -47,6 +47,7 @@ and on the screen, use [`Accordion.Segment`](Accordion.Segment)_
 
 @docs initialTemplates
 @docs Templates, BodyTemplate, InfoTemplate
+@docs resetTemplate
 
 
 # Modify

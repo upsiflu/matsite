@@ -8,6 +8,9 @@
         "Zipper.Mixed",
         "Zipper.Branch",
         "Zipper.Tree",
-        "./README.md"
+        "./README.md",
+        "Ui",
+        "Ui.Get",
+        "Ui.Mask"
     ]
 }

@@ -36,7 +36,7 @@ module Accordion.Segment exposing
 
 # View
 
-@docs view, edit, toClass
+@docs view, toClass
 
 
 # Helpers
@@ -61,7 +61,8 @@ import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
 import Snippet
 import Time
-import Ui exposing (Item, Ui)
+import Ui exposing (Ui)
+import Ui.Aspect exposing (Aspect(..))
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 
@@ -419,7 +420,7 @@ view :
     }
     -> Segment
     -> Ui msg
-view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as config) ({ position, article } as model) =
+view ({ zone, templates, directory, do, delete, reset, rename, insert } as config) ({ position, article } as model) =
     let
         -- SCENE --
         hideBecauseVeryFarAway =
@@ -452,7 +453,7 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
             else
                 oneEntry
 
-        viewPeekLink =
+        viewPeekLink () =
             case model.region of
                 Peek c ->
                     let
@@ -470,9 +471,11 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
                 _ ->
                     Ui.none
 
-        viewBody body =
-            let
-                bodyIsVisible =
+        viewBody () body =
+            Keyed.node "div"
+                [ class "body", classList [ ( "illustrative", Article.isIllustration config model.article ) ] ]
+            <|
+                if
                     Article.isIllustration { templates = templates } model.article
                         || model.position.role
                         == Focus
@@ -482,43 +485,40 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
                         == Breadcrumb
                         || model.position.role
                         == Aisle
-            in
-            (if bodyIsVisible then
-                [ Tuple.pair "heading" <|
-                    case heading config model.article of
-                        Just h ->
-                            Html.a [ href (Layout.sanitise model.article.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
+                then
+                    [ Tuple.pair "heading" <|
+                        case heading config model.article of
+                            Just h ->
+                                Html.a [ href (Layout.sanitise model.article.id) ] [ Html.h2 [ class "segment-heading" ] [ Html.text h ] ]
 
-                        Nothing ->
-                            Html.text ""
-                , Tuple.pair "content" <|
-                    if template.isResetting == Just () then
-                        Html.node "sync-hypertext" [ attribute "preset" "OVERWRITE", attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
-
-                    else
-                        case ( template.body, body ) of
-                            ( Just (Content _ c), _ ) ->
-                                c directory
-                                    |> Snippet.view
-
-                            ( Just (Illustration i), _ ) ->
-                                i directory
-                                    |> Snippet.view
-
-                            ( Nothing, PeekThrough ) ->
+                            Nothing ->
                                 Html.text ""
+                    , Tuple.pair "content" <|
+                        if template.isResetting == Just () then
+                            Html.node "sync-hypertext" [ attribute "preset" "OVERWRITE", attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
 
-                            ( Nothing, CustomIllustration ) ->
-                                Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+                        else
+                            case ( template.body, body ) of
+                                ( Just (Content _ c), _ ) ->
+                                    c directory
+                                        |> Snippet.view
 
-                            ( Nothing, CustomContent _ ) ->
-                                Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
-                ]
+                                ( Just (Illustration i), _ ) ->
+                                    i directory
+                                        |> Snippet.view
 
-             else
-                []
-            )
-                |> Keyed.node "div" [ class "body", classList [ ( "illustrative", Article.isIllustration config model.article ) ] ]
+                                ( Nothing, PeekThrough ) ->
+                                    Html.text ""
+
+                                ( Nothing, CustomIllustration ) ->
+                                    Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+
+                                ( Nothing, CustomContent _ ) ->
+                                    Html.node "sync-hypertext" [ attribute "state" "editing", attribute "data-id" ("_" ++ model.article.id) ] []
+                    ]
+
+                else
+                    []
 
         ( viewByline, bylineHeight ) =
             byline config model
@@ -555,68 +555,45 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
         viewBounds =
             div [ class "bounds" ] []
 
+        viewFab () =
+            fab config model
+                |> Maybe.map (Fab.view config)
+                |> Maybe.withDefault Ui.none
+
         scene =
-            if hideBecauseVeryFarAway then
-                List.map (Html.map never)
-                    [ model.article.caption |> viewCaption
-                    , Html.div [ class "body waiting" ] []
-                    , viewBounds
-                    ]
-                    |> Ui.fromHtmlList
-                    |> Ui.wrapScene
-                        (\inner ->
-                            [ Keyed.node "li"
-                                (id model.article.id
-                                    :: toClass model
-                                    :: class (Article.orientationToString (Article.orientation model.article))
-                                    :: class (bodyTypeToString model.article.body)
-                                    :: Article.structureClass config model.article
-                                    :: toCssVariables model
-                                    :: css ownWidthAsVars
-                                    :: additionalAttributes
-                                )
-                                inner
-                                |> Tuple.pair model.article.id
-                            ]
-                        )
+            (if hideBecauseVeryFarAway then
+                [ ( "caption", model.article.caption |> viewCaption )
+                , ( "body", Html.div [ class "body waiting" ] [] )
+                , ( "bounds", viewBounds )
+                ]
 
-            else
-                let
-                    viewFab =
-                        fab config model
-                            |> Maybe.map (Fab.view config)
-                            |> Maybe.withDefault Ui.none
-
-                    inner =
-                        List.map (Html.map never)
-                            [ model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model)
-                            , model.article.body |> viewBody
-                            , viewPeekLink
-                            , viewByline
-                            , Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly
-                            , model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly
-                            , viewBounds
-                            ]
-                            ++ [ Html.map never viewFab ]
-                            |> List.indexedMap (\key item -> ( String.fromInt key, item ))
-                in
-                Ui.singleton
-                    |> Ui.wrapScene
-                        (\_ ->
-                            [ Keyed.node "li"
-                                (id model.article.id
-                                    :: toClass model
-                                    :: class (Article.orientationToString (Article.orientation model.article))
-                                    :: class (bodyTypeToString model.article.body)
-                                    :: Article.structureClass config model.article
-                                    :: toCssVariables model
-                                    :: css ownWidthAsVars
-                                    :: additionalAttributes
-                                )
-                                inner
-                                |> Tuple.pair model.article.id
-                            ]
+             else
+                [ ( "caption", model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model) )
+                , ( "body", model.article.body |> viewBody () )
+                , ( "bounds", viewBounds )
+                , ( "peekLink", viewPeekLink () )
+                , ( "byline", viewByline )
+                , ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly )
+                , ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly )
+                , ( "fab", viewFab () )
+                ]
+            )
+                |> List.map (Tuple.mapSecond (Html.map never))
+                |> Ui.fromFoliage
+                |> Ui.wrap
+                    (Keyed.node "li"
+                        (id model.article.id
+                            :: toClass model
+                            :: class (Article.orientationToString (Article.orientation model.article))
+                            :: class (bodyTypeToString model.article.body)
+                            :: Article.structureClass config model.article
+                            :: toCssVariables model
+                            :: css ownWidthAsVars
+                            :: additionalAttributes
                         )
+                        >> Tuple.pair model.article.id
+                        >> List.singleton
+                    )
 
         -- CONTROL (contingent Ui) --
         addControlIfPresent =
@@ -688,46 +665,47 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
                                         )
                                     )
                     in
-                    Ui.withControl
-                        (\() ->
-                            Html.fieldset [ class "ui" ]
-                                [ Html.legend [ class "fill-h" ]
-                                    [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName)
-                                    , Ui.distanceHolder
-                                    , overlaidDeleteButton
-                                    ]
-                                , case template.body of
-                                    Just _ ->
-                                        Ui.row
-                                            [ Ui.pick (templateOptions |> Zipper.map (Tuple.mapSecond (always Nothing)))
-                                            , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False Nothing
-                                            ]
+                    Ui.with Control
+                        ([]
+                            |> Ui.with Control
+                                (Html.fieldset [ class "ui" ]
+                                    [ Html.legend [ class "fill-h" ]
+                                        [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName)
+                                        , Ui.distanceHolder
+                                        , overlaidDeleteButton
+                                        ]
+                                    , case template.body of
+                                        Just _ ->
+                                            Ui.row
+                                                [ Ui.pick (templateOptions |> Zipper.map (Tuple.mapSecond (always Nothing)))
+                                                , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False Nothing
+                                                ]
 
-                                    Nothing ->
-                                        Ui.row
-                                            [ Ui.pick options
-                                            , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
-                                            ]
-                                ]
-                                |> Ui.fromHtml
-                                |> Ui.withScene
-                                    [ [ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                                      , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
-                                      , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
-                                      , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
-                                      ]
-                                        |> Html.li
-                                            (toClass model
-                                                :: class (Article.orientationToString (Article.orientation model.article))
-                                                :: class (bodyTypeToString model.article.body)
-                                                :: Article.structureClass config model.article
-                                                :: toCssVariables model
-                                                :: css ownWidthAsVars
-                                                :: additionalAttributes
-                                            )
-                                        |> Ui.fromHtml
-                                        |> Tuple.pair model.article.id
+                                        Nothing ->
+                                            Ui.row
+                                                [ Ui.pick options
+                                                , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
+                                                ]
                                     ]
+                                    |> Ui.fromHtml
+                                )
+                            |> Ui.with Scene
+                                ([ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                                 , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
+                                 , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
+                                 , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
+                                 ]
+                                    |> Html.li
+                                        (toClass model
+                                            :: class (Article.orientationToString (Article.orientation model.article))
+                                            :: class (bodyTypeToString model.article.body)
+                                            :: Article.structureClass config model.article
+                                            :: toCssVariables model
+                                            :: css ownWidthAsVars
+                                            :: additionalAttributes
+                                        )
+                                    |> Ui.fromHtml
+                                )
                         )
 
                 Parent ->
@@ -759,26 +737,24 @@ view ({ zone, now, templates, directory, do, delete, reset, rename, insert } as 
                         originalCaption =
                             model.article.caption
                     in
-                    Ui.withControl
-                        (\() ->
-                            Html.fieldset [ class "ui" ]
-                                [ Html.legend [ class "editCaption fill-h" ]
-                                    [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
-                                    , Ui.distanceHolder
-                                    , Ui.singlePickOrNot article.caption.showsDate
-                                        ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
-                                        , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
-                                        )
-                                    ]
-                                , Ui.pick options
-                                , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
+                    Ui.with Control
+                        (Html.fieldset [ class "ui" ]
+                            [ Html.legend [ class "editCaption fill-h" ]
+                                [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
+                                , Ui.distanceHolder
+                                , Ui.singlePickOrNot article.caption.showsDate
+                                    ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
+                                    , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
+                                    )
                                 ]
-                                |> Ui.fromHtml
+                            , Ui.pick options
+                            , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
+                            ]
+                            |> Ui.fromHtml
                         )
 
                 _ ->
                     identity
     in
-    Ui.singleton
-        |> Ui.withScene [ ( "", scene ) ]
+    scene
         |> addControlIfPresent
