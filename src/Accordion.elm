@@ -83,8 +83,7 @@ import Maybe.Extra as Maybe
 import String
 import Time
 import Ui exposing (Ui)
-import Ui.Aspect exposing (Aspect(..))
-import Ui.ViewModel as UiView
+import Ui.Layout.Aspect exposing (Aspect(..))
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Tree as Tree exposing (EdgeOperation(..), Tree, Walk(..))
@@ -951,7 +950,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 )
                 ( [], [] )
                 >> (\( items, accordionAttributes ) ->
-                        Ui.toggle "backstage" (Html.span [] [ Html.text "-> BackStage" ])
+                        Ui.toggle "backstage" (Html.span [ class "face" ] [ Html.text "-> BackStage" ])
                             |> Ui.with Control propertySheet
                             |> Ui.with Scene (Ui.fromFoliage overlays)
                             |> Ui.with Scene (List.concat items)

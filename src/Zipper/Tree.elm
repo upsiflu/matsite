@@ -1068,9 +1068,11 @@ defoldWithDirections =
             -> (DirTree a -> DirTree a)
         withDirection dir getReferenceNode build newBranch oldTree =
             let
+                accumulatedPath : List Direction
                 accumulatedPath =
                     Tuple.first (getReferenceNode oldTree)
 
+                newPath : List Direction -> List Direction
                 newPath =
                     \subPath ->
                         accumulatedPath

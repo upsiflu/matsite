@@ -94,7 +94,7 @@ module Ui.Get exposing
 import Bool.Extra as Bool
 import List.Extra as List
 import Maybe.Extra as Maybe
-import Ui.Aspect exposing (Aspect)
+import Ui.Layout.Aspect exposing (Aspect)
 
 
 {-| -}
@@ -115,7 +115,7 @@ empty =
 
 {-| in any case, return `a`
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     full 1
         |> get Scene
@@ -139,7 +139,7 @@ singleton key a =
 
 {-| insert at key if not yet populated
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene "a"
         |> orAdd Scene "b"
@@ -156,7 +156,7 @@ orAdd key =
 
 {-| insert at key, overwriting existing value
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene 1
         |> insert Scene 2
@@ -176,7 +176,7 @@ insert key =
 
 {-| insert at key, combining with existing value
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Control [3]
         |> maybeAdd (++) Scene [1, 2]
@@ -202,7 +202,7 @@ maybeAdd composer =
 
 {-| Define a default so that the composition can't fail
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     addWithDefault 0 (+) Scene 1 (full 2)
         |> get Scene
@@ -220,7 +220,7 @@ addWithDefault default composer =
 
 {-| Consider `Nothing` in the `add` composer so that the composition can't fail
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
 
     mapLists : (List a -> List a -> List a) -> Maybe (List a) -> Maybe (List a) -> List a
@@ -267,7 +267,7 @@ mapLists fu ma mb =
 
 {-| Update the value associated with a specified key, if present
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene "a"
         |> update Scene String.toUpper
@@ -309,7 +309,7 @@ updateValue key fu =
 
 {-|
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     consList Scene 1 (full [2, 3])
         |> get Scene
@@ -333,7 +333,7 @@ consList =
 
 {-| `addWithDefault [] (++)`
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     addList Scene [1, 2] (full [3, 4])
         |> get Scene
@@ -355,7 +355,7 @@ addList =
 
 {-| compose a function behind the result
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     map negate (full 1)
         |> get Scene
@@ -369,7 +369,7 @@ map =
 
 {-| Apply a sequence of operations on a `Get`:
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene 1
         |> sequence
@@ -391,7 +391,7 @@ sequence operations getA =
 
 {-| only get a value if the condition holds
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene 1
         |> insert Control 2
@@ -438,7 +438,7 @@ Note that if any of the two values is Nothing, the other is ignored.
 
 Example:
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     map2 (::) (singleton Scene 1) (singleton Scene [2, 3])
         |> get Scene
@@ -471,7 +471,7 @@ map2ByKey fu getA getB =
 
 {-| interprets Nothing as []
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene [1]
         |> concat (singleton Scene [2, 3])
@@ -508,7 +508,7 @@ flat =
 
 {-| `get` the inner `Get` with the given key
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
 -}
 unlockInner : Aspect -> Get (Get a) -> Get a
@@ -536,7 +536,7 @@ join get2 =
 
 {-| returns the first parameter if the second fails, using the same key. Lazy.
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     let
         getMy =
@@ -568,7 +568,7 @@ andGet =
 
 {-| get `get b` from the result of `get a`
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     full 2
         |> andThen (negate >> singleton Scene)
@@ -590,7 +590,7 @@ andThen createGetB getA =
 
 `andThenFlat = andThen >> (<<) join`
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     full 2
         |> andThenFlat (negate >> singleton Scene)
@@ -635,7 +635,7 @@ andMapFlat =
 
 {-| Example:
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     singleton Scene 1
         |> member Scene --> True
@@ -658,7 +658,7 @@ get =
 
 {-| Note that, strictly speaking, you no longer have a `Get` after applying `withDefault`.
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     empty
         |> withDefault "default"
@@ -678,7 +678,7 @@ withDefault =
 
 {-|
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     full "Hello"
         |> toList [Scene, Control]
@@ -696,7 +696,7 @@ toList list getA =
 If you want to modify the behavior on duplicate keys, use `fromListWith`
 or `consList`.
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     fromList [(Scene, "Scene 1"), (Scene, "Scene 2"), (Control, "C")]
         |> toList [Scene, Control]
@@ -717,7 +717,7 @@ toListBy getAB aspects =
 
 {-|
 
-    import Ui.Aspect exposing (Aspect(..))
+    import Ui.Layout.Aspect exposing (Aspect(..))
 
     values [Scene, Control] (full 2) --> [2, 2]
 
@@ -733,7 +733,7 @@ keys list getA =
     List.foldl (\key -> getA key |> Maybe.unwrap identity (\_ -> (::) key)) [] list
 
 
-{-| \`concatLists = fromListBy addList=
+{-| `concatLists = fromListBy addList`
 -}
 concatLists : List ( Aspect, List a ) -> Get (List a)
 concatLists =

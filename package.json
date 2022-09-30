@@ -21,7 +21,7 @@
   "scripts": {
     "doc": "edp --no-browser --port 8000",
     "docs": "edp --no-browser --port 8000",
-    "verify": "elm-verify-examples && elm-test",
+    "verify": "elm-verify-examples && elm-test && rm -rf tests/VerifyExamples",
     "clear-build-cache": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && cp -r ./static/* dist",
     "local": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && parcel index.html",
     "dev": "rm -rf .cache/ .parcel-cache/ dist/ && mkdir dist && parcel --host=192.168.178.93 index.html",

@@ -29,9 +29,8 @@ _Note that Masks are functions so you can compose them easily:_
 -}
 
 import Bool.Extra as Bool
-import List.Extra as List
-import Ui.Aspect exposing (Aspect)
 import Ui.Get as Get exposing (Get)
+import Ui.Layout.Aspect exposing (Aspect)
 
 
 {-| -}

@@ -1,6 +1,6 @@
 module Ui exposing
     ( Ui, Descendant, Item
-    , Foliage, fromHtml, fromTextLabel, fromFoliage
+    , fromHtml, fromTextLabel, fromFoliage
     , Handle(..), toggle, constant
     , with, addLabel, addTextLabel, wrap
     , Flags, view
@@ -14,6 +14,7 @@ module Ui exposing
     , toggleButton, toggleModeButton, squareToggleButton
     , distanceHolder, row
     , Face
+    , toggleFlag
     )
 
 {-| Helps separate the state and layout of interface elements from the main model.
@@ -46,7 +47,7 @@ one-layer deep nested controls with their descendants.
 
 ### Html
 
-@docs Foliage, fromHtml, fromTextLabel, fromFoliage
+@docs fromHtml, fromTextLabel, fromFoliage
 
 
 ### Handle
@@ -110,11 +111,13 @@ import Html.Styled as Html exposing (Attribute, Html, details, div, input, label
 import Html.Styled.Attributes as Attributes exposing (..)
 import Html.Styled.Events exposing (onClick, onInput)
 import Html.Styled.Keyed exposing (node, ul)
+import Json.Decode exposing (maybe)
 import List.Extra as List
 import Maybe.Extra as Maybe
-import Ui.Aspect as Aspect exposing (Aspect(..))
 import Ui.Get as Get exposing (Get)
 import Ui.Layout as Layout exposing (Layout)
+import Ui.Layout.Aspect exposing (Aspect(..))
+import Ui.Layout.ViewModel as ViewModel exposing (Foliage, ViewModel)
 import Ui.Mask as Mask exposing (Mask)
 import Zipper exposing (Zipper)
 
@@ -126,44 +129,13 @@ type alias Ui msg =
     List (Descendant msg)
 
 
-{-|
-
-  - Leaf: draw as is
-  - Wrap: apply a wrapper around all sub-items
-    of the current aspect (see example)
-  - Nest: Logical nesting of items under
-    the contingency of the current aspect
-    in the current item (see example)
-
-Example:
-
-    let
-        viewArticle nr =
-            fromHtml (text ("I am article #" ++ String.fromInt nr))
-                |> with Control
-                    (wrap articleControl (fieldset []))
-
-        articleControl =
-            fromHtml (input [ type_ "text" ] [])
-                |> with Scene
-                    (fromHtml (text "article overlay"))
-    in
-    toggle "Edit" (text "Editing controls and overlay")
-        |> with Scene (viewArticle 5 ++ viewArticle 19)
-        |> with Info (fromHtml (text "info"))
-
--}
+{-| -}
 type Descendant msg
     = Leaf (Foliage msg) (Maybe (Item msg))
     | Wrap (Foliage msg -> Foliage msg) (Ui msg)
 
 
-{-| Descendants of an item are contingent
-on its handle, if present.
-
-  - `handle`: the item's avatar or menu, containing a unique flag
-
--}
+{-| -}
 type alias Item msg =
     { handle : Maybe (Handle msg)
     , get : Get (Ui msg)
@@ -181,11 +153,6 @@ fromTextLabel =
 
 
 {-| -}
-type alias Foliage msg =
-    List ( String, Html msg )
-
-
-{-| -}
 fromHtml : Html msg -> Ui msg
 fromHtml =
     Tuple.pair "" >> List.singleton >> fromFoliage
@@ -197,8 +164,7 @@ fromFoliage =
     Leaf >> (|>) Nothing >> List.singleton
 
 
-{-| State applies to handles: an 'open' handle corresponds to its name appearing in the State
--}
+{-| -}
 type Handle msg
     = Constant (List (Html msg))
     | Toggle String (Html Never)
@@ -209,7 +175,8 @@ createHandle h =
     fromItem { handle = Just h, get = \_ -> Nothing }
 
 
-{-| -}
+{-| Adds a binary flag; is represented by a togglebutton.
+-}
 toggle : String -> Html Never -> Ui msg
 toggle =
     Toggle >> (<<) createHandle
@@ -263,7 +230,7 @@ Now, let's see what happens if we define a contextual aspect.
 
 This will output:
 `Scene -> []`,
-`Control -> "I am wrapped"`
+`Control -> "I am wrapped" []`
 
 -}
 wrap : (Foliage msg -> Foliage msg) -> Ui msg -> Ui msg
@@ -314,52 +281,36 @@ lowerLayerMask =
 ----
 
 
-type Acc msg
-    = Acc
-        { handle : Foliage msg
-        , get : Get (Foliage msg)
-        }
-
-
-{-| appends two accs
-
-    import Ui.Aspect exposing (Aspect(..))
-
-    accumulate
-        (Acc { handle = [], get = Get.singleton Scene [] })
-        (Acc { handle = [], get = Get.singleton Scene [] })
-        |> (\Acc {get} -> get Scene)
-        --> []
-
--}
-merge : Acc msg -> Acc msg -> Acc msg
-merge (Acc a) (Acc b) =
-    Acc
-        { handle = a.handle ++ b.handle
-        , get = Get.concat a.get b.get
-        }
-
-
-foldl1 : (a -> Acc msg -> Acc msg) -> List a -> Acc msg
-foldl1 fu =
-    List.foldl fu start
-
-
-foldlAcc : (a -> Acc msg -> Acc msg) -> List a -> Acc msg -> Acc msg
-foldlAcc fu li acc =
-    List.foldl fu acc li
-
-
-{-| The state of the whole Ui can be mapped directly to the query as a list of flags
+{-| The state of the whole Ui can be mapped directly to the _Url query_ as a list of flags
 -}
 type alias Flags =
     List String
 
 
 {-| -}
+toggleFlag : String -> Flags -> Flags
+toggleFlag flag flags =
+    flags
+        |> (if List.member flag flags then
+                List.remove flag
+
+            else
+                (::) flag
+           )
+
+
+{-| -}
 view : Flags -> Maybe Layout -> Ui msg -> Foliage msg
 view flags maybeLayout =
     let
+        withFlag : String -> String
+        withFlag q =
+            "?" ++ String.join "&" (q :: List.remove "" flags)
+
+        withoutFlag : String -> String
+        withoutFlag q =
+            "?" ++ String.join "&" (List.remove q flags)
+
         viewHandle : Maybe (Handle msg) -> ( Foliage msg, Bool )
         viewHandle =
             Maybe.map
@@ -370,197 +321,51 @@ view flags maybeLayout =
 
                         Toggle flag face ->
                             if List.member flag flags then
-                                ( keyByIndex [ Html.button [ attribute "aria-checked" "true" ] [ Html.map never face ] ], True )
+                                ( keyByIndex [ Html.a [ href ("?toggle=" ++ flag), attribute "role" "switch", attribute "aria-checked" "true" ] [ Html.map never face ] ], True )
 
                             else
-                                ( keyByIndex [ Html.button [ attribute "aria-checked" "false" ] [ Html.map never face ] ], False )
+                                ( keyByIndex [ Html.a [ href ("?toggle=" ++ flag), attribute "role" "switch", attribute "aria-checked" "false" ] [ Html.map never face ] ], False )
                 )
                 >> Maybe.withDefault ( [], True )
 
-        {- A `Ui` is a list of logically independent items. -}
-        viewUi : Aspect -> Mask (Ui msg) -> Ui msg -> Acc msg
-        viewUi aspect mask =
-            foldl1 (viewDesc aspect mask >> merge)
+        viewUi : (Descendant msg -> ViewModel msg) -> Ui msg -> ViewModel msg
+        viewUi how =
+            List.foldl (how >> ViewModel.merge) ViewModel.empty
 
-        mapGet : Mask (Foliage msg) -> Acc msg -> Acc msg
-        mapGet mask (Acc acc) =
-            Acc { acc | get = mask acc.get }
-
-        {- Situation: We can 'get' Accs.
-           Goal: We want to merge all available Accs.
-        -}
-        viewGet : Aspect -> Mask (Ui msg) -> Get (Ui msg) -> Acc msg
-        viewGet aspect mask =
-            Get.mapByKey (\key -> viewUi key mask)
+        viewGet : ( Aspect, Mask (Ui msg) ) -> Get (Ui msg) -> ViewModel msg
+        viewGet ( aspect, mask ) =
+            Get.mapByKey (\key -> viewUi (viewDesc ( key, mask )))
                 >> Get.values [ Scene, Control, Info ]
-                >> List.foldl
-                    merge
-                    start
+                >> List.foldl ViewModel.merge ViewModel.empty
 
-        {- A `Descendant` can wrap its contextual aspect, and contain logical
-           descendants which may be masked.
-        -}
-        viewDesc : Aspect -> Mask (Ui msg) -> Descendant msg -> Acc msg
-        viewDesc aspect mask d =
+        viewItem : ( Aspect, Mask (Ui msg) ) -> Item msg -> ViewModel msg
+        viewItem ( aspect, mask ) item =
+            let
+                ( handle, isOn ) =
+                    viewHandle item.handle
+            in
+            viewGet ( aspect, mask ) item.get
+                |> ViewModel.mapHandle (\_ -> handle)
+
+        viewDesc : ( Aspect, Mask (Ui msg) ) -> Descendant msg -> ViewModel msg
+        viewDesc ( aspect, mask ) d =
             case d of
-                Leaf foliage Nothing ->
-                    Acc { handle = [], get = Get.singleton aspect foliage }
+                Leaf foliage maybeItem ->
+                    maybeItem
+                        |> Maybe.unwrap ViewModel.empty (viewItem ( aspect, mask ))
+                        |> ViewModel.mapGet (Get.addList aspect foliage)
 
-                Leaf foliage (Just item) ->
-                    let
-                        ( handle, isOn ) =
-                            viewHandle item.handle
-                    in
-                    Acc
-                        { handle = handle
-                        , get =
-                            Get.singleton aspect foliage
-                        }
-                        |> merge (viewGet aspect mask item.get)
-
-                Wrap fu descs ->
-                    viewUi aspect mask descs
-                        |> mapGet (Get.update aspect fu)
+                Wrap wrapper descList ->
+                    descList
+                        |> viewUi (viewDesc ( aspect, mask ))
+                        |> ViewModel.mapGet (Get.update aspect wrapper)
     in
-    viewUi Scene Mask.transparent
-        >> (\(Acc acc) ->
-                acc.handle
-                    ++ (acc.get
-                            |> Get.toListBy niceLayout
-                                [ Scene, Control, Info ]
-                       )
-           )
-
-
-start : Acc msg
-start =
-    Acc { handle = [], get = Get.empty }
-
-
-accFromFoliage : Aspect -> Foliage msg -> Acc msg
-accFromFoliage aspect foliage =
-    Acc { handle = [], get = Get.singleton aspect foliage }
-
-
-niceLayout : Get (Foliage msg -> ( String, Html msg ))
-niceLayout =
-    Get.fromList
-        [ ( Scene, ul [ class "scene" ] >> Tuple.pair "scene" )
-        , ( Control, ul [ class "control" ] >> Tuple.pair "control" )
-        , ( Info, ul [ class "info" ] >> Tuple.pair "info" )
-        ]
-
-
-{-| Magic happens here.
-
-
-### Logic
-
-
-### Dom
-
-The `scene`s are collectively processed by the wrapper function defined in the Ui.
-
--}
+    viewUi (viewDesc ( Scene, Mask.transparent ))
+        >> Layout.view (Maybe.withDefault Layout.Default maybeLayout)
 
 
 
-{-
-   view : Flags -> Maybe Layout -> Ui msg -> Foliage msg
-   view flags maybeLayout =
-       let
-           ---- RULES ----
-           ---- Rule 1
-           ---- A `Ui` consists of logically orthogonal items which are drawn on top of each other.
-           ---- A wrapFunction wraps the `scene`s of a given `Ui`.
-           viewUi : Ui msg -> ViewModel msg
-           viewUi ui =
-               case ui of
-                   Leaf region f ->
-                       ViewModel [] f [] []
-                           |> debugInfo "viewUi: Only Scene" forget
-
-                   Branch wrapFunction list ->
-                       ViewModel.concatMap viewItem list
-                           |> (\record -> { record | scenes = wrapFunction record.scenes })
-                           |> debugInfo "viewUi: Sub with n items" (always (List.length list))
-
-           ---- Rule 2
-           ---- If a `handle` is switched off, only the nested `scene`s are rendered.
-           uiMask : Bool -> Mask
-           uiMask =
-               ifElse
-                   transparent
-                   (Mask False True False False)
-
-           ---- Rule 3
-           ---- If a `handle is switched off, the item only renders `handle` and `scene`.
-           itemMask : Bool -> Mask
-           itemMask =
-               ifElse
-                   transparent
-                   (Mask True True False False)
-
-           ---- Role 4
-           ---- The body of a masked item is composed of the regions
-           ---- `handle`, `scene`, `control` and `info`, in that order.
-           body item =
-               [ item.scene, item.info, item.control ]
-                   |> Maybe.values
-                   |> List.map force
-
-           ---- VIEWS ----
-           viewItem : Item msg -> ViewModel msg
-           viewItem item =
-               let
-                   isOn =
-                       case item.handle of
-                           Just (Toggle flag _) ->
-                               List.member (Debug.log " Flag " flag)
-                                   (Debug.log " State " flags)
-                                   |> Debug.log " ---> is on? "
-
-                           _ ->
-                               True
-               in
-               item
-                   ---- (a) mask self
-                   |> applyMaskToItem (itemMask isOn)
-                   |> body
-                   |> List.map
-                       ---- (b) mask visible sub-Uis
-                       (applyMask (uiMask isOn)
-                           >> viewUi
-                       )
-                   |> Maybe.cons (Maybe.map viewHandle item.handle)
-                   |> ViewModel.concat
-
-           viewHandle : Handle msg -> ViewModel msg
-           viewHandle h =
-               ViewModel
-                   (case h of
-                       Constant html ->
-                           html
-
-                       Toggle flag face ->
-                           [ Html.map never face ]
-                   )
-                   []
-                   []
-                   []
-
-           forget : a -> ()
-           forget =
-               always ()
-
-           debugInfo : String -> (a -> b) -> a -> a
-           debugInfo str deb a =
-               deb a |> Debug.log str |> always a
-       in
-       viewUi
-           >> ViewModel.view (Maybe.withDefault Layout.Default maybeLayout)
--}
----- Conditional Views
+---- Conditional Views ----
 
 
 isDebugging : Bool

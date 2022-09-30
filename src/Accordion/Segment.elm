@@ -62,7 +62,7 @@ import Occurrence exposing (Occurrence)
 import Snippet
 import Time
 import Ui exposing (Ui)
-import Ui.Aspect exposing (Aspect(..))
+import Ui.Layout.Aspect exposing (Aspect(..))
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 

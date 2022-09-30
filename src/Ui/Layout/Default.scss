@@ -1,0 +1,37 @@
+.handle {
+    position: fixed;
+    z-index : 2;
+}
+
+.control {
+    display:none;
+}
+
+.handle [role="switch"] {
+    padding   : 2px;
+    background: grey;
+    display   : block;
+    display:none;
+    color     : white;
+    >.face {
+        display: block;
+    }
+    &[aria-checked="true"]{
+        >.face {
+            border    : 2px groove darkblue;
+            background: darkblue;
+        }
+        &:hover>face{
+            border-style    : ridge;
+        }
+    }
+    &[aria-checked="false"] {
+        >.face {
+            border    : 2px outset #888;
+            background: #777;
+        }
+        &:hover>.face {
+            background: darkblue;
+        }
+    }
+}

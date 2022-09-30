@@ -1,7 +1,7 @@
 {
     "name": "upsiflu/matsite",
     "summary": "Website for Moving Across Thresholds",
-    "version": "0.0.0",
+    "version": "0.9.0",
     "exposed-modules": [
         "Zipper",
         "Zipper.Branch",
