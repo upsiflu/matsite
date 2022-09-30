@@ -1,11 +1,12 @@
 module Snippets.Video exposing (trailers, videochannel, vimeoVideo)
 
 import Article
+import Directory
 import Html.String exposing (..)
 import Html.String.Attributes exposing (..)
 import Layout
-import Ui
 import Snippet
+import Ui
 
 
 vimeoVideo : Int -> Html msg
@@ -61,26 +62,40 @@ trailers =
         |> Article.Content (Just "Trailer")
 
 
+seeLab : Directory.Directory -> String -> List (Html msg)
+seeLab dir descr =
+    Directory.getClosestBy (String.length descr // 4) descr dir
+        |> Maybe.map
+            (\uuid -> [ a [ class "seeLab", href (Layout.sanitise uuid) ] [ span [ class "lab-logo" ] [ text "LAB" ], span [ class "hover-caption lab-title" ] [ text (" ☛" ++ descr ++ " ") ] ] ])
+        |> Maybe.withDefault [ span [ class "hover-caption other-title" ] [ text descr ] ]
+
+
 videochannel : Article.BodyTemplate
 videochannel =
-    article []
-        [ [ 514927927
-          , 533845894
-          , 517426338
-          , 581244925
-          , 525617567
-          , 537057257
-          , 539421233
-          , 549047696
-          , 558664865
-          , 564303449
-          , 687420793
-          ]
-            |> List.map
-                (\number ->
-                    li [] [ vimeoVideo number ]
-                )
-            |> ul [ class "video-carousel dense" ]
-        ]
-        |> always
+    (\dir ->
+        article []
+            [ [ ( 514927927, "Erin Manning conversation" )
+              , ( 533845894, "dances of the mouth" )
+              , ( 517426338, "dances of care" )
+              , ( 581244925, "parallel worlds" )
+              , ( 525617567, "creating a Verbal Climate" )
+              , ( 537057257, "Botanizing the virtual" )
+              , ( 539421233, "Wandering the city" )
+              , ( 549047696, "layers of cells/earth/a.../?" )
+              , ( 558664865, "Facing the impossible" )
+              , ( 564303449, "staying with the muddle" )
+              , ( 687420793, "Glitching scores and code" )
+              , ( 691848907, "Fatigue as creative proposition" )
+              , ( 728908770, "Foregrounding the Background" )
+              , ( 744657368, "Konwn to Unknown, Alienation" )
+              , ( 737716811, "Learning to love the microbiome" )
+              ]
+                |> List.reverse
+                |> List.map
+                    (\( number, title ) ->
+                        li [ class "hover-caption-on-hover" ] (vimeoVideo number :: seeLab dir title)
+                    )
+                |> ul [ class "video-carousel dense" ]
+            ]
+    )
         |> Article.Content Nothing

@@ -12,9 +12,9 @@ import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
+import Snippet exposing (cacheImg)
 import Snippets.Video as Video
 import Time exposing (Month(..))
-import Snippet exposing (cacheImg)
 
 
 type Collage
@@ -193,8 +193,11 @@ In this gathering, facilitated by filmmaker and gardener - Ella von der Haide, w
         ]
     , Series 6
         "LOCALITY"
-        [ Event 8 Sep 22 "Unplanting the seeds of hatred" 
-          (Just """“Since the beginning of the Russian invasion of Ukraine, I couldn’t think of art, neither create it nor proceed with my artworks
+        [ Event 8
+            Sep
+            22
+            "Unplanting the seeds of hatred"
+            (Just """“Since the beginning of the Russian invasion of Ukraine, I couldn’t think of art, neither create it nor proceed with my artworks
 art seemed pointless
 only real tangible actions work
 helping, structuring, supporting those who are in need
@@ -212,19 +215,40 @@ What if we change the feedback?”
 
 Facilitated by Vera Shchelkina - a Russian somatic dance artist, this workshop is a playground where we can touch seeds of hatred in our bodies, take them into our hands, hold them, and grow them into something else - developing individual and collective artistic practice from our bodily sensations. The gathering will begin with a guided practice led by Vera, followed by an invitation to create your own practice and to share it with others. 
 https://www.movingtouch.space/
-""") 
-          "Gather-town + at bUm, Kreuzberg" "Vera Shchelkina" "-"
-           Nothing 
-           (Just <| Image 2 "https://lh5.googleusercontent.com/ZbJrTYQQ-N6LqPMlOVwrNVoeUmCXVuFttjA-qhnN0lFezUaEO9VmgHnZhquQgguAs-cJ2wFrc9rJOjSY4X94miS6JjdA82mAe7UtRzHU8YpqbUxe1o9AJEOHlsOs5rfIuwibYNEbCY6bBKKcJMrbtmNFPKMVaz07LxBKmtx6vzmXAEQcpT2D-mKkug")
-        , Event 22 Sep 22 "Pleasure is a practice" (Just """This gathering is centered on “Pleasure Activism: The Politics of Feeling Good” by activist, author and doula - adrienne maree brown, who teaches us how embracing what brings us joy is essential in organising against oppression. brown highlights the many ways that people of color, sex workers, disabled people and queer, trans and nonbinary people have been denied joy—and why we must encourage their pleasure as well as our own for collective liberation.
-            Facilitated by choreographer/dancer Renae Shadler and companioned by anthropologist Susanne Schmitt, this event includes readings of text excerpts as well as a somatic proposition to work through our body’s internal layers of skin, flesh and bone, creating more space within the container of our body. The practice builds up to a place where the body can operate as a whole by connecting all the layers within itself and then radiating beyond its borders and limits - moving as the Pleasure Activists we inherently are!""") 
-            "Gather-town + at bUm, Kreuzberg" "Renae Shadler" "Susanne Schmitt" 
-            Nothing 
+""")
+            "Gather-town + at bUm, Kreuzberg"
+            "Vera Shchelkina"
+            "-"
+            Nothing
+            (Just <| Image 2 "https://lh5.googleusercontent.com/ZbJrTYQQ-N6LqPMlOVwrNVoeUmCXVuFttjA-qhnN0lFezUaEO9VmgHnZhquQgguAs-cJ2wFrc9rJOjSY4X94miS6JjdA82mAe7UtRzHU8YpqbUxe1o9AJEOHlsOs5rfIuwibYNEbCY6bBKKcJMrbtmNFPKMVaz07LxBKmtx6vzmXAEQcpT2D-mKkug")
+        , Event 22
+            Sep
+            22
+            "Pleasure is a practice"
+            (Just """This gathering is centered on “Pleasure Activism: The Politics of Feeling Good” by activist, author and doula - adrienne maree brown, who teaches us how embracing what brings us joy is essential in organising against oppression. brown highlights the many ways that people of color, sex workers, disabled people and queer, trans and nonbinary people have been denied joy—and why we must encourage their pleasure as well as our own for collective liberation.
+            
+            Facilitated by choreographer/dancer Renae Shadler and companioned by anthropologist Susanne Schmitt, this event includes readings of text excerpts as well as a somatic proposition to work through our body’s internal layers of skin, flesh and bone, creating more space within the container of our body. The practice builds up to a place where the body can operate as a whole by connecting all the layers within itself and then radiating beyond its borders and limits - moving as the Pleasure Activists we inherently are!""")
+            "Gather-town + at bUm, Kreuzberg"
+            "Renae Shadler"
+            "Flupsi Upsi"
+            Nothing
             (Just <| Image 2 "https://lh3.googleusercontent.com/To6h6vTsIIh65kLIY45osrEwm2y0rJkOEy0o_wQ9SSgd2ycb5dbOYzMzkLksHPCv5DG4gR31hYfs7wyapo_dwUfkdFqLa6LUKO2p2V7pKH_Np49w6N9d2BgBDRH7JO-_IDBFj444hldIXDGKQOZzWSI4mCAeQgTWvnWwBMlVbqXtlsQfmvIVN84Vbg")
-        , Event 6 Oct 22 "Locality 3" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
-        , Event 20 Oct 22 "Locality 4" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
-        , Event 3 Nov 22 "Locality 5" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
-        , Event 17 Nov 22 "Locality 6" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing Nothing
+        , Event 6
+            Oct
+            22
+            "Whale Fall"
+            (Just """A whale fall occurs when the carcass of a whale has fallen onto the ocean floor at a depth greater than 1,000m (3,300 ft) creating complex ecosystems that can supply sustenance to deep-sea organisms for decades.
+
+            This gathering, facilitated by choreographer/dancer Renae Shadler and companioned by anthropologist Susanne Schmitt, will dive into ‘FATHOMS, The World in the Whale’ by Rebecca Giggs, focusing especially on how the decaying whale body becomes a habitat for creatures (‘fugitive species’) that only live in dead whales. Together, we also explore the text physically through a led movement warmup and improvisation, feeling into the more-than-human worlds within our own bodies and forming a shared thinking/feeling/sensing that life and death are very close to one another and inexplicably linked. 
+            """)
+            "Gather-town + at bUm, Kreuzberg"
+            "Renae Shadler"
+            "Susanne Schmitt"
+            Nothing
+            (Just <| Image 2 "https://lh4.googleusercontent.com/KEBiAqiEZW3DA27oW7aumTRfDdRpj9uVP8HHZE52UzDigGt22T7Uf5g5cxjUrNPGufXNYqXoy0rKbvPgA94vc8ysYFo0dh3UR9XuaJzJ9CbK3u05NmH80BBeNnSJK970pTVZBoX1l1i0TPy81L71FyAeV6kiFyw8w2E9oIuePOmK85HUlfmpzn6gKg")
+        , Event 20 Oct 22 "Locality 4" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
+        , Event 3 Nov 22 "Locality 5" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
+        , Event 17 Nov 22 "Locality 6" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
         ]
     ]
 
