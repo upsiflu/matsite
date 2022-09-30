@@ -307,7 +307,7 @@ injectHistory history accordion =
 -}
 reviseHistory : History -> Accordion -> Accordion
 reviseHistory history accordion =
-    if Debug.log "is syncing?" (config accordion).syncing then
+    if (config accordion).syncing then
         injectHistory history accordion
 
     else

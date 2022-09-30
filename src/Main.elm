@@ -241,7 +241,7 @@ update msg model =
 
         ---- Persistent Data
         ( LogReceived log, Model m ) ->
-            ( Model { m | accordion = Debug.log "ReVISING" (Accordion.reviseHistory log m.accordion) }, Cmd.none )
+            ( Model { m | accordion = Accordion.reviseHistory log m.accordion }, Cmd.none )
 
         ( IntentGenerated intent, Model m ) ->
             ( Model { m | backlog = Just intent }, Cmd.none )
@@ -307,7 +307,7 @@ view model =
 
                     Model m ->
                         [ viewAccordion m
-                            |> Ui.view (Debug.log "U R LLLLL" (unwrap m.url) |> .uiState) Nothing
+                            |> Ui.view (unwrap m.url |> .uiState) Nothing
                             |> Keyed.ul [ Attributes.class "model" ]
                             |> Html.toUnstyled
                         , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
