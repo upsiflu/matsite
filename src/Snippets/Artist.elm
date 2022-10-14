@@ -4,7 +4,7 @@ import Article
 import Directory exposing (Directory)
 import Html.String as Html exposing (Html, text, toHtml)
 import Html.String.Attributes exposing (..)
-import Html.Styled exposing(fromUnstyled)
+import Html.Styled exposing (fromUnstyled)
 import Layout
 import List.Extra as List
 import Snippet exposing (cacheImg)
@@ -236,6 +236,61 @@ artists =
                     , internal dir "Series 6"
                     ]
       , photo = "https://lh5.googleusercontent.com/jLwyczx8qR-MbNdBfbSYDDk4c-F7fVacKqhefsgVLqdtFIxhH0CEhyFLAMc56XxBQB29zLEd3Ofp0PEhr6H4EpZvItB1vQJ4tH59lo4WcNxKHTWwmydw-nPE1k-DLdfGF11G7wfYkBZih-YlPQ"
+      , wide = False
+      }
+    , { name = "Vera Shchelkina"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """born in Moscow, is a dance artist that uses various somatic approaches to research the human body and living matter. Her main dance and performance pieces where she has been a co-author and performer are "CO-TOUCH" (2018, Moscow, Saint-Petersburg, Berlin, Dresden), "The Imposture Lab" (2018, Moscow, Minsk), "My Ex(body) (2018, Moscow, Minsk», SMRTЪ (2020, Moscow, Yekaterinburg, Kazan), «Vibrant Matter» (2021, Saint-Petersburg), and others.
+
+She is recently studying at the Somatische Akademie in Berlin to become a somatic movement educator and regularly teaches workshops and classes. """
+                    , weblink "movingtouch.space" "https://www.movingtouch.space/"
+                    , event dir "Unplanting the seeds of hatred" "https://www.facebook.com/events/601421931359812"
+                    ]
+      , photo = "https://lh6.googleusercontent.com/wZH-jLExTmRjdoGwwEpKsJxj2Hg0mXgXM5XU_0QdJ-jTUnDIr-Svru8UJ94-BwO8h_9QiRneDJFp1v4LBE1H9hrxdL4AOrlUycn9TNJ6R58B4In2W7QgxUDkMA-DWJECghiYs1gnNOMtu87LKLZwWqpo5n-7ChoHMFbfIKSMZ2ns9ATSLoQ9gxhycg"
+      , wide = True
+      }
+    , { name = "Ella von der Haide"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """in her work as garden activist, audio-visual artist, dipl.-ing. spacial planner and manager of a organic community supported agricultural farm (Solawi Isartal) explores techniques to activate alternative sensibilities. She is based in München (Germany)  working  towards ecological and social transformation and is an expert on queer ecologies. Her topics include queer gardening, urban gardening, alternative food systems. """
+                    , weblink "eine-andere-welt-ist-pflanzbar.de" "www.eine-andere-welt-ist-pflanzbar.de"
+                    , event dir "learning to love the microbiome" "https://www.facebook.com/events/3392714897626309"
+                    ]
+      , photo = "https://lh4.googleusercontent.com/z_3YcxRYXSJ5LaRImksvQnOHbXpXm74eHJSg9IxBbld0UCHIvcgfjVdALvjMQMukhpJf-tlUPi5SNYaspAbN1wWZw3ArK31VhyYNj8sW_Wd2gKarhNkMthTI3w8tjXAcTsgvxx6WLItYIJVQp15pRyepmMpnoPpcoP0invyHPVmDrS3zjT0SKB13OA"
+      , wide = True
+      }
+    , { name = "Robert Ssempijja"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """is a Ugandan contemporary artist and dance researcher who works in traditional and non-traditional spaces in an era of post-colonialism and decolonization. In his practice, he presses against the body’s physical limits to create work that is utterly sincere. He addresses social, political and cultural issues, creating meaning through the interplay of the physical body, the psychological world of the mind, human emotions, and the soul. He is committed to constructing a sustainable scene for contemporary dance in Uganda. Ssempijja is also curious to know how the body creates and transfers information and secrets into a movement that builds up the body’s own vocabulary. He assumes that our bodies are comprised of archives of information which are activated when it comes to movement."""
+                    , weblink "Robertssempijja.com" "Robertssempijja.com"
+                    , event dir "Known to Unknown, Alienation" "https://www.facebook.com/events/717565509528106"
+                    ]
+      , photo = "https://lh4.googleusercontent.com/PBMk2ySDAZA4m8EAR52f_0Te9Vj0WLiG-8HvMnE5ObecQwXoLge7arrZXNRHGwlTBOanyVCY5-RaakKynfxbKAIDq5oG2aPj9Lz6bv9Ff_TWiKVwsrar-mfhdm1FkND5peS-CqDOyzdF-bz8WnEfJb4mVPHo438UI3EwRiRBseH6omCam_uUWSwVaw"
+      , wide = False
+      }
+    , { name = "The Quilombaque Cultural Community"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """is an ethnic-cultural political movement ruled by drums. It is situated in the neighborhood of Perus, northwest of the city of São Paulo in Brazil. Created by young cultural activists with the aim of facing the problems and dilemmas that surround the periphery, mainly poverty and violence. Since the beginning, human development through art, culture and knowledge are our instruments and tools for producing effective changes in this reality. Because these, understood and articulated in a systemic way, promote and provide guarantee of access to an essential human right: Emancipation, Expanding and amplifying the imaginary universe and the repertoire of languages; Autonomy, generating work, income and prospects for young people."""
+                    , weblink "quilombaque.org.br" "https://quilombaque.org.br/"
+                    ]
+      , photo = "https://lh6.googleusercontent.com/6dHBFr_R1mYYDDw1s9LA-jZBz0YjN81lvuQiXp5w_ANbbgrUYwlMyI7uSFx_ML7JHbHcd8-sgcrPBPTPuM4RP3-GuNXVhuY2OtlxdaAivHIQnpQDzQjnx7FSmD8Z3AiIVSUp8RlBJnGvnfeO7ouUz6JH7ynvsfSUcXMHCJF6E6_gdHO7m7NtFmXsDQ"
+      , wide = True
+      }
+    , { name = "Jol Thoms"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """is a quantum ecologist living and working on a wise and lively Ocean planet. As an artist and educator he works in the fields of art & science for eco-social and epistemic justice. As a vernacular musician Jol is an obsessive mystic. His practice addresses our troubled relationships with nature, technology, and the cosmos by signaling beyond the purely measurable and quantifiable, and by thinking, feeling, and sensing with more-than-human worlds."""
+                    , weblink "jolthoms.com" "https://jolthoms.com/"
+                    ]
+      , photo = "https://lh4.googleusercontent.com/uCGilVHlSpWgj_iAls-JWBJB4sBcOdz40bkYfyzUSs_OQFWabGftO6YWq-x6L00-kTyszU009lxHsYfsVQdkcHS3QBi538Ah07bCxy2CE2VFqCubG8rtIhuO_HFYlJz-qXyCBU2-k3yg5DFrO1isT1GUq1oZjHJuQk_N7aY9BS0htaVkh2A4vAFBfQ"
       , wide = False
       }
     ]

@@ -1,7 +1,7 @@
 port module Main exposing (Model(..), Msg(..), Route(..), SessionId, main, overwrite, pleaseCenter, pleaseConfirm, update, upgradeIfPossible, view)
 
 import Accordion exposing (Accordion)
-import Browser
+import Browser exposing (Document)
 import Browser.Navigation as Nav
 import Codec exposing (decoder, encoder)
 import Css exposing (..)
@@ -19,6 +19,7 @@ import Result.Extra as Result
 import Task
 import Time
 import TimeZone
+import Tuple exposing (pair)
 import Ui
 import Url exposing (Url)
 import Url.Codec exposing (Codec)
@@ -58,12 +59,13 @@ overwrite =
     True
 
 
-main : Program () Model Msg
+main : Program () ( Url, Model ) Msg
 main =
     Browser.application
         { init =
             \_ url key ->
                 let
+                    initialModel : Model
                     initialModel =
                         Loading
                             { key = key
@@ -74,9 +76,9 @@ main =
                 in
                 initialModel
                     |> update (UrlChanged url)
-                    |> (\( model, cmd ) -> ( model, Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Time.now |> Task.attempt NowReceived ] ))
-        , view = view
-        , update = update
+                    |> (\( model, cmd ) -> ( ( url, model ), Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Time.now |> Task.attempt NowReceived ] ))
+        , view = \( url, model ) -> view model
+        , update = \msg ( url, model ) -> update msg model |> Tuple.mapFirst (pair (Ui.update url))
         , subscriptions = \_ -> Sub.none
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
@@ -187,6 +189,10 @@ update msg model =
             ( Model m, Nav.load href )
 
         ( UrlChanged url, Model m ) ->
+            -- incoming: potential Ui Messages via Link
+            -- Idea is that Ui.State is updated through these messages privately.
+            -- The `view` should handle its dependency on Url itself
+            -- because changing the path does not "change" the model, only the viewport / viewstate / viewlocation...
             let
                 { destination, uiState } =
                     unwrap url
@@ -200,6 +206,9 @@ update msg model =
                         Accordion.goToParentId destination m.accordion
                 in
                 ( Model { m | url = url, accordion = newAccordion }
+                  -- the following has a problem: it is fired before the `view`!
+                  -- On the next requestAnimationFrame, the layout may have changed.
+                  -- Solution: move it into `view` with a custom element please-center
                 , Cmd.batch
                     [ Accordion.focusId newAccordion |> pleaseCenter
                     , Accordion.parentId newAccordion |> pleaseConfirm
@@ -230,6 +239,7 @@ update msg model =
                         |> (\_ -> ( model, Cmd.none ))
 
         ( ScrolledTo id, Model m ) ->
+            -- TODO: Change Url path instead (Cmd)
             ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
 
         ( ScrolledIntoNowhere, Model m ) ->
@@ -285,8 +295,10 @@ upgradeIfPossible model =
 
 
 {-| -}
+view : Model -> Document Msg
 view model =
     let
+        viewAccordion : { m | zone : ( String, Time.Zone ), now : Time.Posix, accordion : Accordion } -> Ui.Ui Msg
         viewAccordion m =
             Accordion.view
                 { zone = m.zone

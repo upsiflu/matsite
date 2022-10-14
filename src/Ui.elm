@@ -3,7 +3,7 @@ module Ui exposing
     , fromHtml, fromTextLabel, fromFoliage
     , Handle(..), toggle, constant
     , with, addLabel, addTextLabel, wrap
-    , Flags, view
+    , Flags, toggleFlag, view
     , cacheImg
     , disclose, debugOnly, ifJust, notIf, none
     , Edge(..), overlay
@@ -14,7 +14,7 @@ module Ui exposing
     , toggleButton, toggleModeButton, squareToggleButton
     , distanceHolder, row
     , Face
-    , toggleFlag
+    , update
     )
 
 {-| Helps separate the state and layout of interface elements from the main model.
@@ -69,7 +69,7 @@ _Note that `Ui`s are `Lists`, so you can use `++`, `List.reverse` etc!_
 
 # View
 
-@docs Flags, view
+@docs Flags, toggleFlag, view
 
 ---
 
@@ -119,6 +119,7 @@ import Ui.Layout as Layout exposing (Layout)
 import Ui.Layout.Aspect exposing (Aspect(..))
 import Ui.Layout.ViewModel as ViewModel exposing (Foliage, ViewModel)
 import Ui.Mask as Mask exposing (Mask)
+import Url exposing (Url)
 import Zipper exposing (Zipper)
 
 
@@ -300,6 +301,12 @@ toggleFlag flag flags =
 
 
 {-| -}
+update : Url -> Url
+update =
+    identity
+
+
+{-| -}
 view : Flags -> Maybe Layout -> Ui msg -> Foliage msg
 view flags maybeLayout =
     let
@@ -335,7 +342,7 @@ view flags maybeLayout =
         viewGet : ( Aspect, Mask (Ui msg) ) -> Get (Ui msg) -> ViewModel msg
         viewGet ( aspect, mask ) =
             Get.mapByKey (\key -> viewUi (viewDesc ( key, mask )))
-                >> Get.values [ Scene, Control, Info ]
+                >> Get.values [ Scene, {- Control, -} Info ]
                 >> List.foldl ViewModel.merge ViewModel.empty
 
         viewItem : ( Aspect, Mask (Ui msg) ) -> Item msg -> ViewModel msg
@@ -461,7 +468,7 @@ overlay edge =
 {-| -}
 row : List (Html msg) -> Html msg
 row =
-    Html.div [ class "row" ]
+    Html.fieldset [ class "row" ]
 
 
 {-| -}

@@ -749,23 +749,29 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 Log { history, editing } _ ->
                     if editing then
                         sheets
-                            ++ [ Html.div [ class "stretch-h" ]
+                            ++ [ ( "editing"
+                                 , Html.div [ class "stretch-h" ]
                                     [ Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
                                     , Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
                                     , Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
                                     ]
+                                 )
                                ]
 
                     else
-                        [ Html.div [ class "stretch-h" ]
-                            [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
-                            ]
+                        [ ( "editing"
+                          , Html.div [ class "stretch-h" ]
+                                [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
+                                ]
+                          )
                         ]
 
                 _ ->
-                    [ Html.div [ class "stretch-h" ]
-                        [ Html.text ""
-                        ]
+                    [ ( "editing"
+                      , Html.div [ class "stretch-h" ]
+                            [ Html.text ""
+                            ]
+                      )
                     ]
 
         statistics : Html.Attribute msg
@@ -951,7 +957,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 ( [], [] )
                 >> (\( items, accordionAttributes ) ->
                         Ui.toggle "backstage" (Html.span [ class "face" ] [ Html.text "-> BackStage" ])
-                            |> Ui.with Control propertySheet
+                            |> Ui.with Control (Ui.wrap editAccordion propertySheet)
                             |> Ui.with Scene (Ui.fromFoliage overlays)
                             |> Ui.with Scene (List.concat items)
                             |> Ui.wrap

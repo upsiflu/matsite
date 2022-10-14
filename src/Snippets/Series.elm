@@ -246,7 +246,17 @@ https://www.movingtouch.space/
             "Susanne Schmitt"
             Nothing
             (Just <| Image 2 "https://lh4.googleusercontent.com/KEBiAqiEZW3DA27oW7aumTRfDdRpj9uVP8HHZE52UzDigGt22T7Uf5g5cxjUrNPGufXNYqXoy0rKbvPgA94vc8ysYFo0dh3UR9XuaJzJ9CbK3u05NmH80BBeNnSJK970pTVZBoX1l1i0TPy81L71FyAeV6kiFyw8w2E9oIuePOmK85HUlfmpzn6gKg")
-        , Event 20 Oct 22 "Locality 4" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
+        , Event 20
+            Oct
+            22
+            "in the biological reflection"
+            (Just """Facilitated by quantum ecologist - Jol Thoms, this gathering strives to honour the more-than-human by acknowledging their selfhood in a meditative communing. Through careful exercises with water, soil, sound, and plant we approach and attend to a universal drone where openings to worlds beyond human constraint are possible.
+Caring gestures are tested with voice and intention to disrupt anthropocentric thought patterns that confine realities to hominid sensory logics. Another mode altogether, these exercises enchant a cosmic hum that practice movement into the perceptual apparatus' of nonhumans - in our case, plant-beings. We re-tune into what exists outside of usual human experience and become-with a radically verdant other. """)
+            "Gather-town + at bUm, Kreuzberg"
+            "Jol Thoms"
+            ""
+            Nothing
+            (Just <| Image 1 "https://lh5.googleusercontent.com/ZMVeL8WwAEprAcX5BYa3Wui1QufIzJdSZzkRXA9wJDXwIzEp7UsJWD1MSIUg08B2MOORke5_48CgMysfIfQUpN0Bo8Iz_a07GZv-tq45znAu-oFsKVP4QFmlt7JfWAlNp5c6HwFH4f1h7jkmgnzbq-_bicX5kzWVSLsCCVmf6OCl-hXbY6j_oVOUzw")
         , Event 3 Nov 22 "Locality 5" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
         , Event 17 Nov 22 "Locality 6" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
         ]
