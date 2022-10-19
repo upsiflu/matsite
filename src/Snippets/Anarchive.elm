@@ -1,8 +1,9 @@
-module Snippets.Anarchive exposing (anarchive, incipit)
+module Snippets.Anarchive exposing (anarchive, essays, incipit)
 
 import Article
 import Html.String as Html exposing (..)
 import Html.String.Attributes as Attr exposing (class, href, src, title)
+import Snippet exposing (cacheImg)
 
 
 {-| -}
@@ -27,8 +28,22 @@ incipit =
     Html.div
         [ class "richtext"
         ]
-        [ img [ src "https://lh6.googleusercontent.com/Ko6kFLF0ASL4bdqxLLK2t2Be-bIGY2B7YJzr5WC2c-9E3MK6IK08DuzQsbjC-nC-PrzrKOcxvYPeqOClmBYcWKVPEVvOrk-wqHoZxVaVcTLHHexkHOQHI6oZCGo7dbqq3GXRDVYf" ] []
-        , p []
+        [ p [ class "meta" ]
+            [ cacheImg "Library" 1 "" "https://lh6.googleusercontent.com/Ko6kFLF0ASL4bdqxLLK2t2Be-bIGY2B7YJzr5WC2c-9E3MK6IK08DuzQsbjC-nC-PrzrKOcxvYPeqOClmBYcWKVPEVvOrk-wqHoZxVaVcTLHHexkHOQHI6oZCGo7dbqq3GXRDVYf"
+            , text """MaT's reference texts are available for everyone to read, download and/or add to. It's easy and simple to use. Please add texts with 'First name, Last name_Title'. Enjoy your digital wandering."""
+            ]
+        ]
+        |> always
+        |> Article.Illustration
+
+
+{-| -}
+essays : Article.BodyTemplate
+essays =
+    Html.div
+        [ class "richtext"
+        ]
+        [ p []
             [ text """“Following cues from Walter Benjamin, I understand thresholds not so much as limits or borders [grenze], but as sites where potential swells [schwellen]. Think of wave energy – the metabolic pulse of the oceanic suck and push, where bodies and forces collide... Bodies and lived experiences are always threaded with thresholds: encounters that render us porous; chances to stitch ourselves anew. Thresholds, like waves, are generative zones of potential.”""" ]
         , p []
             [ text "--", a [ href "/ally-bisshop" ] [ text "Ally Bisshop" ] ]
@@ -47,4 +62,4 @@ incipit =
             ]
         ]
         |> always
-        |> Article.Illustration
+        |> Article.Content (Just "Essays")

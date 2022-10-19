@@ -64,6 +64,7 @@ addTemplates zone =
                 >> presetBody "Credits" Festival.radialsystemCredits
                 >> presetBody "Home" Intro.intro
                 >> presetBody "Incipit" Anarchive.incipit
+                >> presetBody "Essays" Anarchive.essays
                 >> presetBody "Archive" Anarchive.anarchive
                 >> presetBody "About MaT" About.mat
                 >> presetBody "Team" About.team
@@ -240,6 +241,9 @@ initialActions timezone =
         :: Go Right
         :: Name "Library"
         :: Go Down
+        :: Name "Essays"
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+        :: Go Right
         :: Name "Incipit"
         :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
