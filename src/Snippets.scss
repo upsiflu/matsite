@@ -11,7 +11,7 @@
         position: absolute;
         top: 0px;
         text-align: right;
-        max-width: calc(var(--column) - 50%);
+        max-width: calc(var(--column) - 100% - 2rem);
         right: calc(0px - var(--column) + 100%);
 
         li {background:white;}
