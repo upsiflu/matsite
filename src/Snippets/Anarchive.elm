@@ -1,4 +1,4 @@
-module Snippets.Anarchive exposing (anarchive, essays, incipit)
+module Snippets.Anarchive exposing (anarchive, essay0, essay1, incipit)
 
 import Article
 import Html.String as Html exposing (..)
@@ -19,7 +19,7 @@ anarchive =
         ]
         []
         |> always
-        |> Article.Content Nothing
+        |> Article.Content (Just "Worded Companions")
 
 
 {-| -}
@@ -38,8 +38,8 @@ incipit =
 
 
 {-| -}
-essays : Article.BodyTemplate
-essays =
+essay0 : Article.BodyTemplate
+essay0 =
     Html.div
         [ class "richtext"
         ]
@@ -51,15 +51,25 @@ essays =
             [ a [ Attr.target "_blank", href "https://www.are.na/block/18079291" ]
                 [ text "📖 Read Ally's essay 'For the exhausted ones: scores for moving through, moving with, fatigue.'" ]
             ]
-        , hr [] []
-        , p []
+        ]
+        |> always
+        |> Article.Content (Just "For the exhausted ones")
+
+
+{-| -}
+essay1 : Article.BodyTemplate
+essay1 =
+    Html.div
+        [ class "richtext"
+        ]
+        [ p []
             [ text "“Creativity and innovation within soft limits is a general character of the MaT practice. Each session has a theme, a set of readings, proposed experiential practices and propositions, and often a co-facilitator. There is also a temporal limitation; the designated 90 minutes marks the boundaries of the event. This additionally makes the practice urgent, ephemeral and thus all the more precious.”" ]
         , p []
             [ text "--", a [ href "/balam-kenter" ] [ text "Balam Kenter" ] ]
         , p []
             [ a [ Attr.target "_blank", href "https://arena-attachments.s3.amazonaws.com/15227955/58dc7d974f3347933305b564051c6b09.pdf?1645189093" ]
-                [ text "📖 Read Balam's essay in our library at are.na" ]
+                [ text "📖 Read Balam's essay “Hello, good evening, and welcome to The Middle of the Film!” in our library at are.na" ]
             ]
         ]
         |> always
-        |> Article.Content (Just "Essays")
+        |> Article.Content (Just "Welcome to The Middle of the Film!")
