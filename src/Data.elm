@@ -70,7 +70,6 @@ addTemplates zone =
                 >> presetBody "Archive" Anarchive.anarchive
                 >> presetBody "About MaT" About.mat
                 >> presetBody "Team" About.team
-                >> presetBody "Trailers" Video.trailers
                 >> presetBody "Video Channel" Video.videochannel
                 >> presetBody "Collective Docs" Traces.traces
                 >> presetInfo "Traces" Traces.tracesInfo
@@ -235,11 +234,7 @@ initialActions timezone =
         :: Name "Videos"
         :: Go Down
         :: Name "Video Channel"
-        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
-        :: Go Right
-        :: Name "Trailers"
-        :: Modify (WithShape (Oriented Horizontal (Article.Columns 3)))
-        :: Go Left
+        :: Modify (WithShape (Oriented Horizontal Article.Screen))
         :: Go Up
         :: Go Right
         :: Name "Library"

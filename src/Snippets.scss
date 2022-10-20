@@ -23,6 +23,41 @@
     }
 }
 
+#Video-Channel, #Trailers {
+    .deferredVimeoVideo {
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: calc(9 / 16 * 100vw);
+            z-index: 200;
+            background: rgba(0,0,0,0.7);
+            cursor:zoom-in;
+            }
+        summary {list-style: none;}
+        .placeholder {height:0; overflow:hidden;}
+    }
+    details.deferredVimeoVideo[open] {
+        summary {
+            cursor:zoom-out;
+            img {opacity:0;}
+            width: 200vw;
+            height: 200vh;
+            z-index: 100;
+            cursor: zoom-out;
+            background: #000000b3;
+            position: absolute;
+            top: -50vh;
+            left: -50vw;
+        }
+        iframe {
+            animation: fadeIn 1s ease-out;
+        }
+        .placeholder {height:auto;}
+    }
+}
+
 
 #Archive {
     >.body {
@@ -80,6 +115,14 @@ ul.video-carousel {
         width: var(--column);
         padding: 0;
         margin: 0;
+    }
+
+    &.dense {
+        display: flex;
+        max-width: 100%;
+        overflow-x: scroll;
+        .seeLab, .seeNothing {display:block; padding:0.5rem; line-height:1rem}
+        summary {cursor:zoom-in; min-width:4.5rem;}
     }
 }
 
