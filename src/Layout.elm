@@ -1,4 +1,4 @@
-module Layout exposing (aStyle, anchoredLabel, bleedingStyle, byline, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, unit)
+module Layout exposing (aStyle, anchoredLabel, bleedingStyle, byline, bylineMulti, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, unit)
 
 import Css exposing (..)
 import Css.Global as Global
@@ -254,3 +254,17 @@ section =
 
 byline =
     Html.text
+
+
+bylineMulti : (Int -> Html msg -> b) -> List (Html msg) -> b
+bylineMulti fu li =
+    let
+        h =
+            List.length li // 2
+
+        rest =
+            toFloat (List.length li) / 2 - toFloat h
+    in
+    List.intersperse (Html.br [] []) li
+        |> Html.div [ class ("bylineCompensate" ++ String.fromFloat rest) ]
+        |> fu h

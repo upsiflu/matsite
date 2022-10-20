@@ -71,6 +71,7 @@ addTemplates zone =
                 >> presetBody "Trailers" Video.trailers
                 >> presetBody "Video Channel" Video.videochannel
                 >> presetBody "Collective Docs" Traces.traces
+                >> presetInfo "Traces" Traces.tracesInfo
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Article.Toc
                 >> presetInfo "Labs" (Article.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))

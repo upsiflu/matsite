@@ -79,6 +79,18 @@ a:active {
     display: flex;
     align-items: center;
     padding: 0 1.125rem;
+
+    .bylineCompensate0 {
+        position: relative;
+        top: calc(0px - var(--unit) / 5);
+        line-height: 1rem;
+    }
+
+    a:link[href] {text-decoration: underline;}
+    a {color:blue;}
+    a:hover {text-decoration-color: blue;}
+    a:visited:not(:hover) {text-decoration-color: rgb(116, 121, 255);}
+
 }
 
 .west .byline {

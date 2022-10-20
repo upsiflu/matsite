@@ -198,7 +198,7 @@ accurately fills the viewport at the moment the focus has changed, and can conse
         outline-offset: -0.5rem;
         pointer-events: none;
         left: calc(var(--x) + var(--here-width) / 2 - 50vw);
-        top: calc(var(--y) + var(--unit) / 2 - var(--info-height) * 0.5 + var(--here-height) *0.5 - 40vh);
+        top: calc(var(--y) + var(--unit) / 2 - var(--info-height) / 2 + var(--here-height) / 2 - 40vh);
         pointer-events: none;
         background: transparent;
     }
