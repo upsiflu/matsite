@@ -257,7 +257,19 @@ Caring gestures are tested with voice and intention to disrupt anthropocentric t
             ""
             Nothing
             (Just <| Image 1 "https://lh5.googleusercontent.com/ZMVeL8WwAEprAcX5BYa3Wui1QufIzJdSZzkRXA9wJDXwIzEp7UsJWD1MSIUg08B2MOORke5_48CgMysfIfQUpN0Bo8Iz_a07GZv-tq45znAu-oFsKVP4QFmlt7JfWAlNp5c6HwFH4f1h7jkmgnzbq-_bicX5kzWVSLsCCVmf6OCl-hXbY6j_oVOUzw")
-        , Event 3 Nov 22 "Locality 5" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
+        , Event 3
+            Nov
+            22
+            "Hapticality in a different light. Nighttime phytography and electric energy."
+            (Just """This event takes the ‘Moving across Thresholds’ (MaT) series away from its usual site in Kreuzberg to Studio Nagelneu next to Prinzessinnengärten Neukölln. The hybrid format will continue its parallel online offering in Gathertown, carrying with it the threshold of connecting both IRL (in-real-life) and URL (online).
+Facilitated by Dr. Susanne Schmitt, the event moves along propositions for encounters with sources of "artificial" light, its nuances and its absences. We do so by taking cues from the different sources of light and shadow that the space holds: the moving light of projectors, daylight and its disappearance, the street lights next to the Studio Nagelneu, and last but not least: the UV light that is used to create and harden artificial nails and grow plants alike.
+By throwing and avoiding shadows, creating and disabling light(s) the site creates an opening to think about plants as sensorial beings who need light for nurture as well as offering a space to reflect on the nighttime ecologies and economies of Neukölln through the lens of electrified landscapes.
+Participants are welcome to bring flashlights or lamps.""")
+            "Gather-town + at Studio NagelNeu, Neukölln"
+            "Susanne Schmitt"
+            ""
+            Nothing
+            (Just <| Image 1 "https://lh6.googleusercontent.com/SOTi_rliDZaO8rDmiiN3fPnVR7gdvNpE73sIRdPKBCKqTpk46RIm5pxt6c_ulZlqGQUodDMFavkLYF0kdOE3JDC8LV0zCKxViZ9Swaq1qR_coiSI0OPzYcbX4SAhgF8PyGLhLvpSM5LXm8JHrcB3u20j2ylgNocLEbBhr8Z51M2_6t3C8qRwWsypYA")
         , Event 17 Nov 22 "Locality 6" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
         ]
     ]
