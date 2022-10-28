@@ -1,4 +1,4 @@
-module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, video1, video2, view)
+module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, tidalShifts2, tidalShiftsCollage, video1, video2, view)
 
 import Article exposing (Article, BodyTemplate)
 import Html.String exposing (..)
@@ -30,11 +30,47 @@ tidalShifts =
             [ text "Tidal Shifts"
             ]
         , p []
-            [ text "in the frame of the Perform[d]ance Mini-festival at Stralsund; 26 + 27 November" ]
-        , cacheImg "Tidal Shifts" 1 "" "https://lh4.googleusercontent.com/KhvCcb1f63tCgNBDATLEip6KTZ3LPpXwaTo99Ho4ibQ8dpXgW2tJbKyompDD4Qq5l13O1G_qF2RmZac0SVhLrWnQv--w-4lfaW66gIFN9hD0qmQjy1wKWdz3Rr7hk88_ks3PlPMlRGedRTxSbA"
+            [ text """'Moving across Thresholds - Tidal Shifts' is a mini-festival of artist labs in the coastal town of Stralsund, three hours north of Berlin.
+            """ ]
+        , p []
+            [ text """MaT will host four 3-hour labs that will take place both live at the Perform[d]ance 
+            studios in Stralsund and online in our customised Gathertown world on the 
+            26 + 27 November.""" ]
+        , p [] [ a [ Attr.href "https://performdance.de" ] [ text "performdance.de" ] ]
         ]
         |> always
         |> Article.Content (Just "Moving across Thresholds:")
+
+
+tidalShifts2 : BodyTemplate
+tidalShifts2 =
+    div
+        [ Attr.class "richtext"
+        ]
+        [ h3 [] [ text "Guest Facilitators" ]
+        , ul []
+            [ li [] [ text "Nattan Dobkin - joining in person from Tel Aviv, Israel" ]
+            , li [] [ text "Renae Shadler - joining in person from Berlin, Germany\n" ]
+            , li [] [ text "Judith Förster - joining in person from Berlin, Germany" ]
+            , li [] [ text "Martha Hincapié Charry - joining digitally" ]
+            , li [] [ text "Viviane Tabach - joining digitally " ]
+            ]
+        , p []
+            [ i [] [ text "Stay tuned in the coming weeks for registration details." ]
+            ]
+        ]
+        |> always
+        |> Article.Content Nothing
+
+
+tidalShiftsCollage : BodyTemplate
+tidalShiftsCollage =
+    div
+        []
+        [ cacheImg "Tidal Shifts" 2 "" "https://lh4.googleusercontent.com/lxmaDpkMf9wfykNBjY2LswyaxOyhd_2ccu_tzVN-CoX3DuV9-8DLLbHTAyvDbA4pG4LZr3kU4r-O552wXhGBf4GLzX6JUyulqcdakuHCuBrtJtzLOyeZ9aEYgpF2FD5CCBhOkDa2pIsdQen34rY7UDCZTNGU4lrUspLK4rQMOB9qzX5wRdw4bNkBYw"
+        ]
+        |> always
+        |> Article.Illustration
 
 
 description : BodyTemplate

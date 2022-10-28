@@ -76,8 +76,9 @@ addTemplates zone =
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Article.Toc
                 >> presetInfo "Labs" (Article.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
-                >> presetBody "Festival (Illustration)" Festival.genericIllustration
+                >> presetBody "Tidal Shifts Collage" Festival.tidalShiftsCollage
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
+                >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2
     in
     addArtistTemplates >> addLabsTemplates >> addOtherTemplates
 
@@ -174,10 +175,15 @@ initialActions timezone =
                 :: comingSoonTwoDays 26 Nov 2022 2
                 :: Modify (WithCaption { text = "Perform[d]ance Stralsund", showsDate = True })
                 :: Go Down
+                :: Name "Tidal Shifts Collage"
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
+                :: Go Right
                 :: Name "Tidal Shifts"
-                :: Go Down
-                :: Name "Festival (Illustration)"
-                :: Go Up
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                :: Go Right
+                :: Name "Tidal Shifts Facilitators"
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                :: Go Left
                 :: Go Up
                 :: Go Right
                 :: Name "Radialsystem"
