@@ -115,3 +115,12 @@ _Dataflows:_
 - Browser authorizes the database
 - Elm reads and writes histories per item, and database persists these
 - Config is volatile (not persisted)
+
+
+# Libraries
+
+- [https://github.com/ThatGuySam/vumbnail](vumbnail) creates and caches Vimeo thumbnais (ISC or MIT license)
+- Firebase stores the data that can be edited through the CMS, and distributes it
+- [https://github.com/neilj/Squire](Squire) is a simple Html WYSIWYG editor (MIT license)
+
+Thank you to the creators of these libraries, as well as to the lovely Elm community!
