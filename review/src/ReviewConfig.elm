@@ -30,6 +30,10 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
+import NoUnsortedCases
+import NoUnsortedLetDeclarations
+import NoUnsortedRecords
+import NoUnsortedTopLevelDeclarations
 import Review.Rule as Rule exposing (Rule)
 import Simplify
 
@@ -41,7 +45,6 @@ config =
     , NoDebug.TodoOrToString.rule
         |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoExposingEverything.rule
-    --, NoImportingEverything.rule []
     , NoMissingTypeAnnotation.rule
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
@@ -56,4 +59,26 @@ config =
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
     , Simplify.rule Simplify.defaults
+    -- Enforce ordering of case patterns
+    , NoUnsortedCases.rule
+        (NoUnsortedCases.defaults
+            |> NoUnsortedCases.sortListPatternsByLength
+        )
+
+    -- Enforce ordering of let declarations
+    , NoUnsortedLetDeclarations.rule
+        (NoUnsortedLetDeclarations.sortLetDeclarations
+            |> NoUnsortedLetDeclarations.usedInExpressionFirst
+            |> NoUnsortedLetDeclarations.alphabetically
+            |> NoUnsortedLetDeclarations.glueHelpersAfter
+        )
+
+    -- Enforce ordering of record fields
+    , NoUnsortedRecords.rule
+        (NoUnsortedRecords.defaults
+            |> NoUnsortedRecords.treatAllSubrecordsAsCanonical
+            -- This is only on to help me find bugs
+            |> NoUnsortedRecords.typecheckAllRecords
+            |> NoUnsortedRecords.reportAmbiguousRecordsWithoutFix
+        )
     ]
