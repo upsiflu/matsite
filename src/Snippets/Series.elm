@@ -256,7 +256,7 @@ Caring gestures are tested with voice and intention to disrupt anthropocentric t
             "Jol Thoms"
             ""
             Nothing
-            (Just <| Image 1 "https://lh5.googleusercontent.com/ZMVeL8WwAEprAcX5BYa3Wui1QufIzJdSZzkRXA9wJDXwIzEp7UsJWD1MSIUg08B2MOORke5_48CgMysfIfQUpN0Bo8Iz_a07GZv-tq45znAu-oFsKVP4QFmlt7JfWAlNp5c6HwFH4f1h7jkmgnzbq-_bicX5kzWVSLsCCVmf6OCl-hXbY6j_oVOUzw")
+            (Just <| Image 2 "https://lh5.googleusercontent.com/ZMVeL8WwAEprAcX5BYa3Wui1QufIzJdSZzkRXA9wJDXwIzEp7UsJWD1MSIUg08B2MOORke5_48CgMysfIfQUpN0Bo8Iz_a07GZv-tq45znAu-oFsKVP4QFmlt7JfWAlNp5c6HwFH4f1h7jkmgnzbq-_bicX5kzWVSLsCCVmf6OCl-hXbY6j_oVOUzw")
         , Event 3
             Nov
             22
@@ -269,8 +269,18 @@ Participants are welcome to bring flashlights or lamps.""")
             "Susanne Schmitt"
             ""
             Nothing
-            (Just <| Image 1 "https://lh6.googleusercontent.com/SOTi_rliDZaO8rDmiiN3fPnVR7gdvNpE73sIRdPKBCKqTpk46RIm5pxt6c_ulZlqGQUodDMFavkLYF0kdOE3JDC8LV0zCKxViZ9Swaq1qR_coiSI0OPzYcbX4SAhgF8PyGLhLvpSM5LXm8JHrcB3u20j2ylgNocLEbBhr8Z51M2_6t3C8qRwWsypYA")
-        , Event 17 Nov 22 "Locality 6" Nothing "Gather-town + at bUm, Kreuzberg" "t.b.a." "t.b.a." Nothing (Just <| Image 1 "https://lh5.googleusercontent.com/aSyi8Am6R6n4wAKb6D2mvZeg5Od1U8azT-XvKIgVJk7qJISCnbKFSpaUjPNu2m2UPs19yPXVpXBwMDGOuo7GqmB4ChiTORDrC8B6cuxU48XVQfmRImbOMCQsDrV-iUtl0vtd8EPilMfw8cSZcYXm6xZ0h6KQqh44XqkSn0Zp444eCLFKov2-tgWGLw")
+            (Just <| Image 2 "https://lh6.googleusercontent.com/SOTi_rliDZaO8rDmiiN3fPnVR7gdvNpE73sIRdPKBCKqTpk46RIm5pxt6c_ulZlqGQUodDMFavkLYF0kdOE3JDC8LV0zCKxViZ9Swaq1qR_coiSI0OPzYcbX4SAhgF8PyGLhLvpSM5LXm8JHrcB3u20j2ylgNocLEbBhr8Z51M2_6t3C8qRwWsypYA")
+        , Event 17
+            Nov
+            22
+            "Scalar Sensorium"
+            (Just """Environmental, geological and biological acoustics are becoming an increasingly important sensing method among scientific fields investigating climate change across vast scales. This ‘sonic turn’ of the climate sciences is not predicated on sound as a metaphor describing the changing conditions of critical zones — it is an acknowledgement of the very material planes of sound embedded within nested climate crises. From subtle alterations in the registers of bird songs, to colossal shifts in the sonic environments of the deep sea, sound provides a wealth of registers through which our tactile and/or cochlear ears can sense fundamental material changes.
+Facilitated by Samuel Hertz, a Berlin-based sound artist and researcher, this gathering centres on the field of bioacoustics, wherein spatio-temporal dimensions of ecological changes are registered through durational recording methods. Field methods used for scientific research are translated into multi-sensory techniques, as experiments with hearing/feeling, mapping, and embodying explore the types of knowledge that sound lends to understanding more-than-human scales of a planet in crisis.""")
+            "Gather-town + at bUm, Kreuzberg"
+            "Samuel Hertz"
+            ""
+            Nothing
+            (Just <| Image 2 "https://lh3.googleusercontent.com/EvoYRdLoEIsdTfCjs-Bsi-bl2FikgeKQRPR_cNMiE1ZNBzi-qCcmrBsqiJhlftfODWTUG9WnQcQbroFIwUgaLatK2lV_VZAjssyMZiyyCqSGWZzmTaQyENdwLcMYmTQCUGN890DY6Kh0Py4Rq1CRGhS7XZPexniRntzOM7uhkH69JNXvSWooYkEy5tqR7A")
         ]
     ]
 

@@ -71,7 +71,7 @@ artists =
       , wide = False
       }
     , { name = "Ally Bisshop"
-      , bio = \dir -> Html.p [] [ Html.text "Ally Bisshop is an Australian artist, writer, and researcher living in Berlin. She draws on methods and concepts across multiple disciplines to think critically and creatively about the material, affective, ethical, and relational thresholds between human and nonhuman. In 2018 Ally completed a Ph.D. in visual arts (UNSW Sydney's National Institute for Experimental Arts) with an exploration of more-than-human techniques in processual artistic praxis. Previously, she studied art at the UdK Berlin through Olafur Eliasson’s Institut für Räumexperimente, and microbiology (B.Sc. Hons 1) at UQ Brisbane. Since 2017 she has been an associate researcher in Berlin-based artist Tomás Saraceno’s transdisciplinary interspecies Arachnophilia project.", Html.a [ class "weblink", href "https://allybisshop.com/" ] [ Html.text "https://allybisshop.com/" ], Html.i [] [ Html.text "Link to Fatigue as creative proposition" ] ]
+      , bio = \dir -> Html.p [] [ Html.text "is an Australian artist, writer, and researcher living in Berlin. She draws on methods and concepts across multiple disciplines to think critically and creatively about the material, affective, ethical, and relational thresholds between human and nonhuman. In 2018 Ally completed a Ph.D. in visual arts (UNSW Sydney's National Institute for Experimental Arts) with an exploration of more-than-human techniques in processual artistic praxis. Previously, she studied art at the UdK Berlin through Olafur Eliasson’s Institut für Räumexperimente, and microbiology (B.Sc. Hons 1) at UQ Brisbane. Since 2017 she has been an associate researcher in Berlin-based artist Tomás Saraceno’s transdisciplinary interspecies Arachnophilia project.", Html.a [ class "weblink", href "https://allybisshop.com/" ] [ Html.text "https://allybisshop.com/" ], Html.i [] [ Html.text "Link to Fatigue as creative proposition" ] ]
       , photo = "https://lh6.googleusercontent.com/kJjIIvJeffNdqTIFCGaANwI6xY85zqTQTJf4XdJ4PWikurkXsOlkZBehEUD7Zfi1V70e7zYOiCA9Rt3fS0L5PNEHsCOU4LFrpRPNSwiYlKY89DrqXHWWUfE967k9GIYHVp7YxNKx2Nycggx_jw"
       , wide = True
       }
@@ -210,7 +210,7 @@ artists =
       , bio =
             \dir ->
                 Html.p []
-                    [ Html.text " is a choreographer, dancer, stage and costume designer living in Berlin. Her work is situated between visual art and dance. She combines the performative with the somatic and works experientially with bodies and their political, sensual and visual dimensions. The interaction of body and material is at the center of her research. In collaboration with various choreographers, visual artists and dancers, she continuously gives new forms to the interaction of bodies and materials in her work. "
+                    [ Html.text "is a choreographer, dancer, stage and costume designer living in Berlin. Her work is situated between visual art and dance. She combines the performative with the somatic and works experientially with bodies and their political, sensual and visual dimensions. The interaction of body and material is at the center of her research. In collaboration with various choreographers, visual artists and dancers, she continuously gives new forms to the interaction of bodies and materials in her work. "
                     , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
                     , weblink "judithfoerster.de" "www.judithfoerster.de"
                     , Html.h4 [] [ Html.text "Creative Companion:" ]
@@ -291,6 +291,17 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
                     , weblink "jolthoms.com" "https://jolthoms.com/"
                     ]
       , photo = "https://lh4.googleusercontent.com/uCGilVHlSpWgj_iAls-JWBJB4sBcOdz40bkYfyzUSs_OQFWabGftO6YWq-x6L00-kTyszU009lxHsYfsVQdkcHS3QBi538Ah07bCxy2CE2VFqCubG8rtIhuO_HFYlJz-qXyCBU2-k3yg5DFrO1isT1GUq1oZjHJuQk_N7aY9BS0htaVkh2A4vAFBfQ"
+      , wide = False
+      }
+    , { name = "Samuel Hertz"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is a Berlin-based sound artist and researcher working at intersections of Earth-based sound, sonic sensualities, and climate change. Having studied composition with experimental music pioneers Pauline Oliveros, Fred Frith, Maggi Payne, and Zeena Parkins at the Center for Contemporary Music at Mills College, Hertz works fluidly between the worlds of composed music for ensembles, electronic music and installation, performance, and film. His work has been seen at venues such as Fylkingen (SE), Ars Electronica Festival (AT), Sophiensaele (DE), the National Science and Media Museum (UK), Opera North (UK), and the Macerata Opera Festival (IT) among many others. Hertz’s writings on the relationships between sound and climate can be found in interdisciplinary journals and platforms, as well as two recent book chapters. Hertz is currently a AHRC/Techne-funded PhD candidate at Royal Holloway, University of London (Centre for GeoHumanities), researching sound-sensing networks of climate change at the scales of atmospheric, geologic, and bioacoustic conservation."
+                    , weblink "samhertzsound.com" "www.samhertzsound.com"
+                    , event dir "Scalar Sensorium" "https://www.facebook.com/events/1241796136377315"
+                    ]
+      , photo = "https://lh3.googleusercontent.com/MecYX84rnf6hfsKvVM_kvr31KsBbjuxEQiGSoElBlQp6zFFfA7HJ_EGYrBbPwynqmfvW82wUJFg1Por5WBfa0l4tS_hQhih6dLZohpWsxJDbKDPysM9d9JAt5F0-q_8nbzb89Kwlhc1YHISDr7xRsRBRD2hILwsb58ViOiA1YLXC3mZC9Qe4Dm-m-Ns6xg"
       , wide = False
       }
     ]
