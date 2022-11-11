@@ -37,7 +37,7 @@ tidalShifts =
             studios in Stralsund and online in our customised Gathertown world on the 
             26 + 27 November.""" ]
         , p [] [ a [ Attr.href "https://performdance.de" ] [ text "performdance.de" ] ]
-        , p [] [ text "Registration is free and you can register for one or more events by emailing your name and the labs you would like to join to: ticket@performdance.de" ]
+        , p [] [ strong [] [ text "Registration" ], text " is free and you can register for one or more events by emailing your name and the labs you would like to join to: ", pre [] [ text "ticket@performdance.de" ] ]
         ]
         |> always
         |> Article.Content (Just "Moving across Thresholds:")
@@ -55,9 +55,6 @@ tidalShifts2 =
             , li [] [ text "Judith Förster - joining in person from Berlin, Germany" ]
             , li [] [ text "Martha Hincapié Charry - joining digitally" ]
             , li [] [ text "Viviane Tabach - joining digitally " ]
-            ]
-        , p []
-            [ i [] [ text "Stay tuned in the coming weeks for registration details." ]
             ]
         ]
         |> always
