@@ -35,6 +35,19 @@ artists =
                 , Html.a [ class "weblink", target "_blank", href fblink ] [ Html.text " [fb event page]" ]
                 ]
 
+        festivalEvent dir descr =
+            Directory.getClosestBy (String.length descr // 4) descr dir
+                |> Maybe.map
+                    (\uuid -> Html.a [ href uuid ] [ Html.text "☛ Festival" ])
+                |> Maybe.map
+                    (\closeEvent ->
+                        Html.fieldset []
+                            [ Html.legend [] [ Html.text (descr ++ ":") ]
+                            , closeEvent
+                            ]
+                    )
+                |> Maybe.withDefault Snippet.none
+
         festival descr location outlink =
             Html.a [ class "weblink", target "_blank", href outlink ] [ Html.text (descr ++ " [" ++ location ++ "]") ]
 
@@ -50,32 +63,32 @@ artists =
         --Directory.maybeLink descr dir
         --Html.a [ class "internal", href ("/" ++ Layout.sanitise descr) ] [ Html.text (" ☛" ++ descr ++ " ") ]
     in
-    [ { name = "Anna Mayberry"
+    [ { name = "Anna\u{00A0}Mayberry"
       , bio = \dir -> Html.p [] [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” ", Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(www.bauereignis.de)" ], Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life." ]
       , photo = "https://lh3.googleusercontent.com/x80L4cgraRGQsq0juS4izJwhwAMsvKE-Hu3sLXk6UsnjKf3mz-evo7J4espwIk1zep5BEZ-oxobH099Msoi68N4-W9IqyObHlpcYqh759JRNGReInZY50arDy6QL3jvT5-91xHFugugv7hNKog"
       , wide = False
       }
-    , { name = "Balam Kenter"
+    , { name = "Balam\u{00A0}Kenter"
       , bio = \dir -> Html.p [] [ Html.text "Balam is three cats in a trench coat who intermittently passes for a PhD student at the Centre for Interdisciplinary Studies in Society and Culture at Concordia University, Tio’Tia:Ke. Balam has always been interested in bodies, especially non-normative ones, especially at the point of encounter with oppressive systems. Their current academic work is situated at the intersections of Political Philosophy, Critical Disability Studies, and Critical Animal Studies. Having explored the relationship between exploitation and oppression through disability at Boğaziçi University’s Philosophy MA program, they are now focusing on the political, historical, and material entanglements of ableism and anthropocentrism under late capitalism. When they are not studying in Montreal, Balam lives with two humans, three cats, and a dog in Istanbul. Unless they are on a strict deadline, Balam can often be found (or lost) researching tangential topics, watching horror films, and doodling. ", Html.a [ class "weblink", target "_blank", href "https://balamkenter.com/" ] [ text "  https://balamkenter.com/" ] ]
       , photo = "https://lh3.googleusercontent.com/am3kGTLYql5xaKoh-A9f3W2IR7eUws_FZQeLJ1CuzAvaPg06aFIDWpq2VaAzfiw8KgMNmrbfhqKUgHC92CcyOdH9rZnXrpk7nLVpaCQSGHZwvcxbymxgDSzd-mUojWoaC0tfMGcwVMkfRE3eHA"
       , wide = False
       }
-    , { name = "Julia Grillmayr"
+    , { name = "Julia\u{00A0}Grillmayr"
       , bio = \dir -> Html.p [] [ Html.text "Julia Grillmayr is a Vienna- and Linz-based cultural studies scholar, journalist, radio maker and science communicator. She holds a PhD in Comparative Literature from the University of Vienna. At the University of Art and Design Linz, she explored the relationship between contemporary SF literature and futurological scenarios. Her research interests are speculative (eco)feminist philosophy and cyberpunk. She is creator of the radio broadcast Superscience Me on Radio Orange, she works for the public radio channel Ö1, and podcasts for the Austrian Academy of Science. The rest of the time, she spends in muddy danubian wetlands and in tap shoes.", Html.a [ class "weblink", target "_blank", href "https://juliagrillmayr.at/" ] [ Html.text "https://juliagrillmayr.at/" ] ]
       , photo = "https://lh4.googleusercontent.com/7LLFpU2L0El8Dg9mRS6zZb4kG1bE9-PyAfrcuZ_cBoOZ3AytTW-7LxX0srwjh44wo6et2BYjSBnTTSigvMr4XZPujU_UOEX4r7f0Owgm1UE7VIgCwYTWVOaKPvm8B6kLx2BlWZ_chtYj03vnvA"
       , wide = False
       }
-    , { name = "Rivca Rubin"
+    , { name = "Rivca\u{00A0}Rubin"
       , bio = \dir -> Html.p [] [ Html.text "Rivca is described as a catalyst of fresh liberating approaches to shifting oppressive systems and co-creating those beneficial to all people with consciously considered communicating at the heart of all relating and egalitarian engaging. Rivca works with leadership, artists and activists in the cultural, educational, business and non-governmental sectors in Europe and worldwide, such as the Clore Leadership Programme, Unesco Literature Fund, BBC Academy, BFI and Regional Screen Archives, Manchester Museum, Manchester and Whitworth Art Galleries, Invisible Dust, Global Grooves Future Leaders, VANZA Leadership Programme, All Out Africa, SEEDCommunity South Africa, PAP, TAK and HZT Berlin, HfMDK Frankfurt, Akademie for Performing Arts Producer, Germany. Rivca presents at international conferences and networks, is a co-initiator of GrandReUnion, Tender Hotel, and joint director of Islington Mill, Salford, Manchester.", Html.a [ class "weblink", target "_blank", href "http://www.rivcarubin.com" ] [ Html.text "http://www.rivcarubin.com" ], Html.a [ class "weblink", target "_blank", href "http://www.upwording.com" ] [ Html.text "http://www.upwording.com" ] ]
       , photo = "https://lh4.googleusercontent.com/1R5eaNVfVJytf892zZGbR82TJTUv30_9vHmHu4DXqa4G4ZXBJ_uFQF_Puf5Mbl5aa9VjttHLbXflARqOYz7NY_euQrttTw5tkYh6UTfzDM1a9ckl_FVwmBZJ16JTdG6sszSUtTIGcE_y3OlXmg"
       , wide = False
       }
-    , { name = "Ally Bisshop"
+    , { name = "Ally\u{00A0}Bisshop"
       , bio = \dir -> Html.p [] [ Html.text "is an Australian artist, writer, and researcher living in Berlin. She draws on methods and concepts across multiple disciplines to think critically and creatively about the material, affective, ethical, and relational thresholds between human and nonhuman. In 2018 Ally completed a Ph.D. in visual arts (UNSW Sydney's National Institute for Experimental Arts) with an exploration of more-than-human techniques in processual artistic praxis. Previously, she studied art at the UdK Berlin through Olafur Eliasson’s Institut für Räumexperimente, and microbiology (B.Sc. Hons 1) at UQ Brisbane. Since 2017 she has been an associate researcher in Berlin-based artist Tomás Saraceno’s transdisciplinary interspecies Arachnophilia project.", Html.a [ class "weblink", href "https://allybisshop.com/" ] [ Html.text "https://allybisshop.com/" ], Html.i [] [ Html.text "Link to Fatigue as creative proposition" ] ]
       , photo = "https://lh6.googleusercontent.com/kJjIIvJeffNdqTIFCGaANwI6xY85zqTQTJf4XdJ4PWikurkXsOlkZBehEUD7Zfi1V70e7zYOiCA9Rt3fS0L5PNEHsCOU4LFrpRPNSwiYlKY89DrqXHWWUfE967k9GIYHVp7YxNKx2Nycggx_jw"
       , wide = True
       }
-    , { name = "Natal Igor Dobkin"
+    , { name = "Nattan Dobkin"
       , bio =
             \dir ->
                 Html.p []
@@ -84,7 +97,7 @@ artists =
       , photo = "https://lh3.googleusercontent.com/qqY_NjTLxinp1hkfnhYT5Dh6mEldDluVUssrW2mAhxD-HnRIyp2t5o-J4uiKU1hmwZw1hPJwN0cjNiOv3uPCtnCfbtdzmyRSTdRmhBgnuty4tgIZzkWEQf33iTHlMQQpo2oLTKaWysSNmYiW8Q"
       , wide = False
       }
-    , { name = "Erin Manning"
+    , { name = "Erin\u{00A0}Manning"
       , bio =
             \dir ->
                 Html.p []
@@ -95,7 +108,7 @@ artists =
       , photo = "https://lh5.googleusercontent.com/IxDNp_X7e5mCW7hFWi7JmB3YkfUxPf41sjREB-Yc4yruUeK5zWA3Jey6BhvUpix6MQxnXlfu68aEk-u2vwfih_zVcau2LnBhba4n24W4s4AU6xN32Vn7pk-XD6KO0D2FSATZ47-d0vDhvSl-8Q"
       , wide = True
       }
-    , { name = "Mmakgosi Kgabi"
+    , { name = "Mmakgosi\u{00A0}Kgabi"
       , bio =
             \dir ->
                 Html.p []
@@ -106,7 +119,7 @@ artists =
       , photo = "https://lh5.googleusercontent.com/ZJxm0WNN737-p-pHXWhKauYm-HwDyY6TFIx6cZfi1nHTiyglebUM_lipe8IKfC6EuDWCgruc2_yCmBeVSjAtKy25UUZVOxCiqdEd0PHYUXbWTvGUNgYyWJOhUP_iQM4mT8XaqnvaI6APhfUFGw"
       , wide = False
       }
-    , { name = "Sindri Runudde "
+    , { name = "Sindri\u{00A0}Runudde"
       , bio =
             \dir ->
                 Html.p []
@@ -116,7 +129,7 @@ artists =
       , photo = "https://lh3.googleusercontent.com/FsqQn9QBmI5LkcJZRFmNFtzJvLFhnh_1h0kuSTAFsjhSrZOola6jafd41GFLcywIoxjnSlsihjXzZkIa9jH-4aIR5bWEgKYSt2Jj_wYTYZrprbYhDbqGE_I3QZlsfLPWGGcqXk60DEt57UtRJQ"
       , wide = False
       }
-    , { name = "Susanne Schmitt "
+    , { name = "Susanne\u{00A0}Schmitt"
       , bio =
             \dir ->
                 Html.p []
@@ -130,7 +143,7 @@ artists =
       , photo = "https://lh6.googleusercontent.com/d0BMb7tR4_4y7i92TshMEyTY2R5KTQdGWgya1CBKqjYk8IRcwWq_w7t80zIyv0YCJKCc0KwNW5_UurHosESzxPIZOkqAVzsbWXzpxPfVvCJbJYk_oXKY5XknNlh-viN0P6J0Slp6Mg_kZkKqlg"
       , wide = False
       }
-    , { name = "Cinzi Schincariol  "
+    , { name = "Cinzi\u{00A0}Schincariol"
       , bio =
             \dir ->
                 Html.p []
@@ -141,7 +154,7 @@ artists =
       , photo = "https://lh3.googleusercontent.com/Yv5X5xwlpuchMDoVvolztXrzeT7a2RV5zS78yksnyH07uh4DZX6WKZuWFy-9IIjoDLEchFT8igkW-p4o-O7mRasuTb_htff5nnZgw7T4Z2zM1qlMknRUoFnKmG-KVi1tdzm95trFV2FPwJEclw"
       , wide = True
       }
-    , { name = "Maikon K "
+    , { name = "Maikon\u{00A0}K"
       , bio =
             \dir ->
                 Html.p []
@@ -152,7 +165,7 @@ artists =
       , photo = "https://lh6.googleusercontent.com/cRFXa4T1BRErSN7tF-brmEQtcvhUUtqKLaojhjxJoQ2f20Xv5w1JVp3daSgmalq_E03Bm3MZHOLTXIPcLxyO40y-38GiuoMbyUrDCvYJM8wEW1Tb2qHk5cbpnwU-tpkN78mka1RwCVEUSypzfw"
       , wide = False
       }
-    , { name = "Siegmar Zacharias"
+    , { name = "Siegmar\u{00A0}Zacharias"
       , bio =
             \dir ->
                 Html.p []
@@ -174,7 +187,7 @@ artists =
       , photo = "https://lh4.googleusercontent.com/w2DGtzW7bmuSQ0erzRGI67uXRMPLiaPbUFiMW57Lh7jvRlPe5OY2G5juI9k597-tsegUMN3jgTnLR4ZsYgKuaAIkrnyfSjdW1hhTVutfmXZ2iI782ZDisqdJdJR48k4KhA4o3KmAc2A2C5HLcQ"
       , wide = True
       }
-    , { name = "Roland Walter "
+    , { name = "Roland\u{00A0}Walter"
       , bio =
             \dir ->
                 Html.p []
@@ -185,7 +198,7 @@ artists =
       , photo = "https://lh4.googleusercontent.com/5P6VEeTon9r50xjK53zEQWANbfFwvZStaJkaQ7HKnJTunweP-4ehzY4jfPD-jjJQlzPmI7JaZaeMthIqRewLljBpSZn364VtBh_G08UDWUdxbcXUE4QkU0oToUDf1H2_gka65lIfLaiRNwL7VQ"
       , wide = False
       }
-    , { name = "Isack Abeneko"
+    , { name = "Isack\u{00A0}Abeneko"
       , bio =
             \dir ->
                 Html.p []
@@ -196,7 +209,7 @@ artists =
       , photo = "https://lh3.googleusercontent.com/vEYuRZmFzFtQfUJO748pxL7mHMJ6uf5uAU5RpUR9WJKeLSRdvfGe4WXPWy2QR-5z7vQNUWUTBCpwoBLcK5SUHEKdwGfWoctKGoMLKbx9hE5FaJCthRmD_eD_Kevs1dIO6q7fWYdc6HJzSga-ig"
       , wide = False
       }
-    , { name = "Giovana de Souza Possignolo"
+    , { name = "Giovana\u{00A0}de\u{00A0}Souza\u{00A0}Possignolo"
       , bio =
             \dir ->
                 Html.p []
@@ -206,7 +219,7 @@ artists =
       , photo = "https://lh6.googleusercontent.com/zoEGn1A_OOG60YJ41KbZ1ETcAYxWHi3jODBdAcJPVhjErtMrxhCoHYkPKvLXkgOU6vJ5ByoXJpVTBkbw4UvBjDvqGwbL-loWktgFqJKR09hlfvsxwUI7NnSAPqFjam5KSbALB0OswKiz6shbyg"
       , wide = False
       }
-    , { name = "Judith Förster"
+    , { name = "Judith\u{00A0}Förster"
       , bio =
             \dir ->
                 Html.p []
@@ -221,7 +234,7 @@ artists =
       , photo = "https://lh6.googleusercontent.com/VZJG7c7-aTYhn2JuuXzbhSWePR1x3KRJoSllnV2IyRp-TpCVD22bB1Lp_pSiPJ5wvrp0aoFU4SPAtid-QN1_Ei7VEoLKVufrlzqL4TjfnARJBGmWLi3khA1C4BYNnbdFc1OPRdPXBR-ce-RG7g"
       , wide = False
       }
-    , { name = "Renae Shadler"
+    , { name = "Renae\u{00A0}Shadler"
       , bio =
             \dir ->
                 Html.p []
@@ -238,7 +251,7 @@ artists =
       , photo = "https://lh5.googleusercontent.com/jLwyczx8qR-MbNdBfbSYDDk4c-F7fVacKqhefsgVLqdtFIxhH0CEhyFLAMc56XxBQB29zLEd3Ofp0PEhr6H4EpZvItB1vQJ4tH59lo4WcNxKHTWwmydw-nPE1k-DLdfGF11G7wfYkBZih-YlPQ"
       , wide = False
       }
-    , { name = "Vera Shchelkina"
+    , { name = "Vera\u{00A0}Shchelkina"
       , bio =
             \dir ->
                 Html.p []
@@ -251,7 +264,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh6.googleusercontent.com/wZH-jLExTmRjdoGwwEpKsJxj2Hg0mXgXM5XU_0QdJ-jTUnDIr-Svru8UJ94-BwO8h_9QiRneDJFp1v4LBE1H9hrxdL4AOrlUycn9TNJ6R58B4In2W7QgxUDkMA-DWJECghiYs1gnNOMtu87LKLZwWqpo5n-7ChoHMFbfIKSMZ2ns9ATSLoQ9gxhycg"
       , wide = True
       }
-    , { name = "Ella von der Haide"
+    , { name = "Ella\u{00A0}von\u{00A0}der\u{00A0}Haide"
       , bio =
             \dir ->
                 Html.p []
@@ -262,7 +275,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh4.googleusercontent.com/z_3YcxRYXSJ5LaRImksvQnOHbXpXm74eHJSg9IxBbld0UCHIvcgfjVdALvjMQMukhpJf-tlUPi5SNYaspAbN1wWZw3ArK31VhyYNj8sW_Wd2gKarhNkMthTI3w8tjXAcTsgvxx6WLItYIJVQp15pRyepmMpnoPpcoP0invyHPVmDrS3zjT0SKB13OA"
       , wide = True
       }
-    , { name = "Robert Ssempijja"
+    , { name = "Robert\u{00A0}Ssempijja"
       , bio =
             \dir ->
                 Html.p []
@@ -273,7 +286,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh4.googleusercontent.com/PBMk2ySDAZA4m8EAR52f_0Te9Vj0WLiG-8HvMnE5ObecQwXoLge7arrZXNRHGwlTBOanyVCY5-RaakKynfxbKAIDq5oG2aPj9Lz6bv9Ff_TWiKVwsrar-mfhdm1FkND5peS-CqDOyzdF-bz8WnEfJb4mVPHo438UI3EwRiRBseH6omCam_uUWSwVaw"
       , wide = False
       }
-    , { name = "The Quilombaque Cultural Community"
+    , { name = "The\u{00A0}Quilombaque Cultural Community"
       , bio =
             \dir ->
                 Html.p []
@@ -283,7 +296,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh6.googleusercontent.com/6dHBFr_R1mYYDDw1s9LA-jZBz0YjN81lvuQiXp5w_ANbbgrUYwlMyI7uSFx_ML7JHbHcd8-sgcrPBPTPuM4RP3-GuNXVhuY2OtlxdaAivHIQnpQDzQjnx7FSmD8Z3AiIVSUp8RlBJnGvnfeO7ouUz6JH7ynvsfSUcXMHCJF6E6_gdHO7m7NtFmXsDQ"
       , wide = True
       }
-    , { name = "Jol Thoms"
+    , { name = "Jol\u{00A0}Thoms"
       , bio =
             \dir ->
                 Html.p []
@@ -293,7 +306,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh4.googleusercontent.com/uCGilVHlSpWgj_iAls-JWBJB4sBcOdz40bkYfyzUSs_OQFWabGftO6YWq-x6L00-kTyszU009lxHsYfsVQdkcHS3QBi538Ah07bCxy2CE2VFqCubG8rtIhuO_HFYlJz-qXyCBU2-k3yg5DFrO1isT1GUq1oZjHJuQk_N7aY9BS0htaVkh2A4vAFBfQ"
       , wide = False
       }
-    , { name = "Samuel Hertz"
+    , { name = "Samuel\u{00A0}Hertz"
       , bio =
             \dir ->
                 Html.p []
@@ -304,8 +317,35 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
       , photo = "https://lh3.googleusercontent.com/MecYX84rnf6hfsKvVM_kvr31KsBbjuxEQiGSoElBlQp6zFFfA7HJ_EGYrBbPwynqmfvW82wUJFg1Por5WBfa0l4tS_hQhih6dLZohpWsxJDbKDPysM9d9JAt5F0-q_8nbzb89Kwlhc1YHISDr7xRsRBRD2hILwsb58ViOiA1YLXC3mZC9Qe4Dm-m-Ns6xg"
       , wide = False
       }
+    , { name = "Viviane\u{00A0}Tabach"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is a curator and art educator. Her research focuses on educational methods within curatorial and artistic practices. She is both a Masters student in Art in Context at UdK, Berlin, and in Cultures of the Curatorial at HGB, Leipzig. She holds a postgraduate degree in Art: Criticism and Curatorship from Pontifícia Universidade Católica de São Paulo, and a Teaching Practice and BA of Visual Arts degrees from Unesp, São Paulo. She has worked for institutions such as the Pinacoteca Museum in São Paulo, Sesc Pompeia, Sao Paulo Biennial Foundation, Berlin Biennale, among others. She co-founded and co-directs the art space Casa Aberta, in São Paulo, where she holds hybrid projects that weave together arts, dance and music. And she runs the art space Co-Making Matters at Haus der Statistik, Berlin."
+                    , festivalEvent dir "Tidal Shifts"
+                    ]
+      , photo = "https://lh4.googleusercontent.com/pGTJzzuK2e3kaHiu7d6Y9vIBMJODvOWWdcujTDJPWcmX3DY3sqyEXB8q9ZUU63oi3qyif56oSuzxbszNJztqbJPaTvbqgqpB2cT0Ha-41WzNvmzlcYFy9bKHSHhXvV0-mhxT2hK1qa10EE0sPQLtXfSH4b-OH3-QxRniqp9Pv0UryUXvOzI6WTqLN3oCCQ"
+      , wide = True
+      }
+    , { name = "Martha Hincapie\u{00A0}Charry"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text """is a BIPoC Colombian artist: choreographer, performer, decolonial curator and researcher based in Berlin.
+
+Martha studied dance in her home country and completed her dance theatre & solo dance studies at the Folkwang-University Essen under the direction of Pina Bausch and her MA Art in Context at the University of the Arts, UdK Berlin. In 2019 she was Pina Bausch Fellowship recipient.
+
+Her own creations have been invited to festivals and theatres in Europe, Asia and The Americas. She is artistic director of Plataforma/SurReal Berlin Festival. In her curatorial practice she reflects on (de)coloniality processes and forms of survival that artists have experienced in their migration to Europe or as part of local utopias. Since 2021 she is associate curator of the ENCOUNTERS programme at Radialsystem.
+
+She has been opening up a dialogue space between continents through a transdisciplinary reflection of the human body, where the topics of climate chaos, the relationship between art, humans/more-than-humans, and the visible with the invisible world, find a platform. """
+                    , weblink "martha-hincapie-charry.com" "http://martha-hincapie-charry.com"
+                    , festivalEvent dir "Tidal Shifts"
+                    ]
+      , photo = "https://lh3.googleusercontent.com/CRNg6FseXSkpjgv0bZFY6FB5V2YRbzzsDIe0DXXgN9W4SCmSHuSxcRtfiflvcB5vI0TZW1ZpgFjVOhzbkxBTLLmuNgO7ALcIhONXu1aY2O9RT7_acXJfM4fjxTnCiZ9ixh9rTnbIUMEQpztz41_qA-KxuvarPtlI27Wm4zg2gLwU2PKcdXjsevu6pxjiZg"
+      , wide = True
+      }
     ]
-        |> List.sortBy (.name >> String.split " " >> List.last >> Maybe.withDefault "z")
+        |> List.sortBy (.name >> String.split "\u{00A0}" >> List.last >> Maybe.withDefault "Y")
 
 
 view : Artist -> Article.BodyTemplate

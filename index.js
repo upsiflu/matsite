@@ -1,8 +1,9 @@
 import { Elm } from "./src/Main.elm";
-import {} from "./append-log";
-import {} from "./closest-aisle";
-import {} from "./vimeo-video";
-import {} from "./copy-text";
+import { } from "./append-log";
+import { } from "./closest-aisle";
+import { } from "./see-me";
+import { } from "./vimeo-video";
+import { } from "./copy-text";
 
 history.scrollRestoration = "manual";
 
