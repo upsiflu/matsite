@@ -46,6 +46,7 @@ that manages its own data and can be queried but is stateless
 -}
 
 import Codec exposing (Codec, string)
+import Controls
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (onInput)
@@ -136,7 +137,7 @@ merge next prev =
         ( ComingSoon _, f ) ->
             f
 
-        ( f, ComingSoon _) ->
+        ( f, ComingSoon _ ) ->
             f
 
 
@@ -167,7 +168,7 @@ stringToFabType str =
             Subscribe { link = "https://" } |> Just
 
         "(Soon)" ->
-            ComingSoon {occurrence = [] } |> Just
+            ComingSoon { occurrence = [] } |> Just
 
         _ ->
             Nothing
@@ -183,13 +184,14 @@ edit { zone, save } maybeFab =
                     []
 
                 Just (Register r) ->
-                    [ Ui.inputLine "link" "Weblink (https://...)" r.link (\l -> Register { r | link = l } |> Just |> save)
+                    [ Controls.inputLine "link" "Weblink (https://...)" r.link (\l -> Register { r | link = l } |> Just |> save)
                     , Occurrence.edit { zone = zone, save = \o -> Register { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
 
                 Just (Subscribe { link }) ->
-                    [ Ui.inputLine "link" "Weblink (https://...)" link (\l -> Subscribe { link = l } |> Just |> save )
+                    [ Controls.inputLine "link" "Weblink (https://...)" link (\l -> Subscribe { link = l } |> Just |> save)
                     ]
+
                 Just (ComingSoon r) ->
                     [ Occurrence.edit { zone = zone, save = \o -> ComingSoon { r | occurrence = o } |> Just |> save } r.occurrence
                     ]
@@ -198,15 +200,14 @@ edit { zone, save } maybeFab =
     ]
         |> Zipper.create
             ( "Subscribe", stringToFabType "Subscribe" |> save )
-            
-            [( "(Soon)", stringToFabType "(Soon)" |> save )]
+            [ ( "(Soon)", stringToFabType "(Soon)" |> save ) ]
         |> (case maybeFab of
                 Nothing ->
                     Tuple.pair False
 
                 Just fab ->
                     Zipper.findClosest (Tuple.first >> (==) (fabTypeToString fab))
-                        >> Zipper.mapFocus (\( str, _ ) -> ( str ++ " ×", save Nothing ))
+                        >> Zipper.mapFocus (\( str, _ ) -> ( str ++ "\u{00A0}×", save Nothing ))
                         >> Tuple.pair True
            )
         |> (\( active, options ) ->
@@ -217,7 +218,7 @@ edit { zone, save } maybeFab =
                         )
                     )
                     options
-                    |> Ui.pickOrNot active
+                    |> Controls.pickOrNot active
            )
         |> (\picker -> Html.legend [ class "no-break" ] [ Html.label [ class "ui" ] [ Html.text "Interactivity:\u{00A0}" ], picker ] :: editor)
         |> Html.fieldset [ class "ui" ]
@@ -228,17 +229,18 @@ edit { zone, save } maybeFab =
 
 
 {-| -}
-view : { a | zone : ( String, Time.Zone ), now:Time.Posix } -> Fab -> Html Never
+view : { a | zone : ( String, Time.Zone ), now : Time.Posix } -> Fab -> Html Never
 view { zone, now } fab =
     case fab of
         Register r ->
             if Occurrence.isDuring now r.occurrence then
                 Html.a [ class "register fab", target "_blank", href r.link, title ("Current: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
+
             else if Occurrence.isUpcoming now r.occurrence then
                 Html.a [ class "register fab", target "_blank", href r.link, title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Register" ] ]
-            else 
-                Html.a [ class "register fab inactive", target "_blank", href r.link, title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past Event" ] ]
 
+            else
+                Html.a [ class "register fab inactive", target "_blank", href r.link, title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past\u{00A0}Event" ] ]
 
         Subscribe _ ->
             Html.details
@@ -255,11 +257,12 @@ view { zone, now } fab =
         ComingSoon r ->
             if Occurrence.isDuring now r.occurrence then
                 Html.a [ class "register soon fab", target "_blank", title ("Current: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Link coming soon" ] ]
+
             else if Occurrence.isUpcoming now r.occurrence then
                 Html.a [ class "register soon fab", target "_blank", title ("Upcoming: " ++ Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Link coming soon" ] ]
-            else 
-                Html.a [ class "register soon fab inactive", target "_blank", title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past Event" ] ]
 
+            else
+                Html.a [ class "register soon fab inactive", target "_blank", title (Occurrence.toString zone Occurrence.Minutes r.occurrence) ] [ Html.span [ class "title" ] [ Html.text "Past\u{00A0}Event" ] ]
 
 
 {-| where Nothing means something like eternal
@@ -272,7 +275,7 @@ occurrence fab =
 
         Register r ->
             Just r.occurrence
-        
+
         ComingSoon r ->
             Just r.occurrence
 

@@ -67,6 +67,7 @@ import Article exposing (Article, Orientation(..), hasBody)
 import Article.Fab as Fab
 import Bool.Extra as Bool
 import Codec exposing (Codec, encoder, string, variant0, variant1)
+import Controls
 import Css exposing (..)
 import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -697,7 +698,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                     (\( { isUndone, by }, intent ) ->
                                         Html.li []
                                             [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
-                                            , Ui.singlePickOrNot (not isUndone)
+                                            , Controls.singlePickOrNot (not isUndone)
                                                 (( intentIdToString intent.intentId, atFocus (Undo by) )
                                                     |> (\( str, msg ) ->
                                                             ( { front = [ Html.text str ], title = "Select a Byline if needed" }
@@ -716,7 +717,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                                 [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
                                                 , Html.button [ onClick (volatile LogToggled) ] [ Html.text "close" ]
                                                 ]
-                                            , Ui.check { front = [ Html.text "Synchronize with Databas" ], title = "If you don't connect to the database, the app uses a minimal preset structure" } (volatile SyncingToggled) (Just c.syncing)
+                                            , Controls.check { front = [ Html.text "Synchronize with Databas" ], title = "If you don't connect to the database, the app uses a minimal preset structure" } (volatile SyncingToggled) (Just c.syncing)
                                             , Html.p [] [ Html.text "You can undo and redo any previous action in this list by clicking on the green buttons." ]
                                             , l
                                             ]
@@ -751,9 +752,9 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                         sheets
                             ++ [ ( "editing"
                                  , Html.div [ class "stretch-h" ]
-                                    [ Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
-                                    , Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
-                                    , Ui.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
+                                    [ Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
+                                    , Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
+                                    , Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
                                     ]
                                  )
                                ]
@@ -761,7 +762,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                     else
                         [ ( "editing"
                           , Html.div [ class "stretch-h" ]
-                                [ Ui.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
+                                [ Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
                                 ]
                           )
                         ]
@@ -929,12 +930,12 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
 
         propertySheet : Ui msg
         propertySheet =
-            Ui.fromHtml
-                (Ui.row
-                    [ Ui.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
+            Ui.html
+                (Controls.row
+                    [ Controls.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
                         (volatile (TemplatesUpdated Article.toggleTemplates))
                         (Article.templatesAreOn (accordion |> config |> .templates))
-                    , Ui.check { front = [ Html.label [] [ Html.text "Synchronize with database" ] ], title = "Accept updates from the database." }
+                    , Controls.check { front = [ Html.label [] [ Html.text "Synchronize with database" ] ], title = "Accept updates from the database." }
                         (volatile SyncingToggled)
                         (Just (config accordion).syncing)
                     ]
@@ -956,9 +957,9 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                 )
                 ( [], [] )
                 >> (\( items, accordionAttributes ) ->
-                        Ui.toggle "backstage" (Html.span [ class "face" ] [ Html.text "-> BackStage" ])
+                        Ui.toggle "backstage" [ Html.span [ class "face" ] [ Html.text "-> BackStage" ] ]
                             |> Ui.with Control (Ui.wrap editAccordion propertySheet)
-                            |> Ui.with Scene (Ui.fromFoliage overlays)
+                            |> Ui.with Scene (Ui.foliage overlays)
                             |> Ui.with Scene (List.concat items)
                             |> Ui.wrap
                                 (\scenes ->

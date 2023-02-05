@@ -105,8 +105,8 @@ type Msg
 
 
 type Route
-    = Home Ui.Flags
-    | Article String Ui.Flags
+    = Home (List String)
+    | Article String (List String)
 
 
 routeCodecs : List (Codec Route)

@@ -48,6 +48,7 @@ module Accordion.Segment exposing
 import Article exposing (Action(..), Article, BodyChoice(..), BodyTemplate(..), InfoChoice(..), InfoTemplate(..), Templates, Width(..), bodyTemplateToString, bodyTypeToString, getTemplate, infoTypeToString)
 import Article.Fab as Fab exposing (Fab)
 import Bool.Extra exposing (ifElse)
+import Controls
 import Css exposing (..)
 import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
@@ -573,13 +574,13 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                 , ( "bounds", viewBounds )
                 , ( "peekLink", viewPeekLink () )
                 , ( "byline", viewByline )
-                , ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Ui.overlay Ui.TopLeft |> Ui.debugOnly )
-                , ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Ui.overlay Ui.TopRight |> Ui.debugOnly )
+                , ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Controls.overlay Controls.TopLeft |> Ui.debugOnly )
+                , ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Controls.overlay Controls.TopRight |> Ui.debugOnly )
                 , ( "fab", viewFab () )
                 ]
             )
                 |> List.map (Tuple.mapSecond (Html.map never))
-                |> Ui.fromFoliage
+                |> Ui.foliage
                 |> Ui.wrap
                     (Keyed.node "li"
                         (id model.article.id
@@ -619,10 +620,10 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                             details [ class "deleteArticle fly-orientation" ]
                                 [ summary [] [ Html.span [] [ Html.text "" ] ]
                                 , div [ class "ui flying right-aligned bottom-aligned" ]
-                                    [ Ui.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
-                                    , Ui.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
+                                    [ Controls.toggleButton { front = [ span [] [ text "Cut" ] ], title = "Cut this segment" } False Nothing
+                                    , Controls.toggleButton { front = [ span [] [ text "Copy" ] ], title = "Copy this segment, excluding its id" } False Nothing
+                                    , Controls.toggleButton { front = [ span [] [ text "Paste" ] ], title = "Paste this segment, excluding its id" } False Nothing
+                                    , Controls.toggleButton { front = [ span [] [ text "Delete" ] ], title = "Delete this segment" } False (Just delete)
                                     ]
                                 ]
 
@@ -670,30 +671,30 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                             |> Ui.with Control
                                 (Html.fieldset [ class "ui" ]
                                     [ Html.legend [ class "fill-h" ]
-                                        [ Ui.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName)
-                                        , Ui.distanceHolder
+                                        [ Controls.textInput "The Unique ID of this segment" article.id (Just <| \newName -> rename newName)
+                                        , Controls.distanceHolder
                                         , overlaidDeleteButton
                                         ]
                                     , case template.body of
                                         Just _ ->
-                                            Ui.row
-                                                [ Ui.pick (templateOptions |> Zipper.map (Tuple.mapSecond (always Nothing)))
-                                                , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False Nothing
+                                            Controls.row
+                                                [ Controls.pick (templateOptions |> Zipper.map (Tuple.mapSecond (always Nothing)))
+                                                , Controls.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False Nothing
                                                 ]
 
                                         Nothing ->
-                                            Ui.row
-                                                [ Ui.pick options
-                                                , Ui.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
+                                            Controls.row
+                                                [ Controls.pick options
+                                                , Controls.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
                                                 ]
                                     ]
-                                    |> Ui.fromHtml
+                                    |> Ui.html
                                 )
                             |> Ui.with Scene
-                                ([ Ui.overlay Ui.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                                 , Ui.overlay Ui.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
-                                 , Ui.overlay Ui.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
-                                 , Ui.overlay Ui.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
+                                ([ Controls.overlay Controls.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                                 , Controls.overlay Controls.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
+                                 , Controls.overlay Controls.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
+                                 , Controls.overlay Controls.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
                                  ]
                                     |> Html.li
                                         (toClass model
@@ -704,7 +705,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                                             :: css ownWidthAsVars
                                             :: additionalAttributes
                                         )
-                                    |> Ui.fromHtml
+                                    |> Ui.html
                                 )
                         )
 
@@ -740,17 +741,17 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                     Ui.with Control
                         (Html.fieldset [ class "ui" ]
                             [ Html.legend [ class "editCaption fill-h" ]
-                                [ Ui.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
-                                , Ui.distanceHolder
-                                , Ui.singlePickOrNot article.caption.showsDate
+                                [ Controls.textInput "Caption" article.caption.text (Just <| \txt -> intend (WithCaption { originalCaption | text = txt }))
+                                , Controls.distanceHolder
+                                , Controls.singlePickOrNot article.caption.showsDate
                                     ( { front = [ Html.text "📅" ], title = "Should the Caption include a date (range)?" }
                                     , Just (intend (WithCaption { originalCaption | showsDate = not model.article.caption.showsDate }))
                                     )
                                 ]
-                            , Ui.pick options
+                            , Controls.pick options
                             , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
                             ]
-                            |> Ui.fromHtml
+                            |> Ui.html
                         )
 
                 _ ->

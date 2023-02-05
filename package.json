@@ -8,7 +8,7 @@
     "node-elm-compiler": "^5.0.6",
     "parcel": "^2.5.0",
     "process": "^0.11.10",
-    "sass": "^1.54.8"
+    "sass": "^1.56.1"
   },
   "dependencies": {
     "@vimeo/player": "^2.16.4",
