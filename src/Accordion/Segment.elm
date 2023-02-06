@@ -60,10 +60,10 @@ import Layout
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
+import Restrictive.Layout.Region exposing (Aspect(..))
+import Restrictive.Ui as Ui exposing (Ui)
 import Snippet
 import Time
-import Ui exposing (Ui)
-import Ui.Layout.Aspect exposing (Aspect(..))
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 
@@ -420,7 +420,7 @@ view :
     , insert : Direction -> msg
     }
     -> Segment
-    -> Ui msg
+    -> Ui Aspect ( String, Html msg )
 view ({ zone, templates, directory, do, delete, reset, rename, insert } as config) ({ position, article } as model) =
     let
         -- SCENE --
@@ -461,7 +461,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                         previewOccurrences =
                             occ model
                                 |> Maybe.map (Occurrence.view (Occurrence.AsList (Tuple.second zone) Occurrence.Days))
-                                |> Maybe.withDefault Ui.none
+                                |> Maybe.withDefault (Html.text "")
                     in
                     Html.a [ class "peekLink", href c.targetId, title c.hint ]
                         [ Html.h2 [] [ Html.text c.hint ]
@@ -470,7 +470,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                         ]
 
                 _ ->
-                    Ui.none
+                    Html.text ""
 
         viewBody () body =
             Keyed.node "div"
@@ -559,8 +559,16 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
         viewFab () =
             fab config model
                 |> Maybe.map (Fab.view config)
-                |> Maybe.withDefault Ui.none
+                |> Maybe.withDefault (Html.text "")
 
+        viewCenterMe =
+            if position.role == Focus then
+                Html.node "center-me" [] []
+
+            else
+                Html.text ""
+
+        scene : Ui aspect ( String, Html msg )
         scene =
             (if hideBecauseVeryFarAway then
                 [ ( "caption", model.article.caption |> viewCaption )
@@ -569,13 +577,15 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                 ]
 
              else
-                [ ( "caption", model.article.caption |> viewCaption |> Ui.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Ui.notIf (isPeek model) )
+                [ ( "caption", model.article.caption |> viewCaption |> Layout.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Layout.notIf (isPeek model) )
                 , ( "body", model.article.body |> viewBody () )
                 , ( "bounds", viewBounds )
                 , ( "peekLink", viewPeekLink () )
                 , ( "byline", viewByline )
-                , ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Controls.overlay Controls.TopLeft |> Ui.debugOnly )
-                , ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Controls.overlay Controls.TopRight |> Ui.debugOnly )
+                , ( "centerMe", viewCenterMe )
+
+                --, ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Controls.overlay Controls.TopLeft |> Ui.debugOnly )
+                --, ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Controls.overlay Controls.TopRight |> Ui.debugOnly )
                 , ( "fab", viewFab () )
                 ]
             )
@@ -597,6 +607,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                     )
 
         -- CONTROL (contingent Ui) --
+        addControlIfPresent : Ui Aspect ( String, Html msg ) -> Ui Aspect ( String, Html msg )
         addControlIfPresent =
             let
                 intend =
@@ -665,9 +676,27 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                                         , maybeNot template.body msg
                                         )
                                     )
+
+                        sideButtons =
+                            [ Controls.overlay Controls.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
+                            , Controls.overlay Controls.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
+                            , Controls.overlay Controls.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
+                            , Controls.overlay Controls.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
+                            ]
+                                |> Html.li
+                                    (toClass model
+                                        :: class (Article.orientationToString (Article.orientation model.article))
+                                        :: class (bodyTypeToString model.article.body)
+                                        :: Article.structureClass config model.article
+                                        :: toCssVariables model
+                                        :: css ownWidthAsVars
+                                        :: additionalAttributes
+                                    )
+                                |> Tuple.pair "overlays"
+                                |> Ui.html
                     in
                     Ui.with Control
-                        ([]
+                        (Ui.singleton
                             |> Ui.with Control
                                 (Html.fieldset [ class "ui" ]
                                     [ Html.legend [ class "fill-h" ]
@@ -688,25 +717,12 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                                                 , Controls.toggleButton { front = [ span [] [ text "↺" ] ], title = "Replace the contents with Flupsi's Preset" } False (Just (reset article.id))
                                                 ]
                                     ]
+                                    |> Tuple.pair "Control"
                                     |> Ui.html
                                 )
                             |> Ui.with Scene
-                                ([ Controls.overlay Controls.Top [ overlaidButton Up "insert empty segment to the top" "+" ]
-                                 , Controls.overlay Controls.Right [ overlaidButton Right "insert empty segment to the right" "+" ]
-                                 , Controls.overlay Controls.Bottom [ overlaidButton Down "insert empty segment to the bottom" "+" ]
-                                 , Controls.overlay Controls.Left [ overlaidButton Left "insert empty segment to the left" "+" ]
-                                 ]
-                                    |> Html.li
-                                        (toClass model
-                                            :: class (Article.orientationToString (Article.orientation model.article))
-                                            :: class (bodyTypeToString model.article.body)
-                                            :: Article.structureClass config model.article
-                                            :: toCssVariables model
-                                            :: css ownWidthAsVars
-                                            :: additionalAttributes
-                                        )
-                                    |> Ui.html
-                                )
+                                []
+                         -- TODO: sideButtons
                         )
 
                 Parent ->
@@ -751,6 +767,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                             , Controls.pick options
                             , Fab.edit { zone = zone, save = WithFab >> intend } model.article.fab
                             ]
+                            |> Tuple.pair "caption"
                             |> Ui.html
                         )
 

@@ -1,5 +1,6 @@
-module Layout exposing (aStyle, anchoredLabel, bleedingStyle, byline, bylineMulti, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, unit)
+module Layout exposing (aStyle, anchoredLabel, bleedingStyle, byline, bylineMulti, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, notIf, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, unit)
 
+import Bool.Extra as Bool
 import Css exposing (..)
 import Css.Global as Global
 import Css.Media as Media
@@ -7,6 +8,18 @@ import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (class, css, href)
 import Svg.Styled as Svg exposing (svg)
 import Svg.Styled.Attributes as SvgAttributes
+
+
+
+---- Conditional Rendering ----
+
+
+{-| -}
+notIf : Bool -> Html msg -> Html msg
+notIf =
+    Bool.ifElse
+        (\_ -> Html.text "")
+        identity
 
 
 

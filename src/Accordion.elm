@@ -72,7 +72,7 @@ import Css exposing (..)
 import Directory exposing (Directory)
 import Fold exposing (Direction(..), Position, Role(..))
 import Html.Styled as Html exposing (Html, node)
-import Html.Styled.Attributes exposing (attribute, class, classList, css, id)
+import Html.Styled.Attributes as Attr exposing (attribute, class, classList, css, id)
 import Html.Styled.Events as Events exposing (onClick)
 import Html.Styled.Keyed as Keyed
 import Json.Decode as Decode
@@ -81,10 +81,11 @@ import Layout
 import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
+import Restrictive
+import Restrictive.Layout.Region exposing (Aspect(..))
+import Restrictive.Ui as Ui exposing (Ui)
 import String
 import Time
-import Ui exposing (Ui)
-import Ui.Layout.Aspect exposing (Aspect(..))
 import Zipper
 import Zipper.Branch as Branch exposing (Branch)
 import Zipper.Tree as Tree exposing (EdgeOperation(..), Tree, Walk(..))
@@ -617,7 +618,7 @@ update msg =
 
 
 type Renderable msg
-    = Item (Ui msg)
+    = Item (Ui Aspect ( String, Html msg ))
     | Var ( String, Int )
     | Class String
 
@@ -637,353 +638,381 @@ type alias ViewMode msg =
 view :
     ViewMode msg
     -> Accordion
-    -> Ui msg
-view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) accordion =
-    let
-        c =
-            config accordion
-
-        {- given a history and the id of the current session, the Accordion can generate an `Intent` from location and action. -}
-        generateIntent : String -> Action -> String -> Intent
-        generateIntent location action sessionId =
+    -> Ui Aspect ( String, Html msg )
+view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) accordion_ =
+    Ui.byPath <|
+        \path ->
             let
-                history =
+                accordion =
+                    goToParentId (Debug.log "Accordion.view -> path" path) accordion_
+
+                c =
+                    config accordion
+
+                {- given a history and the id of the current session, the Accordion can generate an `Intent` from location and action. -}
+                generateIntent : String -> Action -> String -> Intent
+                generateIntent location action sessionId =
+                    let
+                        history =
+                            case accordion of
+                                Accordion _ ->
+                                    []
+
+                                Log l _ ->
+                                    l.history
+
+                        latestOrdinal =
+                            history
+                                |> List.filter (.intentId >> .sessionId >> (==) sessionId)
+                                |> List.map (.intentId >> .ordinal)
+                                |> List.maximum
+                                |> Maybe.withDefault 0
+                    in
+                    { intentId = { sessionId = sessionId, ordinal = latestOrdinal + 1 }, location = Just location, action = action }
+
+                atFocus : Action -> msg
+                atFocus =
+                    generateIntent (focusId accordion) >> do
+
+                breadcrumbs : String -> (() -> List Article)
+                breadcrumbs sid () =
+                    goToId sid accordion
+                        |> config
+                        |> .tree
+                        |> Tree.breadcrumbs
+
+                branch : String -> (() -> Branch Article)
+                branch sid () =
+                    goToId sid accordion
+                        |> config
+                        |> .tree
+                        |> Tree.focusedBranch
+
+                editAccordion sheets =
                     case accordion of
-                        Accordion _ ->
-                            []
-
-                        Log l _ ->
-                            l.history
-
-                latestOrdinal =
-                    history
-                        |> List.filter (.intentId >> .sessionId >> (==) sessionId)
-                        |> List.map (.intentId >> .ordinal)
-                        |> List.maximum
-                        |> Maybe.withDefault 0
-            in
-            { intentId = { sessionId = sessionId, ordinal = latestOrdinal + 1 }, location = Just location, action = action }
-
-        atFocus : Action -> msg
-        atFocus =
-            generateIntent (focusId accordion) >> do
-
-        breadcrumbs : String -> (() -> List Article)
-        breadcrumbs sid () =
-            goToId sid accordion
-                |> config
-                |> .tree
-                |> Tree.breadcrumbs
-
-        branch : String -> (() -> Branch Article)
-        branch sid () =
-            goToId sid accordion
-                |> config
-                |> .tree
-                |> Tree.focusedBranch
-
-        viewLog : Html msg
-        viewLog =
-            let
-                intentIdToString : IntentId -> String
-                intentIdToString iid =
-                    iid.sessionId ++ ":" ++ String.fromInt iid.ordinal
-            in
-            Html.div [ id "activityLog" ]
-                [ case accordion of
-                    Log { history, viewingHistory } _ ->
-                        if viewingHistory then
-                            markUndones history
-                                |> List.map
-                                    (\( { isUndone, by }, intent ) ->
-                                        Html.li []
-                                            [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
-                                            , Controls.singlePickOrNot (not isUndone)
-                                                (( intentIdToString intent.intentId, atFocus (Undo by) )
-                                                    |> (\( str, msg ) ->
-                                                            ( { front = [ Html.text str ], title = "Select a Byline if needed" }
-                                                            , Just msg
-                                                            )
-                                                       )
-                                                )
-                                            , "undone by " ++ intentIdToString by |> Html.text |> Ui.notIf (not isUndone)
-                                            , Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
+                        Log { history, editing } _ ->
+                            if editing then
+                                sheets
+                                    ++ [ ( "editing"
+                                         , Html.div [ class "stretch-h" ]
+                                            [ Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
+                                            , Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
+                                            , Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
                                             ]
-                                    )
-                                |> Html.ol [ class "list" ]
-                                |> (\l ->
-                                        Html.fieldset []
-                                            [ Html.legend []
-                                                [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
-                                                , Html.button [ onClick (volatile LogToggled) ] [ Html.text "close" ]
-                                                ]
-                                            , Controls.check { front = [ Html.text "Synchronize with Databas" ], title = "If you don't connect to the database, the app uses a minimal preset structure" } (volatile SyncingToggled) (Just c.syncing)
-                                            , Html.p [] [ Html.text "You can undo and redo any previous action in this list by clicking on the green buttons." ]
-                                            , l
-                                            ]
-                                   )
+                                         )
+                                       ]
 
-                        else
-                            Html.section [ class "ui control" ]
-                                [ Html.button [ class "ui", onClick (volatile LogToggled) ] [ Html.text "Activity Log..." ] ]
-
-                    Accordion _ ->
-                        Ui.none
-                ]
-
-        viewArticle : Segment -> Ui msg
-        viewArticle =
-            Segment.view
-                { zone = zone
-                , now = now
-                , directory = directory accordion
-                , templates = c.templates
-                , do = \location -> Modify >> generateIntent location >> do
-                , delete = Delete |> atFocus
-                , reset = Reset >> atFocus
-                , rename = Name >> atFocus
-                , insert = Insert >> atFocus
-                }
-
-        editAccordion sheets =
-            case accordion of
-                Log { history, editing } _ ->
-                    if editing then
-                        sheets
-                            ++ [ ( "editing"
-                                 , Html.div [ class "stretch-h" ]
-                                    [ Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↶" ] ], title = "Undo" } False (undo history |> Maybe.map atFocus)
-                                    , Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Done" ] ], title = "Browse the page as if you were a visitor" } True (Just (volatile EditingToggled))
-                                    , Controls.squareToggleButton { front = [ Html.span [] [ Html.text "↷" ] ], title = "Redo" } False (redo history |> Maybe.map atFocus)
-                                    ]
-                                 )
-                               ]
-
-                    else
-                        [ ( "editing"
-                          , Html.div [ class "stretch-h" ]
-                                [ Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
+                            else
+                                [ ( "editing"
+                                  , Html.div [ class "stretch-h" ]
+                                        [ Controls.toggleModeButton { front = [ Html.span [] [ Html.text "Edit" ] ], title = "Change properties of the Articles" } False (Just (volatile EditingToggled))
+                                        ]
+                                  )
                                 ]
-                          )
-                        ]
 
-                _ ->
-                    [ ( "editing"
-                      , Html.div [ class "stretch-h" ]
-                            [ Html.text ""
+                        _ ->
+                            [ ( "editing"
+                              , Html.div [ class "stretch-h" ]
+                                    [ Html.text ""
+                                    ]
+                              )
                             ]
+
+                overlays : List ( String, Html msg )
+                overlays =
+                    [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
+                    , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
+                    , ( "xy", Html.div [ id "xy" ] [] )
+
+                    --the following will be sorted to be the first element so it can influence the others via css ~
+                    , ( " "
+                      , node "closest-aisle"
+                            [ attribute "increment" (focusId accordion)
+                            , id "virtualScreen"
+                            , Decode.at [ "detail" ] Decode.string
+                                |> Decode.map scrolledTo
+                                |> Events.on "scrolledToA"
+                            , Events.on "scrolledIntoNowhere" (Decode.succeed scrolledIntoNowhere)
+                            ]
+                            []
                       )
                     ]
 
-        statistics : Html.Attribute msg
-        statistics =
-            classList
-                [ ( "\u{1FA97}" ++ Article.orientationToString (Article.orientation (Tree.focus c.tree)), True )
-                , ( "aisleHasBody", List.any (Article.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
-                , ( "focusHasBody", Article.hasBody c (Tree.focus c.tree) )
-                , ( "focusIsRoot", Tree.isRoot c.tree )
-                , ( "focusIsBackground", Article.isBackground (Tree.focus c.tree) )
-                ]
+                globalToolbar : Ui Aspect (Html msg)
+                globalToolbar =
+                    Ui.handle
+                        [ Bool.toMaybe "/" (not (isRoot accordion))
+                            |> Layout.hamburgerMenu
+                        ]
 
-        createRegions : C -> List ( Region, List A )
-        createRegions { up, left, x, here, nest, y, right, down } =
-            let
-                focusedArticle =
-                    Tree.focus c.tree
-
-                ---- PEEK ----
-                maybePeekTargetBranch : Maybe (Branch Article)
-                maybePeekTargetBranch =
-                    if hasBody c focusedArticle then
-                        Nothing
-
-                    else
-                        let
-                            focusedBranch =
-                                Tree.focusedBranch c.tree
-                        in
-                        focusedBranch
-                            ---- 1. UPCOMING
-                            |> Branch.subBranches
-                            |> List.filter
-                                (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
-                            |> List.minimumBy
-                                (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
-                            ---- 2. DIRECT CHILD
-                            |> Maybe.orElse (Just focusedBranch)
-
-                -- Find the closest illustration, among the nest, for a given branch of segments
-                peekTargetBranchToIllustration : Branch Article -> Maybe Article
-                peekTargetBranchToIllustration =
-                    Branch.flat
-                        >> List.filter (\a -> List.member a (List.map Tuple.second nest))
-                        >> List.find (Article.isIllustration c)
-
-                ( peekConfig, maybePeek, cache ) =
-                    case maybePeekTargetBranch of
-                        Just targetBranch ->
-                            let
-                                illu =
-                                    peekTargetBranchToIllustration targetBranch
-
-                                cche =
-                                    Maybe.map
-                                        (\ill -> List.filter (Tuple.second >> (/=) ill) nest)
-                                        illu
-                                        |> Maybe.withDefault nest
-
-                                head =
-                                    Branch.node targetBranch
-                            in
-                            ( { targetId = head.id, hint = Article.hint zone head }
-                            , illu |> Maybe.map (Tuple.pair Fold.fataMorganaPosition)
-                            , cche
-                            )
-
-                        Nothing ->
-                            ( Segment.defaultPeekConfig
-                            , Just ( Fold.fataMorganaPosition, Article.defaultIllustration )
-                            , nest
-                            )
-            in
-            [ ( North, List.reverse up )
-            , ( West, List.reverse left )
-            , ( Center, [ here ] )
-            , ( Peek peekConfig, Maybe.toList maybePeek )
-            , ( Cache, cache )
-            , ( East, right )
-            , ( South, down )
-            ]
-                ++ (case here |> Tuple.second |> Article.orientation of
-                        Horizontal ->
-                            [ ( NearWest, List.reverse x )
-                            , ( NearEast, y )
-                            , ( NearNorth, [] )
-                            , ( NearSouth, [] )
+                propertySheet : Ui Aspect (Html msg)
+                propertySheet =
+                    Ui.html
+                        (Controls.row
+                            [ Controls.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
+                                (volatile (TemplatesUpdated Article.toggleTemplates))
+                                (Article.templatesAreOn (accordion |> config |> .templates))
+                            , Controls.check { front = [ Html.label [] [ Html.text "Synchronize with database" ] ], title = "Accept updates from the database." }
+                                (volatile SyncingToggled)
+                                (Just (config accordion).syncing)
                             ]
-
-                        Vertical ->
-                            [ ( NearNorth, List.reverse x )
-                            , ( NearSouth, y )
-                            , ( NearWest, [] )
-                            , ( NearEast, [] )
-                            ]
-                   )
-
-        renderRegion : ( Region, List A ) -> List (Renderable msg)
-        renderRegion ( region, list ) =
-            list
-                |> List.foldl
-                    (\( position, article ) ( offset, newList ) ->
-                        let
-                            segment =
-                                { ---- Position
-                                  position = position
-                                , region = region
-                                , offset = offset
-
-                                ---- Data
-                                , article = article
-
-                                ---- Lazy Neighbors
-                                , breadcrumbs = breadcrumbs article.id
-                                , branch = branch article.id
-                                }
-                        in
-                        ( Segment.addWidth c segment (Article.hasBody c article) (Article.width article) offset
-                        , viewArticle segment :: newList
                         )
-                    )
-                    ( Segment.zeroOffset, [] )
-                |> (\( totalOffset, renderedArticles ) ->
-                        Segment.offsetToCssVariables totalOffset
-                            |> List.map (Tuple.mapFirst ((++) (Segment.regionToString region ++ "-")) >> Var)
-                            |> (++) (List.map Item renderedArticles)
-                   )
 
-        overlays : List ( String, Html msg )
-        overlays =
-            [ ( "screenBackground", Html.div [ class "screenBackground" ] [] )
-            , ( "aisleBackground", Html.div [ class "aisleBackground" ] [] )
-            , ( "xy", Html.div [ id "xy" ] [] )
+                renderAccordion : List (Renderable msg) -> Ui Aspect ( String, Html msg )
+                renderAccordion =
+                    let
+                        backStage : Ui Aspect ( String, Html msg )
+                        backStage =
+                            Restrictive.toggle_
+                                { element = Html.a, href = Attr.href, attribute = Attr.attribute }
+                                []
+                                { flag = "backstage"
+                                , label = [ Html.span [ class "face" ] [ Html.text "-> BackStage" ] ]
+                                }
 
-            --the following will be sorted to be the first element so it can influence the others via css ~
-            , ( " "
-              , node "closest-aisle"
-                    [ attribute "increment" (focusId accordion)
-                    , id "virtualScreen"
-                    , Decode.at [ "detail" ] Decode.string
-                        |> Decode.map scrolledTo
-                        |> Events.on "scrolledToA"
-                    , Events.on "scrolledIntoNowhere" (Decode.succeed scrolledIntoNowhere)
-                    ]
-                    []
-              )
-            ]
+                        myEditingControl : Ui Aspect ( String, Html msg )
+                        myEditingControl =
+                            Ui.wrap editAccordion (Ui.key "props" propertySheet)
 
-        globalToolbar : Ui msg
-        globalToolbar =
-            Ui.constant
-                [ Bool.toMaybe "/" (not (isRoot accordion))
-                    |> Layout.hamburgerMenu
-                ]
+                        myOverlays : Ui Aspect ( String, Html msg )
+                        myOverlays =
+                            Ui.foliage overlays
+                    in
+                    List.foldl
+                        (\renderable ->
+                            case renderable of
+                                Item ui ->
+                                    Tuple.mapFirst ((::) ui)
 
-        propertySheet : Ui msg
-        propertySheet =
-            Ui.html
-                (Controls.row
-                    [ Controls.check { front = [ Html.label [] [ Html.text "Show presets" ] ], title = "This option lets you copy from preset content. Turn it off and paste into live segments." }
-                        (volatile (TemplatesUpdated Article.toggleTemplates))
-                        (Article.templatesAreOn (accordion |> config |> .templates))
-                    , Controls.check { front = [ Html.label [] [ Html.text "Synchronize with database" ] ], title = "Accept updates from the database." }
-                        (volatile SyncingToggled)
-                        (Just (config accordion).syncing)
-                    ]
-                )
+                                Var va ->
+                                    Tuple.mapSecond ((::) (css [ Layout.toProperty va ]))
 
-        renderAccordion : List (Renderable msg) -> Ui msg
-        renderAccordion =
-            List.foldl
-                (\renderable ->
-                    case renderable of
-                        Item ui ->
-                            Tuple.mapFirst ((::) ui)
+                                Class cl ->
+                                    Tuple.mapSecond ((::) (class cl))
+                        )
+                        ( [], [] )
+                        >> (\( items, accordionAttributes ) ->
+                                let
+                                    thenWrap =
+                                        Ui.wrap
+                                            (\scenes ->
+                                                [ ( "Accordion"
+                                                  , Keyed.ul
+                                                        (class "Accordion" :: statistics :: accordionAttributes)
+                                                        (List.sortBy Tuple.first scenes)
+                                                  )
+                                                ]
+                                            )
+                                in
+                                Ui.singleton
+                                    |> Ui.with Scene backStage
+                                    |> Ui.with Control myEditingControl
+                                    |> Ui.with Scene myOverlays
+                                    |> Ui.with Scene (List.concat items)
+                                    |> thenWrap
+                                    -- Ui.composeControls >> Html.section [ class "ui sheet" ]
+                                    |> (++) (Ui.key "globalToolbar" globalToolbar)
+                           )
 
-                        Var va ->
-                            Tuple.mapSecond ((::) (css [ Layout.toProperty va ]))
+                viewLog : Html msg
+                viewLog =
+                    let
+                        intentIdToString : IntentId -> String
+                        intentIdToString iid =
+                            iid.sessionId ++ ":" ++ String.fromInt iid.ordinal
+                    in
+                    Html.div [ id "activityLog" ]
+                        [ case accordion of
+                            Log { history, viewingHistory } _ ->
+                                if viewingHistory then
+                                    markUndones history
+                                        |> List.map
+                                            (\( { isUndone, by }, intent ) ->
+                                                Html.li []
+                                                    [ Html.pre [] [ Maybe.map ((++) "at " >> Html.text) intent.location |> Maybe.withDefault (Html.text "*") ]
+                                                    , Controls.singlePickOrNot (not isUndone)
+                                                        (( intentIdToString intent.intentId, atFocus (Undo by) )
+                                                            |> (\( str, msg ) ->
+                                                                    ( { front = [ Html.text str ], title = "Select a Byline if needed" }
+                                                                    , Just msg
+                                                                    )
+                                                               )
+                                                        )
+                                                    , "undone by " ++ intentIdToString by |> Html.text |> Layout.notIf (not isUndone)
+                                                    , Html.pre [] [ Html.text (encoder actionCodec intent.action |> Encode.encode 4) ]
+                                                    ]
+                                            )
+                                        |> Html.ol [ class "list" ]
+                                        |> (\l ->
+                                                Html.fieldset []
+                                                    [ Html.legend []
+                                                        [ Html.span [] [ Html.text ("Activity Log (" ++ String.fromInt (List.length history) ++ ")") ]
+                                                        , Html.button [ onClick (volatile LogToggled) ] [ Html.text "close" ]
+                                                        ]
+                                                    , Controls.check { front = [ Html.text "Synchronize with Databas" ], title = "If you don't connect to the database, the app uses a minimal preset structure" } (volatile SyncingToggled) (Just c.syncing)
+                                                    , Html.p [] [ Html.text "You can undo and redo any previous action in this list by clicking on the green buttons." ]
+                                                    , l
+                                                    ]
+                                           )
 
-                        Class cl ->
-                            Tuple.mapSecond ((::) (class cl))
-                )
-                ( [], [] )
-                >> (\( items, accordionAttributes ) ->
-                        Ui.toggle "backstage" [ Html.span [ class "face" ] [ Html.text "-> BackStage" ] ]
-                            |> Ui.with Control (Ui.wrap editAccordion propertySheet)
-                            |> Ui.with Scene (Ui.foliage overlays)
-                            |> Ui.with Scene (List.concat items)
-                            |> Ui.wrap
-                                (\scenes ->
-                                    [ ( "Accordion"
-                                      , Keyed.ul
-                                            (class "Accordion" :: statistics :: accordionAttributes)
-                                            (List.sortBy Tuple.first scenes)
-                                      )
-                                    ]
+                                else
+                                    Html.section [ class "ui control" ]
+                                        [ Html.button [ class "ui", onClick (volatile LogToggled) ] [ Html.text "Activity Log..." ] ]
+
+                            Accordion _ ->
+                                Html.text ""
+                        ]
+
+                viewArticle : Segment -> Ui Aspect ( String, Html msg )
+                viewArticle =
+                    Segment.view
+                        { zone = zone
+                        , now = now
+                        , directory = directory accordion
+                        , templates = c.templates
+                        , do = \location -> Modify >> generateIntent location >> do
+                        , delete = Delete |> atFocus
+                        , reset = Reset >> atFocus
+                        , rename = Name >> atFocus
+                        , insert = Insert >> atFocus
+                        }
+
+                statistics : Html.Attribute msg
+                statistics =
+                    classList
+                        [ ( "\u{1FA97}" ++ Article.orientationToString (Article.orientation (Tree.focus c.tree)), True )
+                        , ( "aisleHasBody", List.any (Article.hasBody c) (Tree.getAisleNodes c.tree |> Zipper.flat) )
+                        , ( "focusHasBody", Article.hasBody c (Tree.focus c.tree) )
+                        , ( "focusIsRoot", Tree.isRoot c.tree )
+                        , ( "focusIsBackground", Article.isBackground (Tree.focus c.tree) )
+                        ]
+
+                renderRegion : ( Region, List A ) -> List (Renderable msg)
+                renderRegion ( region, list ) =
+                    list
+                        |> List.foldl
+                            (\( position, article ) ( offset, newList ) ->
+                                let
+                                    segment =
+                                        { ---- Position
+                                          position = position
+                                        , region = region
+                                        , offset = offset
+
+                                        ---- Data
+                                        , article = article
+
+                                        ---- Lazy Neighbors
+                                        , breadcrumbs = breadcrumbs article.id
+                                        , branch = branch article.id
+                                        }
+                                in
+                                ( Segment.addWidth c segment (Article.hasBody c article) (Article.width article) offset
+                                , viewArticle segment :: newList
                                 )
-                            -- Ui.composeControls >> Html.section [ class "ui sheet" ]
-                            |> (++) globalToolbar
-                   )
-    in
-    c.tree
-        |> Tree.mapByPosition Tuple.pair
-        |> Tree.view
-            (Tree.Uniform renderTree
-                { toHtml =
-                    createRegions
-                        >> List.concatMap renderRegion
-                        >> renderAccordion
-                }
-            )
+                            )
+                            ( Segment.zeroOffset, [] )
+                        |> (\( totalOffset, renderedArticles ) ->
+                                Segment.offsetToCssVariables totalOffset
+                                    |> List.map (Tuple.mapFirst ((++) (Segment.regionToString region ++ "-")) >> Var)
+                                    |> (++) (List.map Item renderedArticles)
+                           )
+
+                createRegions : C -> List ( Region, List A )
+                createRegions { up, left, x, here, nest, y, right, down } =
+                    let
+                        focusedArticle =
+                            Tree.focus c.tree
+
+                        ---- PEEK ----
+                        maybePeekTargetBranch : Maybe (Branch Article)
+                        maybePeekTargetBranch =
+                            if hasBody c focusedArticle then
+                                Nothing
+
+                            else
+                                let
+                                    focusedBranch =
+                                        Tree.focusedBranch c.tree
+                                in
+                                focusedBranch
+                                    ---- 1. UPCOMING
+                                    |> Branch.subBranches
+                                    |> List.filter
+                                        (Branch.node >> .fab >> Maybe.map (Fab.isUpcoming mode) >> Maybe.withDefault False)
+                                    |> List.minimumBy
+                                        (Branch.node >> .fab >> Maybe.andThen (Fab.nextBeginning mode) >> Maybe.withDefault 2147483646)
+                                    ---- 2. DIRECT CHILD
+                                    |> Maybe.orElse (Just focusedBranch)
+
+                        -- Find the closest illustration, among the nest, for a given branch of segments
+                        peekTargetBranchToIllustration : Branch Article -> Maybe Article
+                        peekTargetBranchToIllustration =
+                            Branch.flat
+                                >> List.filter (\a -> List.member a (List.map Tuple.second nest))
+                                >> List.find (Article.isIllustration c)
+
+                        ( peekConfig, maybePeek, cache ) =
+                            case maybePeekTargetBranch of
+                                Just targetBranch ->
+                                    let
+                                        illu =
+                                            peekTargetBranchToIllustration targetBranch
+
+                                        cche =
+                                            Maybe.map
+                                                (\ill -> List.filter (Tuple.second >> (/=) ill) nest)
+                                                illu
+                                                |> Maybe.withDefault nest
+
+                                        head =
+                                            Branch.node targetBranch
+                                    in
+                                    ( { targetId = head.id, hint = Article.hint zone head }
+                                    , illu |> Maybe.map (Tuple.pair Fold.fataMorganaPosition)
+                                    , cche
+                                    )
+
+                                Nothing ->
+                                    ( Segment.defaultPeekConfig
+                                    , Just ( Fold.fataMorganaPosition, Article.defaultIllustration )
+                                    , nest
+                                    )
+                    in
+                    [ ( North, List.reverse up )
+                    , ( West, List.reverse left )
+                    , ( Center, [ here ] )
+                    , ( Peek peekConfig, Maybe.toList maybePeek )
+                    , ( Cache, cache )
+                    , ( East, right )
+                    , ( South, down )
+                    ]
+                        ++ (case here |> Tuple.second |> Article.orientation of
+                                Horizontal ->
+                                    [ ( NearWest, List.reverse x )
+                                    , ( NearEast, y )
+                                    , ( NearNorth, [] )
+                                    , ( NearSouth, [] )
+                                    ]
+
+                                Vertical ->
+                                    [ ( NearNorth, List.reverse x )
+                                    , ( NearSouth, y )
+                                    , ( NearWest, [] )
+                                    , ( NearEast, [] )
+                                    ]
+                           )
+            in
+            c.tree
+                |> Tree.mapByPosition Tuple.pair
+                |> Tree.view
+                    (Tree.Uniform renderTree
+                        { toHtml =
+                            createRegions
+                                >> List.concatMap renderRegion
+                                >> renderAccordion
+                        }
+                    )
 
 
 type alias A =

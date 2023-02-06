@@ -52,8 +52,8 @@ import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (onInput)
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence)
+import Restrictive.Ui as Ui
 import Time
-import Ui
 import Zipper
 
 

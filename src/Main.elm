@@ -1,4 +1,4 @@
-port module Main exposing (Model(..), Msg(..), Route(..), SessionId, main, overwrite, pleaseCenter, pleaseConfirm, update, upgradeIfPossible, view)
+module Main exposing (Model(..), Msg(..), SessionId, main, overwrite, update, upgradeIfPossible, view)
 
 import Accordion exposing (Accordion)
 import Browser exposing (Document)
@@ -8,28 +8,25 @@ import Css exposing (..)
 import Data
 import Html as Unstyled
 import Html.Attributes as UnstyledAttributes
-import Html.Events as Events
-import Html.Styled as Html
+import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes
+import Html.Styled.Events as Events
 import Html.Styled.Keyed as Keyed
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Layout
+import Restrictive
+import Restrictive.Layout
+import Restrictive.Layout.Region exposing (Aspect)
+import Restrictive.Ui as Ui exposing (Ui)
 import Result.Extra as Result
 import Task
 import Time
 import TimeZone
 import Tuple exposing (pair)
-import Ui
 import Url exposing (Url)
 import Url.Codec exposing (Codec)
 import Url.Parser as UrlParser exposing (Parser)
-
-
-port pleaseCenter : String -> Cmd msg
-
-
-port pleaseConfirm : String -> Cmd msg
 
 
 type alias SessionId =
@@ -38,15 +35,11 @@ type alias SessionId =
 
 type Model
     = Loading
-        { key : Nav.Key
-        , url : Url
-        , maybeZone : Maybe ( String, Time.Zone )
+        { maybeZone : Maybe ( String, Time.Zone )
         , maybeNow : Maybe Time.Posix
         }
     | Model
-        { key : Nav.Key
-        , url : Url
-        , accordion : Accordion
+        { accordion : Accordion
         , backlog : Maybe Accordion.Intent
         , overwrite : Accordion.History
         , zone : ( String, Time.Zone )
@@ -59,33 +52,46 @@ overwrite =
     True
 
 
-main : Program () ( Url, Model ) Msg
+main : Restrictive.Application Model Msg
 main =
-    Browser.application
+    Restrictive.styledApplication
         { init =
-            \_ url key ->
-                let
-                    initialModel : Model
-                    initialModel =
-                        Loading
-                            { key = key
-                            , url = url
-                            , maybeNow = Nothing
-                            , maybeZone = Nothing
-                            }
-                in
-                initialModel
-                    |> update (UrlChanged url)
-                    |> (\( model, cmd ) -> ( ( url, model ), Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Time.now |> Task.attempt NowReceived ] ))
-        , view = \( url, model ) -> view model
-        , update = \msg ( url, model ) -> update msg model |> Tuple.mapFirst (pair (Ui.update url))
-        , subscriptions = \_ -> Sub.none
-        , onUrlChange = UrlChanged
-        , onUrlRequest = LinkClicked
+            ( Loading
+                { maybeNow = Nothing
+                , maybeZone = Nothing
+                }
+            , Cmd.batch
+                [ TimeZone.getZone |> Task.attempt ZoneReceived
+                , Time.now |> Task.attempt NowReceived
+                ]
+            )
+        , view = view
+        , update = update
         }
 
 
 
+{- init =
+       \_ url key ->
+           let
+               initialModel : Model
+               initialModel =
+                   Loading
+                       { key = key
+                       , url = url
+                       , maybeNow = Nothing
+                       , maybeZone = Nothing
+                       }
+           in
+           initialModel
+               |> update (UrlChanged url)
+               |> (\( model, cmd ) -> ( ( url, model ), Cmd.batch [ cmd, TimeZone.getZone |> Task.attempt ZoneReceived, Time.now |> Task.attempt NowReceived ] ))
+   , view = \( url, model ) -> view model
+   , update = \msg ( url, model ) -> update msg model |> Tuple.mapFirst (pair (Ui.update url))
+   , subscriptions = \_ -> Sub.none
+   , onUrlChange = UrlChanged
+   , onUrlRequest = LinkClicked
+-}
 ---- Update ----
 
 
@@ -104,117 +110,10 @@ type Msg
     | LogReceived Accordion.History
 
 
-type Route
-    = Home (List String)
-    | Article String (List String)
-
-
-routeCodecs : List (Codec Route)
-routeCodecs =
-    let
-        isHome : Route -> Bool
-        isHome r =
-            case r of
-                Home _ ->
-                    True
-
-                _ ->
-                    False
-
-        isArticle : Route -> Bool
-        isArticle r =
-            case r of
-                Article _ _ ->
-                    True
-
-                _ ->
-                    False
-
-        guiState : Route -> Ui.Flags
-        guiState r =
-            case r of
-                Home ff ->
-                    ff
-
-                Article _ ff ->
-                    ff
-
-        maybePath : Route -> Maybe String
-        maybePath r =
-            case r of
-                Home _ ->
-                    Just ""
-
-                Article str _ ->
-                    Just str
-    in
-    [ Url.Codec.succeed Home isHome
-        |> Url.Codec.allQueryFlags guiState
-    , Url.Codec.succeed Article isArticle
-        |> Url.Codec.string maybePath
-        |> Url.Codec.allQueryFlags guiState
-    ]
-
-
-unwrap : Url -> { destination : String, uiState : Ui.Flags }
-unwrap =
-    Url.Codec.parseUrl routeCodecs
-        >> Result.unwrap { destination = "", uiState = [] }
-            (\r ->
-                case r of
-                    Home u ->
-                        { destination = "", uiState = u }
-
-                    Article d u ->
-                        { destination = d, uiState = u }
-            )
-
-
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case ( msg, model ) of
         ---- Navigation
-        ( LinkClicked (Browser.Internal url), Model m ) ->
-            let
-                { destination, uiState } =
-                    unwrap url
-            in
-            if destination == Accordion.parentId m.accordion && uiState == .uiState (unwrap m.url) then
-                ( Model { m | accordion = Accordion.exit m.accordion }, Accordion.parentId m.accordion |> pleaseCenter )
-
-            else
-                ( Model m, Url.toString url |> Nav.pushUrl m.key )
-
-        ( LinkClicked (Browser.External href), Model m ) ->
-            ( Model m, Nav.load href )
-
-        ( UrlChanged url, Model m ) ->
-            -- incoming: potential Ui Messages via Link
-            -- Idea is that Ui.State is updated through these messages privately.
-            -- The `view` should handle its dependency on Url itself
-            -- because changing the path does not "change" the model, only the viewport / viewstate / viewlocation...
-            let
-                { destination, uiState } =
-                    unwrap url
-            in
-            if destination == Accordion.parentId m.accordion then
-                ( Model { m | url = url }, Cmd.none )
-
-            else
-                let
-                    newAccordion =
-                        Accordion.goToParentId destination m.accordion
-                in
-                ( Model { m | url = url, accordion = newAccordion }
-                  -- the following has a problem: it is fired before the `view`!
-                  -- On the next requestAnimationFrame, the layout may have changed.
-                  -- Solution: move it into `view` with a custom element please-center
-                , Cmd.batch
-                    [ Accordion.focusId newAccordion |> pleaseCenter
-                    , Accordion.parentId newAccordion |> pleaseConfirm
-                    ]
-                )
-
         ---- Client View
         ( ZoneReceived result, Loading o ) ->
             case result of
@@ -237,13 +136,6 @@ update msg model =
                     {- Debug.log "Now Error" -}
                     error
                         |> (\_ -> ( model, Cmd.none ))
-
-        ( ScrolledTo id, Model m ) ->
-            -- TODO: Change Url path instead (Cmd)
-            ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
-
-        ( ScrolledIntoNowhere, Model m ) ->
-            ( Model m, Accordion.focusId m.accordion |> pleaseCenter )
 
         ---- Volatile Data
         ( AccordionMessageReceived accMsg, Model m ) ->
@@ -268,23 +160,17 @@ upgradeIfPossible model =
                 Maybe.map2
                     (\(( _, z ) as zone) now ->
                         let
-                            { destination, uiState } =
-                                unwrap o.url
-
                             initialAccordion =
                                 Data.initial z
-                                    |> Accordion.goToParentId destination
                         in
                         ( Model
-                            { key = o.key
-                            , url = o.url
-                            , accordion = initialAccordion
+                            { accordion = initialAccordion
                             , backlog = Nothing
                             , overwrite = Data.initialIntents z
                             , zone = zone
                             , now = now
                             }
-                        , Accordion.focusId initialAccordion |> pleaseCenter
+                        , Cmd.none
                         )
                     )
                     o.maybeZone
@@ -295,10 +181,10 @@ upgradeIfPossible model =
 
 
 {-| -}
-view : Model -> Document Msg
+view : Model -> Restrictive.Document Aspect ( String, Html Msg )
 view model =
     let
-        viewAccordion : { m | zone : ( String, Time.Zone ), now : Time.Posix, accordion : Accordion } -> Ui.Ui Msg
+        viewAccordion : { m | zone : ( String, Time.Zone ), now : Time.Posix, accordion : Accordion } -> Ui Aspect ( String, Html Msg )
         viewAccordion m =
             Accordion.view
                 { zone = m.zone
@@ -311,23 +197,22 @@ view model =
                 m.accordion
     in
     { title = "Moving across Thresholds"
+    , layout = Restrictive.Layout.noControl
     , body =
-        Html.toUnstyled Layout.typography
-            :: (case model of
-                    Loading _ ->
-                        [ Html.text "Loading" |> Html.toUnstyled ]
+        (++) (Ui.html ( "typo", Layout.typography )) <|
+            case model of
+                Loading _ ->
+                    Ui.html ( "Loading", Html.text "Loading" )
 
-                    Model m ->
-                        [ viewAccordion m
-                            |> Ui.view (unwrap m.url |> .uiState) Nothing
-                            |> Keyed.ul [ Attributes.class "model" ]
-                            |> Html.toUnstyled
-                        , Unstyled.div [ UnstyledAttributes.class "database connection" ] <|
-                            [ m.backlog
+                Model m ->
+                    (viewAccordion m
+                        |> Ui.wrap (Keyed.ul [ Attributes.class "model" ] >> Tuple.pair "model" >> List.singleton)
+                    )
+                        ++ ([ m.backlog
                                 |> Maybe.map
                                     (encoder Accordion.intentCodec
                                         >> Encode.encode 0
-                                        >> UnstyledAttributes.attribute "backlog"
+                                        >> Attributes.attribute "backlog"
                                         >> List.singleton
                                     )
                                 |> Maybe.withDefault []
@@ -335,7 +220,7 @@ view model =
                                     (if overwrite then
                                         [ encoder Accordion.historyCodec m.overwrite
                                             |> Encode.encode 0
-                                            |> UnstyledAttributes.attribute "overwrite"
+                                            |> Attributes.attribute "overwrite"
                                         ]
 
                                      else
@@ -346,9 +231,11 @@ view model =
                                         |> Decode.map LogReceived
                                         |> Events.on "logReceived"
                                     ]
-                                |> Unstyled.node "append-log"
+                                |> Html.node "append-log"
                                 |> (|>) []
                             ]
-                        ]
-               )
+                                |> Html.div [ Attributes.class "database connection" ]
+                                |> Tuple.pair "db"
+                                |> Ui.html
+                           )
     }

@@ -5,8 +5,8 @@ import Directory exposing (Directory)
 import Html.String exposing (..)
 import Html.String.Attributes exposing (..)
 import Layout
+import Restrictive.Ui as Ui
 import Snippet exposing (cacheImg)
-import Ui
 
 
 vimeoVideo : Int -> Html msg
