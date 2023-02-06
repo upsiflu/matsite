@@ -14,7 +14,7 @@
     "@vimeo/player": "^2.16.4",
     "cross-env": "^7.0.3",
     "elm-doc-preview": "^5.0.5",
-    "firebase": "^9.9.4",
+    "firebase": "^9.14.0",
     "lodash": "^4.17.21"
   },
   "browserslist": "> 15%",

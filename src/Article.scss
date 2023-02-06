@@ -86,8 +86,11 @@ img {
     margin-top: -0.5rem;
     display: block;
     padding: 0.5rem 0.75rem;
-}
+    max-height: calc(var(--ownInfoLines) * var(--unit));
+    overflow:auto;
 
+    
+}
 
 .body h3 {
     max-width: 21rem;

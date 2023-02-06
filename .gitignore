@@ -8,8 +8,6 @@ elm-stuff
 repl-temp-*
 # elm-test generated
 tests/VerifyExamples
-# elm-live generated
-main.js
 # Npm
 node_modules
 # Mac shit
@@ -27,3 +25,4 @@ Thumbs.db
 .firebase/*.cache
 # vscodium
 .vscode
+.firebase/hosting.ZGlzdA.cache

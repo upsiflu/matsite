@@ -344,15 +344,23 @@ toc config { branch, position } =
                             heading config segment
                                 |> Maybe.map
                                     (\entry ->
-                                        Html.li
-                                            [ classList [ ( "focused", String.contains segment.id focus.id ) ] ]
-                                            [ Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ] ]
+                                        let
+                                            ( container, nodes ) =
+                                                if String.contains segment.id focus.id then
+                                                    ( Html.li [ class "focused" ], [ Html.node "see-me" [ attribute "increment" "focus.id" ] [] ] )
+
+                                                else
+                                                    ( Html.li [], [] )
+                                        in
+                                        Html.a [ href ("/" ++ segment.id) ] [ Html.text entry ]
+                                            :: nodes
+                                            |> container
                                     )
                         )
                         zipper
                         |> Zipper.flat
                         |> List.filterMap identity
-                        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 ))
+                        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 |> Basics.min 2 ))
                 )
 
     else
