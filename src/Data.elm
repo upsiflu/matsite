@@ -52,6 +52,15 @@ addTemplates zone =
                     (\( key, value ) ->
                         presetInfo key value
                     )
+
+            {--Todo: Find solution for this.
+            Either TOC without Body or Byline or Talk Renae Out
+            
+            , Series.headings
+                |> List.map
+                    (\( key, value ) ->
+                        presetBody key value
+                    )-}
             ]
                 |> List.concat
                 |> List.foldl (<|) t
@@ -70,12 +79,13 @@ addTemplates zone =
                 >> presetBody "Archive" Anarchive.anarchive
                 >> presetBody "About MaT" About.mat
                 >> presetBody "Team" About.team
+                >> presetBody "Events" About.events
                 >> presetBody "Video Channel" Video.videochannel
                 >> presetBody "Collective Docs" Traces.traces
                 >> presetInfo "Traces" Traces.tracesInfo
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Article.Toc
-                >> presetInfo "Labs" (Article.Byline 1 (Layout.byline "Biweekly on Thursdays; 90mins"))
+                >> presetInfo "Labs" Article.Toc
                 >> presetBody "Tidal Shifts Collage" Festival.tidalShiftsCollage
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
                 >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2
@@ -270,9 +280,14 @@ initialActions timezone =
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
+        :: Name "Events"
+        :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
+        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+        :: Go Right
         :: Name "Team"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
         :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+        :: Go Left
         :: Go Left
         :: Go Up
         :: Go Left

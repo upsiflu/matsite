@@ -1,4 +1,4 @@
-module Snippets.Series exposing (Collage(..), Event, Series, allCaptions, closeEvent, collageColumns, collageToIllustration, data, eventDate, eventbriteLink, presetInfos, presets, structure)
+module Snippets.Series exposing (Collage(..), Event, Series, allCaptions, byline, closeEvent, collageColumns, collageToIllustration, data, eventDate, eventbriteLink, headings, presetInfos, presets, structure)
 
 import Accordion exposing (Action(..))
 import Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
@@ -327,6 +327,21 @@ presets timezone =
             )
 
 
+headings : List ( String, Article.BodyTemplate )
+headings =
+    data
+        |> List.map
+            (\s ->
+                ( "Series-" ++ String.fromInt s.number
+                , Article.Content
+                    (Just
+                        ("Series " ++ String.fromInt s.number ++ "#" ++ s.motto)
+                    )
+                    (always (text ""))
+                )
+            )
+
+
 eventDate : Time.Zone -> Event -> Occurrence
 eventDate timezone event =
     Occurrence.moment timezone event.month event.day (2000 + event.year) 20 0
@@ -410,3 +425,17 @@ structure timezone =
             )
         |> List.intersperse [ Go Right ]
         |> List.concat
+
+
+byline : Article.InfoTemplate
+byline =
+    Layout.bylineMulti Article.Byline <|
+        List.map Layout.byline
+            [ "From 2020-2022 the MaT program included regular hybrid labs hosted live at bUM in Kreuzberg, Berlin and online within our interactive Gathertown world."
+            , "Series 6# 2022: September-November // LOCALITY"
+            , "Series 5# 2022: May-July // QUEERING"
+            , "Series 4# 2022: February-April // EMERGENCE"
+            , "Series 3# 2021: April-June // INTERRELATION"
+            , "Series 2# 2021: January-March // ECOLOGY"
+            , "Series 1# 2020: October-December // LOWERING THE THRESHOLD"
+            ]

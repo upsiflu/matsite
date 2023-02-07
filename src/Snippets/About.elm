@@ -1,26 +1,34 @@
-module Snippets.About exposing (contact, mat, team)
+module Snippets.About exposing (contact, events, mat, team)
 
 import Article
+import Directory
 import Html.String exposing (..)
 import Html.String.Attributes exposing (..)
 import Layout
 import Snippet exposing (cacheImg)
 
-import Directory
-
 
 mat : Article.BodyTemplate
 mat =
-    [ "(MaT) is an ongoing experience-based knowledge lab that combines movement, philosophy and inclusion. Together, we ask how we can perceive thresholds and lower them to encourage greater participation and active co-creation. 'Threshold' is a term that describes a barrier and the act of crossing it. It encompasses physical access requirements, language barriers and even the psychological threshold sometimes caused by the need to introduce oneself at the beginning of an event."
-    , "The series is curated and often facilitated by choreographer Renae Shadler, with guests joining throughout the program. The lab is shaped by Renae’s research into choreographic thinking, embodied learning and attuning to more-than human worlds. "
-    , "How can we conceive new forms of knowledge together that go beyond the linguistic? "
-    , "How can we explore thoughts as experienceable and tangible materials?"
+    [ "Moving across Thresholds (MaT) is an event series that explores how the perceived limits or edges within experience - whether physical, structural or otherwise - can be approached as thresholds of potential that invite us to think and move in different ways. At MaT humans and nonhumans research thresholds as generative places of encounter where entities such as people, gasses and entire ecosystems can interact."
+    , "Conceived as an experimental space, participants explore with full physical commitment what is foregrounded and what is pushed into the background. This is not accidental, but the result of historical processes, dominant pedagogical practices as well as systematic relations of power and oppression. Curated by dance artist Renae Shadler, MaT events combine movement, philosophy and activism, bringing together artists and researchers from neurodiverse and international backgrounds (Europe, Africa and the Global South). Together we ask:"
+    , "What happens when the background comes to life and makes its presence felt?"
     , "What if the landscape becomes a part of us, just as we are a part of it?"
+    , "What are the invisible thresholds of power?"
     , "What if we centre the periphery?"
-    , "In 2022 MaT is hosting hybrid events simultaneously live at bUM in Kreuzberg/Berlin and online within our interactive Gathertown world. Each participant can move freely with their avatar in a textured landscape, interact with those close to them through video and voice chat as well as participate in the creation of online documents."
-    , "The lab is a democratic and safe space where all material generated is shared collectively within the group. When you join, even if it’s only for one event, whatever you discover, we encourage you to take it, and explore it further."
-    , "These are free events and suitable for all bodies. They take place every two weeks, from 20:00 to 21:30 (CET). Register is necessary."
-    , "MaT also hosts festival weekends. In April there was a two-day lab as part of the “SENSE” series at Radialsystem in Berlin that explored invisible thresholds to power within a geography of perception, as well as a mini-festival in November initiated by MaT entitled 'Tidal Shifts' at Perform[d]ance in Stralsund. "
+    , "Since 2020 the MaT series has been hosting regular hybrid events at bUM in Kreuzberg, Berlin and online within an interactive Gathertown world where each participant can move freely with their avatar in a textured landscape, interact with those close to them through video and voice chat as well as participate in the creation of online/offline documents."
+    , "Bespoke festival events include: a two-day event in April 2022 as part of the ‘SENSE’ series at Radialsystem in Berlin (DE) focusing on geographies of perception, and in November 2022 entitled ‘Tidal Shifts’ at Perform[d]ance in the regional city of Stralsund (DE)."
+    ]
+        |> List.map (text >> List.singleton >> p [])
+        |> article [ class "richtext" ]
+        |> always
+        |> Article.Content (Just "Moving across Thresholds")
+
+
+events : Article.BodyTemplate
+events =
+    [ "MaT aims to provide a democratic and safe space where all material generated is open-source. Whether participants join for one or more events, whatever they discover, they are encouraged to take it and explore it further. All events are free and attempt to be suitable for all bodies. "
+    , "The interactive MaT archive includes: open documents, full-length videos of past events, a library of worded-companions and commissioned essays by past facilitators."
     ]
         |> List.map (text >> List.singleton >> p [])
         |> (\paragraphs ->
@@ -39,9 +47,9 @@ mat =
                                 [ 1, 2, 3, 4, 5, 6 ]
                        ]
            )
-        |> article [class "richtext"]
+        |> article [ class "richtext" ]
         |> always
-        |> Article.Content (Just "Moving across Thresholds")
+        |> Article.Content (Just "\u{00A0}")
 
 
 team : Article.BodyTemplate
@@ -50,27 +58,28 @@ team =
         closeArtist who dir =
             Directory.getClosestBy (String.length who // 4) who dir
                 |> Maybe.map
-                    (\uuid -> a [ href uuid ] [ text ("☛ " ++ who |> String.replace " " " ") ])
+                    (\uuid -> a [ href uuid ] [ text ("☛ " ++ who |> String.replace " " "\u{00A0}") ])
                 |> Maybe.withDefault (text who)
     in
-    (\dir->
-    
+    (\dir ->
         article []
             [ cacheImg "Team" 1 "" "https://lh5.googleusercontent.com/DDQ5JPLeAEEx8DraEuc3NzLWq-u3CQl8alu-doc4KUBoBT6BizoBy3Cjs9RgJEoroC5-nH_cmI7VocfbgsmZaM5Y9GKhhizMb70OPpnSGk6IdbfxoFspHaq3_qPEa4T0c1V9YEZTrFpgp7DOHQ"
             , [ ( "Concept, Curation, Facilitation", "Renae Shadler" )
-            , ( "Creative Companion", "Susanne Schmitt" )
-            , ( "Collages, Festival Companion", "Judith Förster" )
-            , ( "Communications", "Flupsi Upsi" )
-            , ( "Documentation", "Stella Horta" )
-            , ( "Production", "Sofia Fantuzzi" )
-            , ( "2021 Communications", "Katie-rose Spence" )
-            , ( "2020/21 Production", "ehrliche arbeit – freelance office for culture" )
-            ]
+              , ( "Creative Companion", "Susanne Schmitt" )
+              , ( "Collages, Festival Companion", "Judith Förster" )
+              , ( "Communications", "Flupsi Upsi" )
+              , ( "Documentation", "Stella Horta" )
+              , ( "Production", "Sofia Fantuzzi" )
+              , ( "2021 Communications", "Katie-rose Spence" )
+              , ( "2020/21 Production", "ehrliche arbeit – freelance office for culture" )
+              ]
                 |> List.map
                     (\( role, person ) ->
-                        li [] [ span [ class "role" ] [ text role ], text ": ", closeArtist person dir ]
+                        li [] [ span [ class "role" ] [ text role ], text ":\u{00A0}", closeArtist person dir ]
                     )
                 |> ul []
+            , hr [] []
+            , small [] [ text "Presented by Renae Shadler & Collaborators. Supported by the NATIONAL PERFORMANCE NETWORK – STEPPING OUT, sponsored by the Federal Government Commissioner for Culture and Media within the framework of the initiative NEUSTART KULTUR, Aid Program Dance. 2020/21 activities with additional support from Marten Bequest Theater Fellowship (Perpetual Trust, Australia).\n" ]
             ]
     )
         |> Article.Content (Just "Team")
