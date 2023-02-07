@@ -64,7 +64,7 @@ artists =
         --Html.a [ class "internal", href ("/" ++ Layout.sanitise descr) ] [ Html.text (" ☛" ++ descr ++ " ") ]
     in
     [ { name = "Anna\u{00A0}Mayberry"
-      , bio = \dir -> Html.p [] [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” ", Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(www.bauereignis.de)" ], Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life." ]
+      , bio = \dir -> Html.p [] [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” ", Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(https://bauereignis.de)" ], Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life." ]
       , photo = "https://lh3.googleusercontent.com/x80L4cgraRGQsq0juS4izJwhwAMsvKE-Hu3sLXk6UsnjKf3mz-evo7J4espwIk1zep5BEZ-oxobH099Msoi68N4-W9IqyObHlpcYqh759JRNGReInZY50arDy6QL3jvT5-91xHFugugv7hNKog"
       , wide = False
       }
@@ -170,7 +170,7 @@ artists =
             \dir ->
                 Html.p []
                     [ Html.text "is a performance artist, researcher, and death doula. She collaborates with humans and uncontrollable materials, such as smoke, slime, drool, the nervous system and death/dying/grief. Together with Steve Heather she is exploring binaural sound for deep listening and deep touch. She is indebted to cultures of listening with the whole body, merging somatic practices, performance practices, herbalism, social work and visceral thinking together. Her works have been shown internationally. She works on intimacy and alienation as two forces of generative transformation."
-                    , weblink "siegmarzacharias.com" "www.siegmarzacharias.com"
+                    , weblink "siegmarzacharias.com" "http://www.siegmarzacharias.com"
                     , event dir "Wailing is breathing out loud for others" "https://www.facebook.com/events/524518955894480/"
                     ]
       , photo = "https://lh6.googleusercontent.com/p7Fm5qDad-npe-sJRJAtyYzvQx5DYf4Zp9RcO5aqjPMeoNSsGXZdHgSgSU00TCPNP8tl9BjgUWalAIasV33Hc5QPBkbMxacM3NcXZ8MYrAn8VBgS18lEN_0U-PI1R-WpJkRgTLr4rv2sH6IRUA"
@@ -240,7 +240,7 @@ artists =
                 Html.p []
                     [ Html.text "is a Berlin-based choreographer, performer and researcher. As founder of `Renae Shadler & Collaborators`, a project-based collective that develops performances with touring artists and non-professional participants, she has created works for theaters, train stations and city squares. Her choreographic practice `Worlding` (since 2015) explores how we shape and are shaped by our environment, and manifests in her creations, MaT curation/facilitation and the `Worlding` podcast series. "
                     , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
-                    , weblink "renaeshadler.com" "www.renaeshadler.com"
+                    , weblink "renaeshadler.com" "http://www.renaeshadler.com"
                     , internal dir "Series 1"
                     , internal dir "Series 2"
                     , internal dir "Series 3"
@@ -269,7 +269,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
             \dir ->
                 Html.p []
                     [ Html.text """in her work as garden activist, audio-visual artist, dipl.-ing. spacial planner and manager of a organic community supported agricultural farm (Solawi Isartal) explores techniques to activate alternative sensibilities. She is based in München (Germany)  working  towards ecological and social transformation and is an expert on queer ecologies. Her topics include queer gardening, urban gardening, alternative food systems. """
-                    , weblink "eine-andere-welt-ist-pflanzbar.de" "www.eine-andere-welt-ist-pflanzbar.de"
+                    , weblink "eine-andere-welt-ist-pflanzbar.de" "http://www.eine-andere-welt-ist-pflanzbar.de"
                     , event dir "learning to love the microbiome" "https://www.facebook.com/events/3392714897626309"
                     ]
       , photo = "https://lh4.googleusercontent.com/z_3YcxRYXSJ5LaRImksvQnOHbXpXm74eHJSg9IxBbld0UCHIvcgfjVdALvjMQMukhpJf-tlUPi5SNYaspAbN1wWZw3ArK31VhyYNj8sW_Wd2gKarhNkMthTI3w8tjXAcTsgvxx6WLItYIJVQp15pRyepmMpnoPpcoP0invyHPVmDrS3zjT0SKB13OA"
@@ -280,7 +280,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
             \dir ->
                 Html.p []
                     [ Html.text """is a Ugandan contemporary artist and dance researcher who works in traditional and non-traditional spaces in an era of post-colonialism and decolonization. In his practice, he presses against the body’s physical limits to create work that is utterly sincere. He addresses social, political and cultural issues, creating meaning through the interplay of the physical body, the psychological world of the mind, human emotions, and the soul. He is committed to constructing a sustainable scene for contemporary dance in Uganda. Ssempijja is also curious to know how the body creates and transfers information and secrets into a movement that builds up the body’s own vocabulary. He assumes that our bodies are comprised of archives of information which are activated when it comes to movement."""
-                    , weblink "Robertssempijja.com" "Robertssempijja.com"
+                    , weblink "Robertssempijja.com" "http://Robertssempijja.com"
                     , event dir "Known to Unknown, Alienation" "https://www.facebook.com/events/717565509528106"
                     ]
       , photo = "https://lh4.googleusercontent.com/PBMk2ySDAZA4m8EAR52f_0Te9Vj0WLiG-8HvMnE5ObecQwXoLge7arrZXNRHGwlTBOanyVCY5-RaakKynfxbKAIDq5oG2aPj9Lz6bv9Ff_TWiKVwsrar-mfhdm1FkND5peS-CqDOyzdF-bz8WnEfJb4mVPHo438UI3EwRiRBseH6omCam_uUWSwVaw"
@@ -291,7 +291,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
             \dir ->
                 Html.p []
                     [ Html.text """is an ethnic-cultural political movement ruled by drums. It is situated in the neighborhood of Perus, northwest of the city of São Paulo in Brazil. Created by young cultural activists with the aim of facing the problems and dilemmas that surround the periphery, mainly poverty and violence. Since the beginning, human development through art, culture and knowledge are our instruments and tools for producing effective changes in this reality. Because these, understood and articulated in a systemic way, promote and provide guarantee of access to an essential human right: Emancipation, Expanding and amplifying the imaginary universe and the repertoire of languages; Autonomy, generating work, income and prospects for young people."""
-                    , weblink "quilombaque.org.br" "https://quilombaque.org.br/"
+                    , weblink "quilombaque.org.br" "http://quilombaque.org.br/"
                     ]
       , photo = "https://lh6.googleusercontent.com/6dHBFr_R1mYYDDw1s9LA-jZBz0YjN81lvuQiXp5w_ANbbgrUYwlMyI7uSFx_ML7JHbHcd8-sgcrPBPTPuM4RP3-GuNXVhuY2OtlxdaAivHIQnpQDzQjnx7FSmD8Z3AiIVSUp8RlBJnGvnfeO7ouUz6JH7ynvsfSUcXMHCJF6E6_gdHO7m7NtFmXsDQ"
       , wide = True
@@ -311,7 +311,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
             \dir ->
                 Html.p []
                     [ Html.text "is a Berlin-based sound artist and researcher working at intersections of Earth-based sound, sonic sensualities, and climate change. Having studied composition with experimental music pioneers Pauline Oliveros, Fred Frith, Maggi Payne, and Zeena Parkins at the Center for Contemporary Music at Mills College, Hertz works fluidly between the worlds of composed music for ensembles, electronic music and installation, performance, and film. His work has been seen at venues such as Fylkingen (SE), Ars Electronica Festival (AT), Sophiensaele (DE), the National Science and Media Museum (UK), Opera North (UK), and the Macerata Opera Festival (IT) among many others. Hertz’s writings on the relationships between sound and climate can be found in interdisciplinary journals and platforms, as well as two recent book chapters. Hertz is currently a AHRC/Techne-funded PhD candidate at Royal Holloway, University of London (Centre for GeoHumanities), researching sound-sensing networks of climate change at the scales of atmospheric, geologic, and bioacoustic conservation."
-                    , weblink "samhertzsound.com" "www.samhertzsound.com"
+                    , weblink "samhertzsound.com" "http://www.samhertzsound.com"
                     , event dir "Scalar Sensorium" "https://www.facebook.com/events/1241796136377315"
                     ]
       , photo = "https://lh3.googleusercontent.com/MecYX84rnf6hfsKvVM_kvr31KsBbjuxEQiGSoElBlQp6zFFfA7HJ_EGYrBbPwynqmfvW82wUJFg1Por5WBfa0l4tS_hQhih6dLZohpWsxJDbKDPysM9d9JAt5F0-q_8nbzb89Kwlhc1YHISDr7xRsRBRD2hILwsb58ViOiA1YLXC3mZC9Qe4Dm-m-Ns6xg"
