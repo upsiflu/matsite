@@ -114,6 +114,10 @@ update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case ( msg, model ) of
         ---- Navigation
+        ( ScrolledTo id, Model m ) ->
+            -- TODO: Change Url path instead (Cmd)
+            ( Model { m | accordion = Accordion.goToId id m.accordion }, Cmd.none )
+
         ---- Client View
         ( ZoneReceived result, Loading o ) ->
             case result of

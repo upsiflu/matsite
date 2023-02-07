@@ -13,6 +13,7 @@
         text-align: right;
         max-width: calc(var(--column) - 100% - 2rem);
         right: calc(0px - var(--column) + 100%);
+        overflow:visible;
 
         li {background:white;}
         li.focused {

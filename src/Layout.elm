@@ -151,6 +151,8 @@ aStyle =
 sanitise : String -> String
 sanitise =
     String.replace " " "-"
+        >> String.replace "\u{00A0}" "-"
+        >> String.replace "&nbsp;" "-"
         >> String.replace "/" "-"
 
 

@@ -8,6 +8,7 @@ module Accordion exposing
     , goToId, goToParentId
     , parentId, focusId
     , ViewMode, view
+    , find
     )
 
 {-|
@@ -452,6 +453,20 @@ goToParentId pId =
 
 
 {-| -}
+find : ( Maybe String, Maybe String ) -> Accordion -> Accordion
+find ( maybeParent, maybeFocus ) =
+    case ( maybeParent, maybeFocus ) of
+        ( _, Just focusId_ ) ->
+            goToClosestId focusId_
+
+        ( Just parentId_, Nothing ) ->
+            goToParentId parentId_
+
+        ( Nothing, Nothing ) ->
+            mapTree Tree.root
+
+
+{-| -}
 goToId : String -> Accordion -> Accordion
 goToId id =
     .id >> (==) id |> Tree.Find |> Tree.go |> mapTree
@@ -640,11 +655,11 @@ view :
     -> Accordion
     -> Ui Aspect ( String, Html msg )
 view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) accordion_ =
-    Ui.byPath <|
-        \path ->
+    Ui.byLocation <|
+        \( path, fragment ) ->
             let
                 accordion =
-                    goToParentId (Debug.log "Accordion.view -> path" path) accordion_
+                    find ( path, fragment ) accordion_
 
                 c =
                     config accordion

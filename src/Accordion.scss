@@ -1,5 +1,9 @@
 @use 'Accordion/Region';
 
+* {
+    // scroll-behavior:auto;
+}
+
 :root {
     --x-offset: 0px;
     --y-offset: 0px;

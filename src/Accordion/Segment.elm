@@ -561,42 +561,53 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                             ]
                    )
 
-        viewBounds =
-            div [ class "bounds" ] []
+        viewAnchor =
+            if position.role == Aisle || position.role == Breadcrumb || position.role == BreadcrumbAisle then
+                [ --( "fragment-me", Html.node "fragment-me-not" [] [] )
+                  --( "anchor", div [ class "anchor" ] [] )
+                  ( "bounds", div [ class "bounds" ] [] )
+                ]
+
+            else if position.role == Parent then
+                [ --( "center-me", Html.node "center-me" [] [] )
+                  ( "bounds", div [ class "bounds" ] [] )
+                ]
+
+            else if position.role == Focus then
+                [ --( "center-me", Html.node "center-me" [] [] )
+                  --, ( "anchor", div [ class "anchor" ] [] )
+                  ( "keep-visible", Html.node "keep-visible" [] [] )
+                , ( "anchor", div [ class "anchor" ] [] )
+                , ( "bounds", div [ class "bounds" ] [] )
+                ]
+
+            else
+                []
 
         viewFab () =
             fab config model
                 |> Maybe.map (Fab.view config)
                 |> Maybe.withDefault (Html.text "")
 
-        viewCenterMe =
-            if position.role == Focus then
-                Html.node "center-me" [] []
-
-            else
-                Html.text ""
-
         scene : Ui aspect ( String, Html msg )
         scene =
             (if hideBecauseVeryFarAway then
                 [ ( "caption", model.article.caption |> viewCaption )
                 , ( "body", Html.div [ class "body waiting" ] [] )
-                , ( "bounds", viewBounds )
                 ]
 
              else
                 [ ( "caption", model.article.caption |> viewCaption |> Layout.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Layout.notIf (isPeek model) )
                 , ( "body", model.article.body |> viewBody () )
-                , ( "bounds", viewBounds )
                 , ( "peekLink", viewPeekLink () )
                 , ( "byline", viewByline )
-                , ( "centerMe", viewCenterMe )
 
                 --, ( "orientation", Article.orientation model.article |> Article.orientationToString |> Html.text |> List.singleton |> Controls.overlay Controls.TopLeft |> Ui.debugOnly )
                 --, ( "path", model.position.path |> List.map (Fold.directionToString >> Html.text) |> Controls.overlay Controls.TopRight |> Ui.debugOnly )
                 , ( "fab", viewFab () )
                 ]
             )
+                ++ viewAnchor
                 |> List.map (Tuple.mapSecond (Html.map never))
                 |> Ui.foliage
                 |> Ui.wrap

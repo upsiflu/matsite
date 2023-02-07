@@ -10,7 +10,10 @@ customElements.define(
     }
 
     connectedCallback() {
-      window.requestAnimationFrame(() => this.parentElement?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" }));
+      setTimeout(() => {
+        window.requestAnimationFrame(() => this.parentElement?.querySelector(".anchor")?.scrollIntoView(
+          { behavior: "smooth", block: "center", inline: "center" }));
+      }, 100)
     }
 
     static get observedAttributes() {
