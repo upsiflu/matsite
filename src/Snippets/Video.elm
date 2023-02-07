@@ -68,9 +68,6 @@ videochannel =
                             ]
                         ]
                     ]
-
-        hVideo =
-            714389952
     in
     (\dir ->
         article []
@@ -82,7 +79,7 @@ videochannel =
               , ( "Series 2", 544616520 )
               , ( "Series 3", 572540457 )
               , ( "Radialsystem", 685421693 )
-              , ( "Perform[d]ance", 0 )
+              , ( "Perform[d]ance", 791948098 )
               ]
                 |> List.map makeTrailer
                 |> ul [ class "video-carousel" ]

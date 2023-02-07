@@ -1019,16 +1019,25 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                     ]
                            )
             in
-            c.tree
-                |> Tree.mapByPosition Tuple.pair
-                |> Tree.view
-                    (Tree.Uniform renderTree
-                        { toHtml =
-                            createRegions
-                                >> List.concatMap renderRegion
-                                >> renderAccordion
-                        }
-                    )
+            Ui.byPath
+                (\path_ ->
+                    c.tree
+                        |> (if path_ == "" then
+                                Tree.root
+
+                            else
+                                identity
+                           )
+                        |> Tree.mapByPosition Tuple.pair
+                        |> Tree.view
+                            (Tree.Uniform renderTree
+                                { toHtml =
+                                    createRegions
+                                        >> List.concatMap renderRegion
+                                        >> renderAccordion
+                                }
+                            )
+                )
 
 
 type alias A =
