@@ -573,6 +573,7 @@ directory =
     tree
         >> Tree.flatMap (.id >> (\id -> ( id, id )))
         >> Directory.fromList
+        >> Directory.insert "Foregrounding the Background" "Radialsystem Berlin"
 
 
 
@@ -820,7 +821,7 @@ view ({ zone, now, do, scrolledTo, scrolledIntoNowhere, volatile } as mode) acco
                                             )
                                 in
                                 Ui.singleton
-                                    |> Ui.with Scene backStage
+                                    --|> Ui.with Scene backStage
                                     |> Ui.with Control myEditingControl
                                     |> Ui.with Scene myOverlays
                                     |> Ui.with Scene (List.concat items)
