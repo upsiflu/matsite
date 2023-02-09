@@ -12,6 +12,7 @@ import Snippets.About as About
 import Snippets.Anarchive as Anarchive
 import Snippets.Artist as Artist
 import Snippets.Festival as Festival
+import Snippets.Gallery as Gallery
 import Snippets.Intro as Intro
 import Snippets.Series as Series
 import Snippets.Traces as Traces
@@ -41,6 +42,18 @@ addTemplates zone =
                     )
                 |> List.foldl (<|) t
 
+        addGalleryTemplates t =
+            Gallery.galleryEntries
+                |> List.map
+                    (\entry ->
+                        let
+                            uid =
+                                Layout.sanitise entry.name
+                        in
+                        presetBody uid (Gallery.view entry)
+                    )
+                |> List.foldl (<|) t
+
         addLabsTemplates t =
             [ Series.presets zone
                 |> List.map
@@ -52,15 +65,6 @@ addTemplates zone =
                     (\( key, value ) ->
                         presetInfo key value
                     )
-
-            {--Todo: Find solution for this.
-            Either TOC without Body or Byline or Talk Renae Out
-            
-            , Series.headings
-                |> List.map
-                    (\( key, value ) ->
-                        presetBody key value
-                    )-}
             ]
                 |> List.concat
                 |> List.foldl (<|) t
@@ -85,12 +89,13 @@ addTemplates zone =
                 >> presetInfo "Traces" Traces.tracesInfo
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Article.Toc
+                >> presetInfo "Gallery" Article.Toc
                 >> presetInfo "Labs" Article.Toc
                 >> presetBody "Tidal Shifts Collage" Festival.tidalShiftsCollage
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
                 >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2
     in
-    addArtistTemplates >> addLabsTemplates >> addOtherTemplates
+    addArtistTemplates >> addGalleryTemplates >> addLabsTemplates >> addOtherTemplates
 
 
 initial : Time.Zone -> Accordion
@@ -119,6 +124,19 @@ subscribeLink =
 initialActions : Time.Zone -> List Accordion.Action
 initialActions timezone =
     let
+        gallery : List Accordion.Action
+        gallery =
+            Gallery.galleryEntries
+                |> List.map
+                    (\{ name, wide } ->
+                        [ Name name
+                        , Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                        , Modify (WithClasses [ "fg" ])
+                        ]
+                    )
+                |> List.intersperse [ Go Right ]
+                |> List.concat
+
         artists : List Accordion.Action
         artists =
             Artist.artists
@@ -266,6 +284,14 @@ initialActions timezone =
         :: Go Right
         :: Name "Archive"
         :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
+        :: Go Left
+        :: Go Up
+        :: Go Right
+        :: Name "Gallery"
+        :: Go Down
+        :: gallery
+        ++ Go Left
+        :: Go Left
         :: Go Left
         :: Go Up
         :: Go Right

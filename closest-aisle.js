@@ -41,9 +41,9 @@ customElements.define(
         let right = rect => rect.x + rect.width;
         let topLeft = rect => rect;
         let outOfScope = rect => {
-          console.log("out of scope?");
-          console.log(" WINDOW: 0 ..", window.innerWidth, " |  0 ..", window.innerHeight)
-          console.log(" RECT:  ", rect.x, "..", rect.x + rect.width, " | ", rect.y, "..", rect.y + rect.height)
+          // console.log("out of scope?");
+          // console.log(" WINDOW: 0 ..", window.innerWidth, " |  0 ..", window.innerHeight)
+          // console.log(" RECT:  ", rect.x, "..", rect.x + rect.width, " | ", rect.y, "..", rect.y + rect.height)
           return (rect.x > window.innerWidth / 2 ||
             rect.y > window.innerHeight / 2 ||
             rect.x + rect.width < window.innerWidth / 2 ||
@@ -71,7 +71,6 @@ customElements.define(
         var closestAisleSegment = null;
 
         let outerBounds = l => {
-          console.log(l);
           return l.map(item => item.getBoundingClientRect()).reduce(unionRect);
         }
 
