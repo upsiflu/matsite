@@ -360,7 +360,7 @@ toc config { branch, position } =
                         zipper
                         |> Zipper.flat
                         |> List.filterMap identity
-                        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 6 |> Basics.min 2 ))
+                        |> (\l -> ( Html.ul [ class "info toc" ] l, List.length l // 2 |> Basics.min 1 |> Basics.max 2 ))
                 )
 
     else

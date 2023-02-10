@@ -58,7 +58,7 @@ tidalShifts2 =
             ]
         ]
         |> always
-        |> Article.Content Nothing
+        |> Article.Content (Just "\u{00A0}")
 
 
 tidalShiftsCollage : BodyTemplate

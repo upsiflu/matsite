@@ -574,6 +574,7 @@ directory =
         >> Tree.flatMap (.id >> (\id -> ( id, id )))
         >> Directory.fromList
         >> Directory.insert "Foregrounding the Background" "Radialsystem Berlin"
+        >> Directory.insert "Tidal Shifts" "Perform[d]ance Stralsund"
 
 
 

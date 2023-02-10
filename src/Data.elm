@@ -54,6 +54,18 @@ addTemplates zone =
                     )
                 |> List.foldl (<|) t
 
+        addEssayTemplates t =
+            Anarchive.essays
+                |> List.map
+                    (\entry ->
+                        let
+                            uid =
+                                Layout.sanitise entry.heading
+                        in
+                        presetBody uid (Anarchive.viewEssay entry)
+                    )
+                |> List.foldl (<|) t
+
         addLabsTemplates t =
             [ Series.presets zone
                 |> List.map
@@ -77,9 +89,7 @@ addTemplates zone =
                 >> presetBody "Credits" Festival.radialsystemCredits
                 >> presetBody "Home" Intro.intro
                 >> presetBody "Incipit" Anarchive.incipit
-                >> presetInfo "Library" Article.Toc
-                >> presetBody "Essay0" Anarchive.essay0
-                >> presetBody "Essay1" Anarchive.essay1
+                -->> presetInfo "Library" Anarchive.blurb
                 >> presetBody "Archive" Anarchive.anarchive
                 >> presetBody "About MaT" About.mat
                 >> presetBody "Team" About.team
@@ -95,7 +105,7 @@ addTemplates zone =
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
                 >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2
     in
-    addArtistTemplates >> addGalleryTemplates >> addLabsTemplates >> addOtherTemplates
+    addArtistTemplates >> addGalleryTemplates >> addLabsTemplates >> addEssayTemplates >> addOtherTemplates
 
 
 initial : Time.Zone -> Accordion
@@ -130,6 +140,19 @@ initialActions timezone =
                 |> List.map
                     (\{ name, wide } ->
                         [ Name name
+                        , Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                        , Modify (WithClasses [ "fg" ])
+                        ]
+                    )
+                |> List.intersperse [ Go Right ]
+                |> List.concat
+
+        essays : List Accordion.Action
+        essays =
+            Anarchive.essays
+                |> List.map
+                    (\{ heading } ->
+                        [ Name heading
                         , Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                         , Modify (WithClasses [ "fg" ])
                         ]
@@ -273,12 +296,8 @@ initialActions timezone =
         :: Go Right
         :: Name "Library"
         :: Go Down
-        :: Name "Essay0"
-        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
-        :: Go Right
-        :: Name "Essay1"
-        :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
-        :: Go Right
+        :: essays
+        ++ Go Right
         :: Name "Incipit"
         :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
         :: Go Right
@@ -290,10 +309,7 @@ initialActions timezone =
         :: Name "Gallery"
         :: Go Down
         :: gallery
-        ++ Go Left
-        :: Go Left
-        :: Go Left
-        :: Go Up
+        ++ Go Up
         :: Go Right
         :: Name "About"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
@@ -316,6 +332,7 @@ initialActions timezone =
         :: Go Left
         :: Go Left
         :: Go Up
+        :: Go Left
         :: Go Left
         :: Go Left
         :: Go Left

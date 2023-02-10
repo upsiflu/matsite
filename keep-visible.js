@@ -37,7 +37,7 @@ customElements.define(
           observer = new IntersectionObserver(intersected, options);
           if (this.parentElement?.id)
             observer.observe(this.parentElement || this);
-        }, 5000)
+        }, 1500)
       }
 
 

@@ -344,6 +344,17 @@ She has been opening up a dialogue space between continents through a transdisci
       , photo = "https://lh3.googleusercontent.com/CRNg6FseXSkpjgv0bZFY6FB5V2YRbzzsDIe0DXXgN9W4SCmSHuSxcRtfiflvcB5vI0TZW1ZpgFjVOhzbkxBTLLmuNgO7ALcIhONXu1aY2O9RT7_acXJfM4fjxTnCiZ9ixh9rTnbIUMEQpztz41_qA-KxuvarPtlI27Wm4zg2gLwU2PKcdXjsevu6pxjiZg"
       , wide = True
       }
+    , { name = "Anna\u{00A0}Farley"
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text " is an autistic artist based in London. Balancing concept and craft, Anna makes process-based art using methods of sculpture, photography, sound, drawing, text, and participation. In pursuit of making an invisible disability visible, Anna consults, creates and delivers bespoke Autism awareness training nationally and internationally. She has worked with Tate, Photofusion, The BFI, Project Art Works, Creativity Works, and is lead inclusivity designer for Place with Purpose. She was nominated and recognized by Dimensions UK as an award winner of the Autism Leaders List 2018 for her contribution to changing communities."
+                    , weblink "www.annafarely.co.uk" "http://www.annafarely.co.uk"
+                    , Html.a [href ("/"++Layout.sanitise "‘I think this may be a threshold’")] [Html.text "Essay ‘I think this may be a threshold’"]
+                    ]
+      , photo = "https://movingacrossthresholds.com/asset/artist/Anna%20Farley%20headshot.png"
+      , wide = False
+      }
     ]
         |> List.sortBy (.name >> String.split "\u{00A0}" >> List.last >> Maybe.withDefault "Y")
 
