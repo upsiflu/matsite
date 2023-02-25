@@ -1,6 +1,7 @@
 {
   "license": "CC-BY-NC-SA-4.0",
   "devDependencies": {
+    "@babel/core": "^7.21.0",
     "@parcel/transformer-elm": "^2.5.0",
     "@parcel/transformer-sass": "^2.5.0",
     "elm": "^0.19.1-5",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "@vimeo/player": "^2.16.4",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "cross-env": "^7.0.3",
     "elm-doc-preview": "^5.0.5",
     "firebase": "^9.14.0",
