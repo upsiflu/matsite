@@ -431,6 +431,12 @@ view :
     -> Ui Aspect ( String, Html msg )
 view ({ zone, templates, directory, do, delete, reset, rename, insert } as config) ({ position, article } as model) =
     let
+        parentId =
+            model.breadcrumbs ()
+                |> List.head
+                |> Maybe.map .id
+                |> Maybe.withDefault "/"
+
         -- SCENE --
         hideBecauseVeryFarAway =
             model.position.role == Aisle && List.length model.position.path > 5
@@ -444,14 +450,19 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
         viewCaption cc =
             let
                 oneEntry =
-                    Layout.header "" model.article.id cc.text
+                    --Layout.header "" model.article.id cc.text
+                    Layout.bounceHeader
+                        [ Html.text cc.text ]
+                        { there = ( Just model.article.id, Nothing ), here = ( Just parentId, Nothing ) }
 
                 secondEntry o =
-                    Html.div [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ]
-                        [ oneEntry
-                        , Occurrence.view (Occurrence.Short (Tuple.second zone) Occurrence.Days) o
-                            |> Layout.htmlHeader "" model.article.id
-                        ]
+                    (oneEntry
+                        ++ Layout.bounceHeader
+                            [ Occurrence.view (Occurrence.Short (Tuple.second zone) Occurrence.Days) o ]
+                            { there = ( Just model.article.id, Nothing ), here = ( Just parentId, Nothing ) }
+                    )
+                        |> Ui.wrap
+                            (\c -> [ ( "headerSegment", Keyed.node "div" [ class "multipleHeaders", css [ displayFlex, justifyContent spaceBetween ] ] c ) ])
             in
             if cc.showsDate then
                 model.article.fab
@@ -480,7 +491,7 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                 _ ->
                     Html.text ""
 
-        viewBody () body =
+        viewBody body =
             Keyed.node "div"
                 [ class "body", classList [ ( "illustrative", Article.isIllustration config model.article ) ] ]
             <|
@@ -592,13 +603,11 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
         scene : Ui aspect ( String, Html msg )
         scene =
             (if hideBecauseVeryFarAway then
-                [ ( "caption", model.article.caption |> viewCaption )
-                , ( "body", Html.div [ class "body waiting" ] [] )
+                [ ( "body", Html.div [ class "body waiting" ] [] )
                 ]
 
              else
-                [ ( "caption", model.article.caption |> viewCaption |> Layout.notIf (Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) |> Layout.notIf (isPeek model) )
-                , ( "body", model.article.body |> viewBody () )
+                [ ( "body", model.article.body |> viewBody )
                 , ( "peekLink", viewPeekLink () )
                 , ( "byline", viewByline )
 
@@ -610,6 +619,8 @@ view ({ zone, templates, directory, do, delete, reset, rename, insert } as confi
                 ++ viewAnchor
                 |> List.map (Tuple.mapSecond (Html.map never))
                 |> Ui.foliage
+                --|> (++) (model.article.caption |> viewCaption)
+                |> (++) ((\() -> model.article.caption |> viewCaption) |> Layout.uiNotIf ((Article.hasBody config model.article && model.position.isLeaf && not model.position.isRoot) || isPeek model))
                 |> Ui.wrap
                     (Keyed.node "li"
                         (id model.article.id

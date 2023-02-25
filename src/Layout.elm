@@ -1,11 +1,16 @@
-module Layout exposing (aStyle, anchoredLabel, bleedingStyle, byline, bylineMulti, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, notIf, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, unit)
+module Layout exposing (aStyle, anchoredLabel, bleedingStyle, bounceHeader, byline, bylineMulti, dense, h2, h2Style, hamburgerMenu, header, headerHelp, htmlHeader, notIf, p, pStyle, rhythm, sanitise, section, theme, toProperty, typography, uiNotIf, unit)
 
 import Bool.Extra as Bool
 import Css exposing (..)
 import Css.Global as Global
 import Css.Media as Media
+import Html as Unstyled
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attributes exposing (class, css, href)
+import Restrictive
+import Restrictive.Layout.Region as Region
+import Restrictive.State
+import Restrictive.Ui exposing (Ui)
 import Svg.Styled as Svg exposing (svg)
 import Svg.Styled.Attributes as SvgAttributes
 
@@ -20,6 +25,14 @@ notIf =
     Bool.ifElse
         (\_ -> Html.text "")
         identity
+
+
+{-| -}
+uiNotIf : Bool -> (() -> List a) -> List a
+uiNotIf =
+    Bool.ifElse
+        (\_ -> [])
+        ((|>) ())
 
 
 
@@ -245,6 +258,52 @@ headerHelp query id =
                 , padding2 rhythm.verticalPadding rhythm.padding
                 ]
             ]
+
+
+
+{--Html.h1
+                    [ css
+                        [ fontFamilies [ "subaruheavy", "sans" ]
+                        , fontSize rhythm.default
+                        , lineHeight rhythm.default
+                        , margin zero
+                        ]
+                    ]
+
+                 -- Html.a css
+                 --     [ display block
+                 --     , padding2 rhythm.verticalPadding rhythm.padding
+                 --     ]
+-}
+
+
+bounceHeader : List (Html Never) -> { there : ( Maybe Restrictive.State.Path, Restrictive.State.Fragment ), here : ( Maybe Restrictive.State.Path, Restrictive.State.Fragment ) } -> Ui aspect ( String, Html msg )
+bounceHeader face =
+    Restrictive.State.bounce
+        >> Restrictive.State.view
+            { attributes =
+                [ Attributes.class "segmentLabel"
+                , css
+                    [ display block
+                    , padding2 rhythm.verticalPadding rhythm.padding
+                    ]
+                ]
+            , contents =
+                [ Html.h1
+                    [ css
+                        [ fontFamilies [ "subaruheavy", "sans" ]
+                        , fontSize rhythm.default
+                        , lineHeight rhythm.default
+                        , margin zero
+                        ]
+                    ]
+                    (List.map (Html.map never) face)
+                ]
+            , customHtml = { element = Html.a, href = Attributes.href, attribute = Attributes.attribute }
+            , occlusions = Region.Some []
+            , position = identity
+            }
+        >> Restrictive.customLink
 
 
 header : String -> String -> String -> Html msg
