@@ -113,7 +113,7 @@ videocarousel =
               , ( 687420793, "Glitching scores and code" )
               , ( 691848907, "Fatigue as creative proposition" )
               , ( 728908770, "Foregrounding the\u{00A0}Background" )
-              , ( 744657368, "Konwn\u{00A0}to Unknown, Alienation" )
+              , ( 744657368, "Known\u{00A0}to Unknown, Alienation" )
               , ( 737716811, "Learning to love the microbiome" )
               , ( 791948098, "Tidal Shifts" )
               , ( 789192195, "Scalar Sensorium" )

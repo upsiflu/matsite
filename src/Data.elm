@@ -309,7 +309,10 @@ initialActions timezone =
         :: Name "Gallery"
         :: Go Down
         :: gallery
-        ++ Go Up
+        ++ Go Left
+        :: Go Left
+        :: Go Left
+        :: Go Up
         :: Go Right
         :: Name "About"
         :: Modify (WithFab (Just <| Fab.Subscribe { link = subscribeLink }))
