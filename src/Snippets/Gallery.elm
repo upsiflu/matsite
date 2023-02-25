@@ -2,9 +2,8 @@ module Snippets.Gallery exposing (Entry, galleryEntries, view)
 
 import Article
 import Directory exposing (Directory)
-import Html.String as Html exposing (Html, text, toHtml)
+import Html.String as Html exposing (Html, text)
 import Html.String.Attributes exposing (..)
-import Html.Styled exposing (fromUnstyled)
 import Layout
 import List.Extra as List
 import Snippet exposing (cacheImg)

@@ -31,22 +31,20 @@ events =
     , "The interactive MaT archive includes: open documents, full-length videos of past events, a library of worded-companions and commissioned essays by past facilitators."
     ]
         |> List.map (text >> List.singleton >> p [])
-        |> (\paragraphs ->
-                paragraphs
-                    ++ [ h2 [] [ text "Festivals" ]
-                       , ul []
-                            [ li [] [ a [ href <| Layout.sanitise "Radialsystem Berlin" ] [ text "Foregrounding the background" ] ]
-                            , li [] [ a [ href <| Layout.sanitise "Perform[d]ance Stralsund" ] [ text "Tidal Shifts" ] ]
-                            ]
-                       , h2 [] [ text "Labs" ]
-                       , ul [] <|
-                            List.map
-                                (\i ->
-                                    li [] [ a [ href <| Layout.sanitise "Series" ++ String.fromInt i ] [ text <| "Series" ++ String.fromInt i ] ]
-                                )
-                                [ 1, 2, 3, 4, 5, 6 ]
-                       ]
-           )
+        |> (++)
+            [ h2 [] [ text "Festivals" ]
+            , ul []
+                [ li [] [ a [ href <| Layout.sanitise "Radialsystem Berlin" ] [ text "Foregrounding the background" ] ]
+                , li [] [ a [ href <| Layout.sanitise "Perform[d]ance Stralsund" ] [ text "Tidal Shifts" ] ]
+                ]
+            , h2 [] [ text "Labs" ]
+            , ul [] <|
+                List.map
+                    (\i ->
+                        li [] [ a [ href <| Layout.sanitise "Series" ++ String.fromInt i ] [ text <| "Series" ++ String.fromInt i ] ]
+                    )
+                    [ 1, 2, 3, 4, 5, 6 ]
+            ]
         |> article [ class "richtext" ]
         |> always
         |> Article.Content (Just "\u{00A0}")

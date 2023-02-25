@@ -4,5 +4,19 @@
   "editor.suggest.insertMode": "insert",
   "editor.suggest.localityBonus": true,
   "editor.suggest.shareSuggestSelections": false,
-  "files.autoSave": "off"
+  "files.autoSave": "off",
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#000",
+    "activityBar.activeBackground": "#2c2c2c",
+    "sideBar.background": "#000",
+    "activityBarBadge.background": "#912097",
+    "tab.inactiveBackground": "#000",
+    "[Material Theme Darker High Contrast]": {
+      "editor.background": "#111"
+    },
+    "list.errorForeground": "#b33030",
+    "list.warningForeground": "#adb538",
+    "gitDecoration.modifiedResourceForeground": "#9e9e9e",
+    "gitDecoration.untrackedResourceForeground": "#908d8d"
+  }
 }

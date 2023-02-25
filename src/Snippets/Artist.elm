@@ -2,9 +2,8 @@ module Snippets.Artist exposing (Artist, artists, view, viewPhoto)
 
 import Article
 import Directory exposing (Directory)
-import Html.String as Html exposing (Html, text, toHtml)
+import Html.String as Html exposing (Html, text)
 import Html.String.Attributes exposing (..)
-import Html.Styled exposing (fromUnstyled)
 import Layout
 import List.Extra as List
 import Snippet exposing (cacheImg)
@@ -350,7 +349,7 @@ She has been opening up a dialogue space between continents through a transdisci
                 Html.p []
                     [ Html.text " is an autistic artist based in London. Balancing concept and craft, Anna makes process-based art using methods of sculpture, photography, sound, drawing, text, and participation. In pursuit of making an invisible disability visible, Anna consults, creates and delivers bespoke Autism awareness training nationally and internationally. She has worked with Tate, Photofusion, The BFI, Project Art Works, Creativity Works, and is lead inclusivity designer for Place with Purpose. She was nominated and recognized by Dimensions UK as an award winner of the Autism Leaders List 2018 for her contribution to changing communities."
                     , weblink "www.annafarely.co.uk" "http://www.annafarely.co.uk"
-                    , Html.a [href ("/"++Layout.sanitise "‘I think this may be a threshold’")] [Html.text "Essay ‘I think this may be a threshold’"]
+                    , Html.a [ href ("/" ++ Layout.sanitise "‘I think this may be a threshold’") ] [ Html.text "Essay ‘I think this may be a threshold’" ]
                     ]
       , photo = "https://movingacrossthresholds.com/asset/artist/Anna%20Farley%20headshot.png"
       , wide = False

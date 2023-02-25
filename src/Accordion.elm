@@ -148,12 +148,6 @@ tree =
 
 
 {-| -}
-mapTemplates : (Article.Templates -> Article.Templates) -> Accordion -> Accordion
-mapTemplates fu =
-    mapConfig <| \c -> { c | templates = fu c.templates }
-
-
-{-| -}
 exit : Accordion -> Accordion
 exit =
     mapTree <|

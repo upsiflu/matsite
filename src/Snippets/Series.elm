@@ -1,4 +1,4 @@
-module Snippets.Series exposing (Collage(..), Event, Series, allCaptions, byline, closeEvent, collageColumns, collageToIllustration, data, eventDate, eventbriteLink, headings, presetInfos, presets, structure)
+module Snippets.Series exposing (Collage(..), Event, Series, byline, collageColumns, collageToIllustration, data, eventDate, eventbriteLink, headings, presetInfos, presets, structure)
 
 import Accordion exposing (Action(..))
 import Article exposing (InfoTemplate(..), Orientation(..), Shape(..))
@@ -8,7 +8,6 @@ import Fold exposing (Direction(..))
 import Html.String exposing (..)
 import Html.String.Attributes exposing (..)
 import Layout
-import Levenshtein
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Occurrence exposing (Occurrence, Precision(..))
@@ -71,26 +70,6 @@ type alias Event =
 
 type alias Series =
     { number : Int, motto : String, events : List Event }
-
-
-allCaptions : List String
-allCaptions =
-    data
-        |> List.concatMap
-            (\s ->
-                ("Series " ++ String.fromInt s.number)
-                    :: List.map
-                        .title
-                        s.events
-            )
-
-
-closeEvent : Int -> String -> Maybe String
-closeEvent proximity str =
-    List.map (\caption -> ( Levenshtein.distance str caption, Layout.sanitise caption )) allCaptions
-        |> List.minimumBy Tuple.first
-        |> Maybe.filter (Tuple.first >> (>) proximity)
-        |> Maybe.map Tuple.second
 
 
 data : List Series

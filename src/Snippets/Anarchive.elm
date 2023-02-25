@@ -1,8 +1,9 @@
-module Snippets.Anarchive exposing (Essay, anarchive, blurb, essay0, essay1, essays, incipit, viewEssay)
+module Snippets.Anarchive exposing (Essay, anarchive, blurb, essays, incipit, viewEssay)
 
 import Article exposing (InfoTemplate(..))
 import Html.String as Html exposing (..)
 import Html.String.Attributes as Attr exposing (class, href, src, title)
+import Layout
 import Snippet exposing (cacheImg)
 
 
@@ -35,44 +36,6 @@ incipit =
         ]
         |> always
         |> Article.Illustration
-
-
-{-| -}
-essay0 : Article.BodyTemplate
-essay0 =
-    Html.div
-        [ class "richtext"
-        ]
-        [ p []
-            [ text """“Following cues from Walter Benjamin, I understand thresholds not so much as limits or borders [grenze], but as sites where potential swells [schwellen]. Think of wave energy – the metabolic pulse of the oceanic suck and push, where bodies and forces collide... Bodies and lived experiences are always threaded with thresholds: encounters that render us porous; chances to stitch ourselves anew. Thresholds, like waves, are generative zones of potential.”""" ]
-        , p []
-            [ text "--", a [ href "/ally-bisshop" ] [ text "Ally Bisshop" ] ]
-        , p []
-            [ a [ Attr.target "_blank", href "https://www.are.na/block/18079291" ]
-                [ text "📖 Read Ally's essay 'For the exhausted ones: scores for moving through, moving with, fatigue.'" ]
-            ]
-        ]
-        |> always
-        |> Article.Content (Just "For the exhausted ones")
-
-
-{-| -}
-essay1 : Article.BodyTemplate
-essay1 =
-    Html.div
-        [ class "richtext"
-        ]
-        [ p []
-            [ text "“Creativity and innovation within soft limits is a general character of the MaT practice. Each session has a theme, a set of readings, proposed experiential practices and propositions, and often a co-facilitator. There is also a temporal limitation; the designated 90 minutes marks the boundaries of the event. This additionally makes the practice urgent, ephemeral and thus all the more precious.”" ]
-        , p []
-            [ text "--", a [ href "/balam-kenter" ] [ text "Balam Kenter" ] ]
-        , p []
-            [ a [ Attr.target "_blank", href "https://arena-attachments.s3.amazonaws.com/15227955/58dc7d974f3347933305b564051c6b09.pdf?1645189093" ]
-                [ text "📖 Read Balam's essay 'Hello, good evening, and welcome to The Middle of the Film!'" ]
-            ]
-        ]
-        |> always
-        |> Article.Content (Just "Welcome to The Middle of the Film!")
 
 
 type alias Essay =
@@ -142,7 +105,7 @@ viewEssay essay =
             , p []
                 [ text essay.excerpt ]
             , p []
-                [ text "by ", a [ href ("/" ++ essay.author) ] [ text essay.author ] ]
+                [ text "by ", a [ href ("/" ++ Layout.sanitise essay.author) ] [ text essay.author ] ]
             , p []
                 [ a [ Attr.target "_blank", href essay.link ]
                     [ text "📖 Read the full essay" ]
