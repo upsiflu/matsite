@@ -100,7 +100,7 @@ addTemplates zone =
                 >> presetBody "Contact" About.contact
                 >> presetInfo "Artists" Article.Toc
                 >> presetInfo "Gallery" Article.Toc
-                >> presetInfo "Labs" Article.Toc
+                >> presetInfo "Labs" Series.byline
                 >> presetBody "Tidal Shifts Collage" Festival.tidalShiftsCollage
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
                 >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2

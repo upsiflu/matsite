@@ -408,13 +408,6 @@ structure timezone =
 
 byline : Article.InfoTemplate
 byline =
-    Layout.bylineMulti Article.Byline <|
-        List.map Layout.byline
-            [ "From 2020-2022 the MaT program included regular hybrid labs hosted live at bUM in Kreuzberg, Berlin and online within our interactive Gathertown world."
-            , "Series 6# 2022: September-November // LOCALITY"
-            , "Series 5# 2022: May-July // QUEERING"
-            , "Series 4# 2022: February-April // EMERGENCE"
-            , "Series 3# 2021: April-June // INTERRELATION"
-            , "Series 2# 2021: January-March // ECOLOGY"
-            , "Series 1# 2020: October-December // LOWERING THE THRESHOLD"
-            ]
+    text "No labs currently scheduled."
+        |> Snippet.view
+        |> Article.Byline 1
