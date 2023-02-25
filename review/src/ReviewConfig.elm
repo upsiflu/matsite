@@ -36,6 +36,7 @@ import NoUnsortedRecords
 import NoUnsortedTopLevelDeclarations
 import Review.Rule as Rule exposing (Rule)
 import Simplify
+import NoUnoptimizedRecursion
 
 
 config : List Rule
@@ -81,4 +82,7 @@ config =
             |> NoUnsortedRecords.typecheckAllRecords
             |> NoUnsortedRecords.reportAmbiguousRecordsWithoutFix
         )
+
+    -- Tail Call Opti
+    , NoUnoptimizedRecursion.rule (NoUnoptimizedRecursion.optOutWithComment "IGNORE TCO")
     ]
