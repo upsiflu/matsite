@@ -67,10 +67,12 @@ elm-verify-examples --run-tests
 
 will run the development version on port 1234 of your development computer
 
+`yarn local` will skip the network and only serve on localhost
+
 ----
 
 ```sh
-npm install -g elm-live
+yarn install -g elm-live
 ```
 
 ```sh
