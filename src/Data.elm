@@ -84,7 +84,6 @@ addTemplates zone =
         addOtherTemplates =
             presetBody "Collage" Festival.collage
                 >> presetBody "Video1" Festival.video1
-                >> presetBody "Video2" Festival.video2
                 >> presetBody "Description" Festival.description
                 >> presetBody "Credits" Festival.radialsystemCredits
                 >> presetBody "Home" Intro.intro
@@ -102,6 +101,7 @@ addTemplates zone =
                 >> presetInfo "Gallery" Article.Toc
                 >> presetInfo "Labs" Series.byline
                 >> presetBody "Tidal Shifts Collage" Festival.tidalShiftsCollage
+                >> presetBody "Tidal Shifts Video" Festival.tidalShiftsVideo
                 >> presetBody "Tidal Shifts" Festival.tidalShifts
                 >> presetBody "Tidal Shifts Facilitators" Festival.tidalShifts2
     in
@@ -234,6 +234,10 @@ initialActions timezone =
                 :: Go Right
                 :: Name "Tidal Shifts Facilitators"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                :: Go Right
+                :: Name "Tidal Shifts Video"
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
+                :: Go Left
                 :: Go Left
                 :: Go Up
                 :: Go Right
@@ -241,21 +245,17 @@ initialActions timezone =
                 :: Modify (WithCaption { text = "Radialsystem Berlin", showsDate = True })
                 :: registerTwoDays 23 Apr 2022 1 "https://www.radialsystem.de/de/veranstaltungen/moving-across-thresholds/"
                 :: Go Down
-                :: Name "Video2"
+                :: Name "Video1"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
                 :: Go Right
                 :: Name "Collage"
-                :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
                 :: Go Right
                 :: Name "Description"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
                 :: Go Right
-                :: Name "Video1"
-                :: Modify (WithShape (Oriented Horizontal (Article.Columns 2)))
-                :: Go Right
                 :: Name "Credits"
                 :: Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
-                :: Go Left
                 :: Go Left
                 :: Go Up
                 :: Go Left

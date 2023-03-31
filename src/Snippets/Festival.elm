@@ -1,4 +1,4 @@
-module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, tidalShifts2, tidalShiftsCollage, video1, video2, view)
+module Snippets.Festival exposing (Festival, collage, description, festivals, genericIllustration, radialsystemCredits, tidalShifts, tidalShifts2, tidalShiftsCollage, tidalShiftsVideo, video1, view)
 
 import Article exposing (Article, BodyTemplate)
 import Html.String exposing (..)
@@ -21,6 +21,40 @@ festivals =
     []
 
 
+tidalShiftsVideo : BodyTemplate
+tidalShiftsVideo =
+    div [ Attr.class "bleeding" ]
+        [ div
+            [ Attr.class "TextformatterVideoEmbed"
+            , Attr.style "position" "relative"
+            , Attr.style "padding-bottom" "56.25%"
+            , Attr.style "height" "0"
+            , Attr.style "overflow" "hidden"
+            ]
+            [ iframe
+                [ Attr.style "position" "absolute"
+                , Attr.style "top" "0"
+                , Attr.style "left" "0"
+                , Attr.style "width" "100%"
+                , Attr.style "height" "100%"
+                , Attr.attribute "byline" "false"
+                , Attr.attribute "portrait" "false"
+                , Attr.src "https://player.vimeo.com/video/791948098?h=1f97d3c1c8&app_id=122963"
+                , Attr.width 1280
+                , Attr.height 720
+                , Attr.attribute "frameborder" "0"
+                , Attr.attribute "allow" "fullscreen; picture-in-picture"
+                , Attr.attribute "allowfullscreen" ""
+                , Attr.title "&#039;MaT - Foregrounding the background&#039; at Radialsystem 2022"
+                , Attr.attribute "dnt" "true"
+                ]
+                []
+            ]
+        ]
+        |> always
+        |> Article.Illustration
+
+
 tidalShifts : BodyTemplate
 tidalShifts =
     div
@@ -30,14 +64,14 @@ tidalShifts =
             [ text "Tidal Shifts"
             ]
         , p []
-            [ text """'Moving across Thresholds - Tidal Shifts' is a mini-festival of artist labs in the coastal town of Stralsund, three hours north of Berlin.
+            [ text """
+            “Thresholds, like waves, are generative zones of potential.” --Ally Bisshop, 2022
             """ ]
         , p []
-            [ text """MaT will host four 3-hour labs that will take place both live at the Perform[d]ance 
-            studios in Stralsund and online in our customised Gathertown world on the 
-            26 + 27 November.""" ]
-        , p [] [ a [ Attr.href "https://performdance.de" ] [ text "performdance.de" ] ]
-        , p [] [ strong [] [ text "Registration" ], text " is free and you can register for one or more events by emailing your name and the labs you would like to join to: ", pre [] [ text "ticket@performdance.de" ] ]
+            [ text """Join us for a mini-festival of artist labs in the coastal town of Stralsund, where MaT will host four 3-hour labs that will take place both live at the Perform[d]ance studios and online in our customised Gathertown world. Together with guest facilitators from Brazil, Colombia and Israel this workshop weekend focuses on the meeting of land and sea as a site of change.""" ]
+        , p []
+            [ text """Conceived as an experimental space, participants explore with full physical commitment; Slow Transitions by Nattan Dobkin and how ‘mythical’ linear movements can become radical when done in slow motion, ritualistic choreographic processes led by Martha Hincapié Charry that look at the relationship of our bodies with planet earth, and ask ‘when was the last time you changed your mind?’ in a workshop led by Viviane Tabach where we share perspectives about sensitive topics.""" ]
+        , p [] [ text "No dance experience necessary. Registration is free and you can register for one or more events by emailing your name and preferred workshop times to ", pre [] [ text "ticket@performdance.de" ] ]
         ]
         |> always
         |> Article.Content (Just "Moving across Thresholds:")
@@ -90,7 +124,7 @@ description =
 
 collage : BodyTemplate
 collage =
-    cacheImg "Moving across Thresholds at Radialsystem (Berlin) - Collage: Judith Förster" 2 "" "https://lh4.googleusercontent.com/bDLi5oDfqgi5fEySAi4NJxsjxYSRsf80RQswbdtbAVacYQy-CBQ_7KiR6bq5xKrL7c4lAjVDjzGosYsvIcCIyYnOd0ZVBZEtkkcJAyNHTcmxPp7MCEW5SF8sMqr0ci0RdN9AZbWqbnK_DxMmsA"
+    cacheImg "Moving across Thresholds at Radialsystem (Berlin) - Collage: Judith Förster" 2 "" "https://movingacrossthresholds.com/asset/festival/radial.png"
         |> always
         |> Article.Illustration
 
@@ -126,15 +160,7 @@ video1 =
                 ]
                 []
             ]
-        ]
-        |> always
-        |> Article.Illustration
-
-
-video2 : BodyTemplate
-video2 =
-    div [ Attr.class "bleeding" ]
-        [ div
+        , div
             [ Attr.class "TextformatterVideoEmbed"
             , Attr.style "position" "relative"
             , Attr.style "padding-bottom" "56.25%"
