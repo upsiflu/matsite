@@ -63,27 +63,61 @@ artists =
         --Html.a [ class "internal", href ("/" ++ Layout.sanitise descr) ] [ Html.text (" ☛" ++ descr ++ " ") ]
     in
     [ { name = "Anna\u{00A0}Mayberry"
-      , bio = \dir -> Html.p [] [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” ", Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(https://bauereignis.de)" ], Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life." ]
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is an English-French architect and writer living in Berlin. In 2017, she completed an M.Sc. in Architecture (ETH Zürich). Her thesis explored the hidden backstage spaces in Zürich’s historical center and how small-scale architectural interventions could enhance these public spaces for city-dwellers. Since 2018 she has been working for the architecture office Bauereignis, a Berlin-based team which focuses on “participatory design and construction projects for the development of schools” "
+                    , Html.a [ target "_blank", href "https://bauereignis.de" ] [ Html.text "(https://bauereignis.de)" ]
+                    , Html.text ". Anna Mayberry has an ongoing writing and drawing practice where she documents the stories of the places and faces she encounters in Berlin or along her travels. This exploration is a source of inspiration in her architectural designs, where she seeks to create built environments which make space for the rhythm of everyday life."
+                    , event dir "Wandering the City" "https://www.facebook.com/events/446694109865123"
+                    ]
       , photo = "https://lh3.googleusercontent.com/x80L4cgraRGQsq0juS4izJwhwAMsvKE-Hu3sLXk6UsnjKf3mz-evo7J4espwIk1zep5BEZ-oxobH099Msoi68N4-W9IqyObHlpcYqh759JRNGReInZY50arDy6QL3jvT5-91xHFugugv7hNKog"
       , wide = False
       }
     , { name = "Balam\u{00A0}Kenter"
-      , bio = \dir -> Html.p [] [ Html.text "Balam is three cats in a trench coat who intermittently passes for a PhD student at the Centre for Interdisciplinary Studies in Society and Culture at Concordia University, Tio’Tia:Ke. Balam has always been interested in bodies, especially non-normative ones, especially at the point of encounter with oppressive systems. Their current academic work is situated at the intersections of Political Philosophy, Critical Disability Studies, and Critical Animal Studies. Having explored the relationship between exploitation and oppression through disability at Boğaziçi University’s Philosophy MA program, they are now focusing on the political, historical, and material entanglements of ableism and anthropocentrism under late capitalism. When they are not studying in Montreal, Balam lives with two humans, three cats, and a dog in Istanbul. Unless they are on a strict deadline, Balam can often be found (or lost) researching tangential topics, watching horror films, and doodling. ", Html.a [ class "weblink", target "_blank", href "https://balamkenter.com/" ] [ text "  https://balamkenter.com/" ] ]
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is three cats in a trench coat who intermittently passes for a PhD student at the Centre for Interdisciplinary Studies in Society and Culture at Concordia University, Tio’Tia:Ke. Balam has always been interested in bodies, especially non-normative ones, especially at the point of encounter with oppressive systems. Their current academic work is situated at the intersections of Political Philosophy, Critical Disability Studies, and Critical Animal Studies. Having explored the relationship between exploitation and oppression through disability at Boğaziçi University’s Philosophy MA program, they are now focusing on the political, historical, and material entanglements of ableism and anthropocentrism under late capitalism. When they are not studying in Montreal, Balam lives with two humans, three cats, and a dog in Istanbul. Unless they are on a strict deadline, Balam can often be found (or lost) researching tangential topics, watching horror films, and doodling. "
+                    , Html.a [ class "weblink", target "_blank", href "https://balamkenter.com/" ] [ text "  https://balamkenter.com/" ]
+                    , event dir "access and excess" "https://www.facebook.com/events/158994299292033"
+                    , Html.h4 [] [ Html.text "Commissioned Essays:" ]
+                    , internal dir "'Hello, good evening, and welcome to the Middle of the Film!'"
+                    , internal dir "'Marx and Foucault Go to the Movies: Horror as Method in Understanding Anthropocentrism and Ableism'"
+                    ]
       , photo = "https://lh3.googleusercontent.com/am3kGTLYql5xaKoh-A9f3W2IR7eUws_FZQeLJ1CuzAvaPg06aFIDWpq2VaAzfiw8KgMNmrbfhqKUgHC92CcyOdH9rZnXrpk7nLVpaCQSGHZwvcxbymxgDSzd-mUojWoaC0tfMGcwVMkfRE3eHA"
       , wide = False
       }
     , { name = "Julia\u{00A0}Grillmayr"
-      , bio = \dir -> Html.p [] [ Html.text "Julia Grillmayr is a Vienna- and Linz-based cultural studies scholar, journalist, radio maker and science communicator. She holds a PhD in Comparative Literature from the University of Vienna. At the University of Art and Design Linz, she explored the relationship between contemporary SF literature and futurological scenarios. Her research interests are speculative (eco)feminist philosophy and cyberpunk. She is creator of the radio broadcast Superscience Me on Radio Orange, she works for the public radio channel Ö1, and podcasts for the Austrian Academy of Science. The rest of the time, she spends in muddy danubian wetlands and in tap shoes.", Html.a [ class "weblink", target "_blank", href "https://juliagrillmayr.at/" ] [ Html.text "https://juliagrillmayr.at/" ] ]
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is a Vienna- and Linz-based cultural studies scholar, journalist, radio maker and science communicator. She holds a PhD in Comparative Literature from the University of Vienna. At the University of Art and Design Linz, she explored the relationship between contemporary SF literature and futurological scenarios. Her research interests are speculative (eco)feminist philosophy and cyberpunk. She is creator of the radio broadcast Superscience Me on Radio Orange, she works for the public radio channel Ö1, and podcasts for the Austrian Academy of Science. The rest of the time, she spends in muddy danubian wetlands and in tap shoes."
+                    , Html.a [ class "weblink", target "_blank", href "https://juliagrillmayr.at/" ] [ Html.text "https://juliagrillmayr.at/" ]
+                    , internal dir "Staying with the muddle"
+                    ]
       , photo = "https://lh4.googleusercontent.com/7LLFpU2L0El8Dg9mRS6zZb4kG1bE9-PyAfrcuZ_cBoOZ3AytTW-7LxX0srwjh44wo6et2BYjSBnTTSigvMr4XZPujU_UOEX4r7f0Owgm1UE7VIgCwYTWVOaKPvm8B6kLx2BlWZ_chtYj03vnvA"
       , wide = False
       }
     , { name = "Rivca\u{00A0}Rubin"
-      , bio = \dir -> Html.p [] [ Html.text "Rivca is described as a catalyst of fresh liberating approaches to shifting oppressive systems and co-creating those beneficial to all people with consciously considered communicating at the heart of all relating and egalitarian engaging. Rivca works with leadership, artists and activists in the cultural, educational, business and non-governmental sectors in Europe and worldwide, such as the Clore Leadership Programme, Unesco Literature Fund, BBC Academy, BFI and Regional Screen Archives, Manchester Museum, Manchester and Whitworth Art Galleries, Invisible Dust, Global Grooves Future Leaders, VANZA Leadership Programme, All Out Africa, SEEDCommunity South Africa, PAP, TAK and HZT Berlin, HfMDK Frankfurt, Akademie for Performing Arts Producer, Germany. Rivca presents at international conferences and networks, is a co-initiator of GrandReUnion, Tender Hotel, and joint director of Islington Mill, Salford, Manchester.", Html.a [ class "weblink", target "_blank", href "http://www.rivcarubin.com" ] [ Html.text "http://www.rivcarubin.com" ], Html.a [ class "weblink", target "_blank", href "http://www.upwording.com" ] [ Html.text "http://www.upwording.com" ] ]
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is described as a catalyst of fresh liberating approaches to shifting oppressive systems and co-creating those beneficial to all people with consciously considered communicating at the heart of all relating and egalitarian engaging. Rivca works with leadership, artists and activists in the cultural, educational, business and non-governmental sectors in Europe and worldwide, such as the Clore Leadership Programme, Unesco Literature Fund, BBC Academy, BFI and Regional Screen Archives, Manchester Museum, Manchester and Whitworth Art Galleries, Invisible Dust, Global Grooves Future Leaders, VANZA Leadership Programme, All Out Africa, SEEDCommunity South Africa, PAP, TAK and HZT Berlin, HfMDK Frankfurt, Akademie for Performing Arts Producer, Germany. Rivca presents at international conferences and networks, is a co-initiator of GrandReUnion, Tender Hotel, and joint director of Islington Mill, Salford, Manchester."
+                    , Html.a [ class "weblink", target "_blank", href "http://www.rivcarubin.com" ] [ Html.text "http://www.rivcarubin.com" ]
+                    , event dir "creating a Verbal Climate" "https://www.facebook.com/events/1547251642115284"
+                    ]
       , photo = "https://lh4.googleusercontent.com/1R5eaNVfVJytf892zZGbR82TJTUv30_9vHmHu4DXqa4G4ZXBJ_uFQF_Puf5Mbl5aa9VjttHLbXflARqOYz7NY_euQrttTw5tkYh6UTfzDM1a9ckl_FVwmBZJ16JTdG6sszSUtTIGcE_y3OlXmg"
       , wide = False
       }
     , { name = "Ally\u{00A0}Bisshop"
-      , bio = \dir -> Html.p [] [ Html.text "is an Australian artist, writer, and researcher living in Berlin. She draws on methods and concepts across multiple disciplines to think critically and creatively about the material, affective, ethical, and relational thresholds between human and nonhuman. In 2018 Ally completed a Ph.D. in visual arts (UNSW Sydney's National Institute for Experimental Arts) with an exploration of more-than-human techniques in processual artistic praxis. Previously, she studied art at the UdK Berlin through Olafur Eliasson’s Institut für Räumexperimente, and microbiology (B.Sc. Hons 1) at UQ Brisbane. Since 2017 she has been an associate researcher in Berlin-based artist Tomás Saraceno’s transdisciplinary interspecies Arachnophilia project.", Html.a [ class "weblink", href "https://allybisshop.com/" ] [ Html.text "https://allybisshop.com/" ], Html.i [] [ Html.text "Link to Fatigue as creative proposition" ] ]
+      , bio =
+            \dir ->
+                Html.p []
+                    [ Html.text "is an Australian artist, writer, and researcher living in Berlin. She draws on methods and concepts across multiple disciplines to think critically and creatively about the material, affective, ethical, and relational thresholds between human and nonhuman. In 2018 Ally completed a Ph.D. in visual arts (UNSW Sydney's National Institute for Experimental Arts) with an exploration of more-than-human techniques in processual artistic praxis. Previously, she studied art at the UdK Berlin through Olafur Eliasson’s Institut für Räumexperimente, and microbiology (B.Sc. Hons 1) at UQ Brisbane. Since 2017 she has been an associate researcher in Berlin-based artist Tomás Saraceno’s transdisciplinary interspecies Arachnophilia project."
+                    , Html.a [ class "weblink", href "https://allybisshop.com/" ] [ Html.text "https://allybisshop.com/" ]
+                    , internal dir "Fatigue as creative proposition"
+                    ]
       , photo = "https://lh6.googleusercontent.com/kJjIIvJeffNdqTIFCGaANwI6xY85zqTQTJf4XdJ4PWikurkXsOlkZBehEUD7Zfi1V70e7zYOiCA9Rt3fS0L5PNEHsCOU4LFrpRPNSwiYlKY89DrqXHWWUfE967k9GIYHVp7YxNKx2Nycggx_jw"
       , wide = True
       }
@@ -92,6 +126,7 @@ artists =
             \dir ->
                 Html.p []
                     [ Html.text "based both in Berlin and Tel aviv, is a performance artist, a teacher, and an adjunct professor in the department of gender studies at Ben Gurion University of the Negev, Be’er Sheva, for which he/they had been noted an outstanding lecturer. He/They teach a performance-art course at the Pre-Academic Art School “The Garage”, for students facing mental health challenges. Dobkin regularly facilitates and independant workshop in Tel Aviv that deals with the performer’s identity in gender and sexual contexts, and in the stage world. Dobkin holds a M.A in gender studies from Ben Gurion University of the Negev, Be’er Sheva, and a B.A in theatre directing and pedagogy from Seminar Hakibutzim College, Tel Aviv. "
+                    , internal dir "Tidal Shifts"
                     ]
       , photo = "https://lh3.googleusercontent.com/qqY_NjTLxinp1hkfnhYT5Dh6mEldDluVUssrW2mAhxD-HnRIyp2t5o-J4uiKU1hmwZw1hPJwN0cjNiOv3uPCtnCfbtdzmyRSTdRmhBgnuty4tgIZzkWEQf33iTHlMQQpo2oLTKaWysSNmYiW8Q"
       , wide = False
@@ -133,6 +168,7 @@ artists =
             \dir ->
                 Html.p []
                     [ Html.text "is an anthropologist and sensory ethnographer, interdisciplinary artist, and facilitator. Her work focuses on creative collaborations within and beyond the label of 'art meets science', multispecies worlds, and the aesthetic dimensions of the workplace and sites of knowledge production like Natural History Museums, Aquariums, or Botanical Gardens."
+                    , weblink "SusanneSchmitt.org" "https://www.susanneschmitt.org/"
                     , event dir "Botanizing the Virtual" "https://www.facebook.com/events/1126808091099825/"
                     , Html.h4 [] [ Html.text "Creative Companion:" ]
                     , internal dir "Series 4"
@@ -203,7 +239,9 @@ artists =
                 Html.p []
                     [ Html.text "is the founder and creative director of ASEDEVA (Art for Social and Economic Development in Africa), a Tanzanian based non profit arts organization. He performs as a dancer, actor and musician while increasingly working off stage as a choreographer, song writer, and curator of the annual ‘Marafiki Music Festival’ and ‘Haba na Haba International Dance Festival’. Isack is motivated by the power of performance art to express and question cultural diversity and colonial politics."
                     , weblink "asedeva.com" "http://www.asedeva.com/"
-                    , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
+                    , Html.h4 [] [ Html.text "Festivals:" ]
+                    , internal dir "Foregrounding the background"
+                    , internal dir "Perform[d]ance"
                     ]
       , photo = "https://lh3.googleusercontent.com/vEYuRZmFzFtQfUJO748pxL7mHMJ6uf5uAU5RpUR9WJKeLSRdvfGe4WXPWy2QR-5z7vQNUWUTBCpwoBLcK5SUHEKdwGfWoctKGoMLKbx9hE5FaJCthRmD_eD_Kevs1dIO6q7fWYdc6HJzSga-ig"
       , wide = False
@@ -214,6 +252,8 @@ artists =
                 Html.p []
                     [ Html.text "is a Brazilian doctoral student in Sociology at Justus Liebig University Giessen and a graduate fellow at the International Graduate Centre for the Study of Culture (GCSC), Germany. In her research, she departs from border, feminist and anti-racist epistemologies to feel-think with peripheral women from the edges of São Paulo city (Brazil) through lived embodied experiences."
                     , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
+                    , Html.h4 [] [ Html.text "Commissioned essay:" ]
+                    , internal dir "'Weaving encounters within thresholds'"
                     ]
       , photo = "https://lh6.googleusercontent.com/zoEGn1A_OOG60YJ41KbZ1ETcAYxWHi3jODBdAcJPVhjErtMrxhCoHYkPKvLXkgOU6vJ5ByoXJpVTBkbw4UvBjDvqGwbL-loWktgFqJKR09hlfvsxwUI7NnSAPqFjam5KSbALB0OswKiz6shbyg"
       , wide = False
@@ -223,8 +263,9 @@ artists =
             \dir ->
                 Html.p []
                     [ Html.text "is a choreographer, dancer, stage and costume designer living in Berlin. Her work is situated between visual art and dance. She combines the performative with the somatic and works experientially with bodies and their political, sensual and visual dimensions. The interaction of body and material is at the center of her research. In collaboration with various choreographers, visual artists and dancers, she continuously gives new forms to the interaction of bodies and materials in her work. "
-                    , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
                     , weblink "judithfoerster.de" "www.judithfoerster.de"
+                    , internal dir "Foregrounding the background"
+                    , internal dir "Tidal Shifts"
                     , Html.h4 [] [ Html.text "Creative Companion:" ]
                     , internal dir "Series 1"
                     , internal dir "Series 2"
@@ -238,8 +279,10 @@ artists =
             \dir ->
                 Html.p []
                     [ Html.text "is a Berlin-based choreographer, performer and researcher. As founder of `Renae Shadler & Collaborators`, a project-based collective that develops performances with touring artists and non-professional participants, she has created works for theaters, train stations and city squares. Her choreographic practice `Worlding` (since 2015) explores how we shape and are shaped by our environment, and manifests in her creations, MaT curation/facilitation and the `Worlding` podcast series. "
-                    , festival "Foregrounding the background" "Radialsystem" "https://www.radialsystem.de/en/veranstaltungen/moving-across-thresholds/"
                     , weblink "renaeshadler.com" "http://www.renaeshadler.com"
+                    , Html.h4 [] [ Html.text "Curator/Facilitator:" ]
+                    , internal dir "Foregrounding the Background"
+                    , internal dir "Tidal Shifts"
                     , internal dir "Series 1"
                     , internal dir "Series 2"
                     , internal dir "Series 3"
@@ -281,6 +324,8 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
                     [ Html.text """is a Ugandan contemporary artist and dance researcher who works in traditional and non-traditional spaces in an era of post-colonialism and decolonization. In his practice, he presses against the body’s physical limits to create work that is utterly sincere. He addresses social, political and cultural issues, creating meaning through the interplay of the physical body, the psychological world of the mind, human emotions, and the soul. He is committed to constructing a sustainable scene for contemporary dance in Uganda. Ssempijja is also curious to know how the body creates and transfers information and secrets into a movement that builds up the body’s own vocabulary. He assumes that our bodies are comprised of archives of information which are activated when it comes to movement."""
                     , weblink "Robertssempijja.com" "http://Robertssempijja.com"
                     , event dir "Known to Unknown, Alienation" "https://www.facebook.com/events/717565509528106"
+                    , Html.h4 [] [ Html.text "Commissioned essay:" ]
+                    , internal dir "'Structure is magic. Architecture, policy, and design.'"
                     ]
       , photo = "https://lh4.googleusercontent.com/PBMk2ySDAZA4m8EAR52f_0Te9Vj0WLiG-8HvMnE5ObecQwXoLge7arrZXNRHGwlTBOanyVCY5-RaakKynfxbKAIDq5oG2aPj9Lz6bv9Ff_TWiKVwsrar-mfhdm1FkND5peS-CqDOyzdF-bz8WnEfJb4mVPHo438UI3EwRiRBseH6omCam_uUWSwVaw"
       , wide = False
@@ -291,6 +336,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
                 Html.p []
                     [ Html.text """is an ethnic-cultural political movement ruled by drums. It is situated in the neighborhood of Perus, northwest of the city of São Paulo in Brazil. Created by young cultural activists with the aim of facing the problems and dilemmas that surround the periphery, mainly poverty and violence. Since the beginning, human development through art, culture and knowledge are our instruments and tools for producing effective changes in this reality. Because these, understood and articulated in a systemic way, promote and provide guarantee of access to an essential human right: Emancipation, Expanding and amplifying the imaginary universe and the repertoire of languages; Autonomy, generating work, income and prospects for young people."""
                     , weblink "quilombaque.org.br" "http://quilombaque.org.br/"
+                    , internal dir "Foregrounding the background"
                     ]
       , photo = "https://lh6.googleusercontent.com/6dHBFr_R1mYYDDw1s9LA-jZBz0YjN81lvuQiXp5w_ANbbgrUYwlMyI7uSFx_ML7JHbHcd8-sgcrPBPTPuM4RP3-GuNXVhuY2OtlxdaAivHIQnpQDzQjnx7FSmD8Z3AiIVSUp8RlBJnGvnfeO7ouUz6JH7ynvsfSUcXMHCJF6E6_gdHO7m7NtFmXsDQ"
       , wide = True
@@ -301,6 +347,7 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
                 Html.p []
                     [ Html.text """is a quantum ecologist living and working on a wise and lively Ocean planet. As an artist and educator he works in the fields of art & science for eco-social and epistemic justice. As a vernacular musician Jol is an obsessive mystic. His practice addresses our troubled relationships with nature, technology, and the cosmos by signaling beyond the purely measurable and quantifiable, and by thinking, feeling, and sensing with more-than-human worlds."""
                     , weblink "jolthoms.com" "https://jolthoms.com/"
+                    , event dir "in the biological reflection" "https://www.facebook.com/events/620289266230295"
                     ]
       , photo = "https://lh4.googleusercontent.com/uCGilVHlSpWgj_iAls-JWBJB4sBcOdz40bkYfyzUSs_OQFWabGftO6YWq-x6L00-kTyszU009lxHsYfsVQdkcHS3QBi538Ah07bCxy2CE2VFqCubG8rtIhuO_HFYlJz-qXyCBU2-k3yg5DFrO1isT1GUq1oZjHJuQk_N7aY9BS0htaVkh2A4vAFBfQ"
       , wide = False
@@ -312,6 +359,8 @@ She is recently studying at the Somatische Akademie in Berlin to become a somati
                     [ Html.text "is a Berlin-based sound artist and researcher working at intersections of Earth-based sound, sonic sensualities, and climate change. Having studied composition with experimental music pioneers Pauline Oliveros, Fred Frith, Maggi Payne, and Zeena Parkins at the Center for Contemporary Music at Mills College, Hertz works fluidly between the worlds of composed music for ensembles, electronic music and installation, performance, and film. His work has been seen at venues such as Fylkingen (SE), Ars Electronica Festival (AT), Sophiensaele (DE), the National Science and Media Museum (UK), Opera North (UK), and the Macerata Opera Festival (IT) among many others. Hertz’s writings on the relationships between sound and climate can be found in interdisciplinary journals and platforms, as well as two recent book chapters. Hertz is currently a AHRC/Techne-funded PhD candidate at Royal Holloway, University of London (Centre for GeoHumanities), researching sound-sensing networks of climate change at the scales of atmospheric, geologic, and bioacoustic conservation."
                     , weblink "samhertzsound.com" "http://www.samhertzsound.com"
                     , event dir "Scalar Sensorium" "https://www.facebook.com/events/1241796136377315"
+                    , Html.h4 [] [ Html.text "Commissioned essay:" ]
+                    , internal dir "'Sound outside of sound'"
                     ]
       , photo = "https://lh3.googleusercontent.com/MecYX84rnf6hfsKvVM_kvr31KsBbjuxEQiGSoElBlQp6zFFfA7HJ_EGYrBbPwynqmfvW82wUJFg1Por5WBfa0l4tS_hQhih6dLZohpWsxJDbKDPysM9d9JAt5F0-q_8nbzb89Kwlhc1YHISDr7xRsRBRD2hILwsb58ViOiA1YLXC3mZC9Qe4Dm-m-Ns6xg"
       , wide = False

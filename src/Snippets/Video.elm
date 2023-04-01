@@ -55,33 +55,22 @@ videochannel =
         makeTrailer =
             \( h, number ) ->
                 li [ class "trailer-thumb" ]
-                    [ deferredVimeoVideo h number
-                    , h2 []
-                        [ text h
-                        , text " "
-                        , a [ href (Layout.sanitise h) ]
-                            [ if h /= "" then
-                                text "More..."
-
-                              else
-                                Snippet.none
-                            ]
-                        ]
+                    [ h2 [] [ text h ]
+                    , deferredVimeoVideo h number
                     ]
     in
     (\dir ->
         article []
             [ videocarousel dir
-            , h2 [] [ text "Trailers" ]
-            , makeTrailer ( "", 777887047 )
-            , makeTrailer ( "", 688293718 )
-            , [ ( "Series 1", 510475030 )
-              , ( "Series 2", 544616520 )
-              , ( "Series 3", 572540457 )
-              , ( "Radialsystem", 685421693 )
-              , ( "Perform[d]ance", 791948098 )
-              ]
-                |> List.map makeTrailer
+            , makeTrailer ( "Trailer", 777887047 )
+            , makeTrailer ( "Impressions", 582137659 )
+            , List.map makeTrailer
+                [ ( "Series 1", 510475030 )
+                , ( "Series 2", 544616520 )
+                , ( "Series 3", 572540457 )
+                , ( "Radialsystem", 777887047 )
+                , ( "Perform[d]ance", 791948098 )
+                ]
                 |> ul [ class "video-carousel" ]
             ]
     )
@@ -100,7 +89,8 @@ videocarousel : Directory -> Html msg
 videocarousel =
     \dir ->
         article []
-            [ [ ( 514927927, "Erin Manning conversation" )
+            [ h2 [] [ text "Recording of past events" ]
+            , [ ( 514927927, "Erin Manning conversation" )
               , ( 533845894, "dances of the mouth" )
               , ( 517426338, "dances of\u{00A0}care" )
               , ( 581244925, "parallel worlds" )

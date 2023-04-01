@@ -11,6 +11,7 @@ import Snippet exposing (cacheImg)
 
 type alias Entry =
     { name : String
+    , heading : String
     , credits : String
     , links : Directory -> List (Html Never)
     , photos : List String
@@ -28,12 +29,11 @@ galleryEntries =
                 |> Maybe.withDefault (text descr)
     in
     [ { name = "Gallery - Series 1"
+      , heading = "Series 1"
       , links = \dir -> internal dir "Series 1" |> List.singleton
-      , credits = "Series 1, Online only - Photos by Stella Horta"
+      , credits = "Online only - Photos by Stella Horta"
       , photos =
-            [ "asset/gallery/series 1/MAT_19.11 (2).jpg"
-            , "asset/gallery/series 1/MAT_19.11 (5).jpg"
-            , "asset/gallery/series 1/MAT_19.11 (5).jpg"
+            [ "asset/gallery/series 1/MAT_19.11 (5).jpg"
             , "asset/gallery/series 1/MAT_19.11 (9).jpg"
             , "asset/gallery/series 1/MAT_19.11 (21).jpg"
             , "asset/gallery/series 1/MAT_19.11 (34).jpg"
@@ -42,8 +42,9 @@ galleryEntries =
       , wide = False
       }
     , { name = "Gallery - Series 2"
+      , heading = "Series 2"
       , links = \dir -> internal dir "Series 2" |> List.singleton
-      , credits = "Series 2, Online only - Photos by Stella Horta"
+      , credits = "Online only - Photos by Stella Horta"
       , photos =
             [ "asset/gallery/series 2/DSCF2212.jpg"
             , "asset/gallery/series 2/DSCF2285.jpg"
@@ -55,8 +56,9 @@ galleryEntries =
       , wide = False
       }
     , { name = "Gallery - Series 3"
+      , heading = "Series 3"
       , links = \dir -> internal dir "Series 3" |> List.singleton
-      , credits = "Series 3, Online only - Photos by Stella Horta"
+      , credits = "Online only - Photos by Stella Horta"
       , photos =
             [ "asset/gallery/series 3/DSCF5081.jpg"
             , "asset/gallery/series 3/DSCF5121.jpg"
@@ -67,9 +69,25 @@ galleryEntries =
             ]
       , wide = False
       }
+    , { name = "Gallery - Series 4-6"
+      , heading = "Series 4-6"
+      , links = \dir -> [ internal dir "Series 4", internal dir "Series 5", internal dir "Series 6" ]
+      , credits = "Hybrid online/offline - Photos by Stella Horta"
+      , photos =
+            [ "asset/gallery/series 4-6/mat_glitch(16).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(21).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(27).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(31).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(59).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(75).jpg"
+            , "asset/gallery/series 4-6/mat_glitch(84).jpg"
+            ]
+      , wide = False
+      }
     , { name = "Gallery - ‘Foregrounding the background' Arnaud Pormarat"
+      , heading = "Foregrounding the background - Drawings"
       , links = \dir -> internal dir "Foregrounding the background" |> List.singleton
-      , credits = "‘Foregrounding the background' at Radialsystem, Hybrid online/offline - Drawings by Arnaud Pormarat "
+      , credits = "Event at Radialsystem, Hybrid online/offline - Drawings by Arnaud Pormarat "
       , photos =
             [ "asset/gallery/radialsystem - drawings/radial_1.jpeg"
             , "asset/gallery/radialsystem - drawings/radial_2.jpeg"
@@ -79,6 +97,7 @@ galleryEntries =
       , wide = False
       }
     , { name = "Gallery - ‘Foregrounding the background' Stella Horta"
+      , heading = "Foregrounding the background - Photos"
       , links = \dir -> internal dir "Foregrounding the background" |> List.singleton
       , credits = "'Foregrounding the background' at Radialsystem, Hybrid online/offline  - Photos by Stella Horta"
       , photos =
@@ -96,22 +115,8 @@ galleryEntries =
             ]
       , wide = False
       }
-    , { name = "Gallery - Series 4-6"
-      , links = \dir -> [ internal dir "Series 4", internal dir "Series 5", internal dir "Series 6" ]
-      , credits = "Series 4-6, Hybrid online/offline - Photos by Stella Horta"
-      , photos =
-            [ "asset/gallery/series 4-6/mat_glitch(16).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(21).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(27).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(31).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(31).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(59).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(75).jpg"
-            , "asset/gallery/series 4-6/mat_glitch(84).jpg"
-            ]
-      , wide = False
-      }
     , { name = "Gallery - Tidal Shifts"
+      , heading = "Tidal Shifts"
       , links = \dir -> [ internal dir "Perform[d]ance" ]
       , credits = "'Tidal Shifts' at Perform[d]ance, Hybrid online/offline - Photos by Daria Panteleeva"
       , photos =
@@ -134,11 +139,12 @@ view : Entry -> Article.BodyTemplate
 view entry =
     (\dir ->
         Html.div [ class "artist richtext" ]
-            (Html.div [] (List.map (Html.map never) (entry.links dir))
+            (Html.h4 [] [ Html.text entry.credits ]
+                :: Html.div [] (List.map (Html.map never) (entry.links dir))
                 :: viewPhotos entry
             )
     )
-        |> Article.Content (Just entry.credits)
+        |> Article.Content (Just entry.heading)
 
 
 viewPhotos : Entry -> List (Html msg)

@@ -138,9 +138,21 @@ initialActions timezone =
         gallery =
             Gallery.galleryEntries
                 |> List.map
-                    (\{ name, wide } ->
+                    (\{ name, heading, wide } ->
                         [ Name name
-                        , Modify (WithShape (Oriented Horizontal (Article.Columns 1)))
+                        , Modify
+                            (WithShape
+                                (Oriented Horizontal
+                                    (Article.Columns
+                                        (if wide then
+                                            2
+
+                                         else
+                                            1
+                                        )
+                                    )
+                                )
+                            )
                         , Modify (WithClasses [ "fg" ])
                         ]
                     )
@@ -310,7 +322,6 @@ initialActions timezone =
         :: Go Down
         :: gallery
         ++ Go Left
-        :: Go Left
         :: Go Left
         :: Go Up
         :: Go Right
