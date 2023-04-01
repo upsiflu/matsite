@@ -10,7 +10,7 @@ import Snippet exposing (cacheImg)
 
 mat : Article.BodyTemplate
 mat =
-    [ "Moving across Thresholds (MaT) is an event series that explores how the perceived limits or edges within experience - whether physical, structural or otherwise - can be approached as thresholds of potential that invite us to think and move in different ways. At MaT humans and nonhumans research thresholds as generative places of encounter where entities such as people, gasses and entire ecosystems can interact."
+    [ "is an event series that explores how the perceived limits or edges within experience - whether physical, structural or otherwise - can be approached as thresholds of potential that invite us to think and move in different ways. At MaT humans and nonhumans research thresholds as generative places of encounter where entities such as people, gasses and entire ecosystems can interact."
     , "Conceived as an experimental space, participants explore with full physical commitment what is foregrounded and what is pushed into the background. This is not accidental, but the result of historical processes, dominant pedagogical practices as well as systematic relations of power and oppression. Curated by dance artist Renae Shadler, MaT events combine movement, philosophy and activism, bringing together artists and researchers from neurodiverse and international backgrounds (Europe, Africa and the Global South). Together we ask:"
     , "What happens when the background comes to life and makes its presence felt?"
     , "What if the landscape becomes a part of us, just as we are a part of it?"
@@ -76,6 +76,9 @@ team =
                         li [] [ span [ class "role" ] [ text role ], text ":\u{00A0}", closeArtist person dir ]
                     )
                 |> ul []
+            , br [] []
+            , br [] []
+            , br [] []
             , hr [] []
             , small [] [ text "Presented by Renae Shadler & Collaborators. Supported by the NATIONAL PERFORMANCE NETWORK – STEPPING OUT, sponsored by the Federal Government Commissioner for Culture and Media within the framework of the initiative NEUSTART KULTUR, Aid Program Dance. 2020/21 activities with additional support from Marten Bequest Theater Fellowship (Perpetual Trust, Australia).\n" ]
             ]
